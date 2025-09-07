@@ -1,69 +1,63 @@
-# React + TypeScript + Vite
+LOLO Frontend 🎶
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend application for the LOLO platform, built with React, TypeScript, Vite, and React Router v7.
+This app connects to the Laravel backend to manage events, users, and credits.
 
-Currently, two official plugins are available:
+🚀 Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+React
+ – UI library
 
-## Expanding the ESLint configuration
+TypeScript
+ – Type-safe development
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Vite
+ – Fast build tool
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+React Router v7
+ – Client-side routing
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+📦 Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Clone the repository and install dependencies:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+git clone <your-repo-url>
+cd lolo-frontend
+npm install
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+▶️ Development
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Start the development server:
+
+npm run dev
+
+
+The app will be running at:
+👉 http://localhost:5173
+
+📂 Project Structure
+src/
+ ├── pages/         # Page components (Home, Events, Users, etc.)
+ ├── App.tsx        # Router setup and navigation
+ ├── main.tsx       # Entry point
+ └── index.css      # Global styles
+
+🌐 Available Routes
+
+/ → Home Page
+
+/events → Events Page
+
+/users → Users Page
+
+📜 License
+
+This project is licensed under the MIT License.
+
+👉 Next steps:
+
+Add API integration with your Laravel backend
+
+Add Event Details route (/events/:id)
+
+Add Authentication (if required)
