@@ -17,8 +17,3 @@ This app connects to the **Laravel backend** to manage events, users, and credit
 ## 📦 Installation  
 
 Clone the repository and install dependencies:  
-
-```bash
-git clone <your-repo-url>
-cd lolo-frontend
-npm install
