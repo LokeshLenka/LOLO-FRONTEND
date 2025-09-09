@@ -3,9 +3,6 @@ import { Link } from "react-router-dom";
 import { Music, Headphones, Mic2, Award, Play, Disc3 } from "lucide-react";
 import { motion } from "framer-motion";
 import Logo from "../components/Logo";
-import Lottie from "lottie-react";
-import { Player } from "@lottiefiles/react-lottie-player";
-import musicNotes from "../assets/3D_Music_Instruments_Transparent.json";
 
 const Home: React.FC = () => {
   return (
