@@ -596,7 +596,7 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
                 value={[field.value ?? 0]}
                 max={10}
                 step={1}
-                onValueChange={([val]) => field.onChange(val)}
+                onValueChange={([val]: [number]) => field.onChange(val)}
               />
             </FormControl>
             <FormMessage />
