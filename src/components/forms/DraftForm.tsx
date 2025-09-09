@@ -5,6 +5,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -57,6 +58,10 @@ const formSchema = z
   });
 
 type FormData = z.infer<typeof formSchema>;
+
+// use state
+
+// const [Disabled, setDisabled] = useState(false);
 
 // Custom Hook for Multi-Step Form
 interface StepField {
@@ -195,28 +200,28 @@ const ToggleGroupItem: React.FC<{
   );
 };
 
-// Slider Component
-const Slider: React.FC<{
-  min: number;
-  max: number;
-  step: number;
-  value: number;
-  onValueChange: (value: number) => void;
-}> = ({ min, max, step, value, onValueChange }) => {
-  return (
-    <div className="w-full">
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onValueChange(Number(e.target.value))}
-        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-      />
-    </div>
-  );
-};
+// // Slider Component
+// const Slider: React.FC<{
+//   min: number;
+//   max: number;
+//   step: number;
+//   value: number;
+//   onValueChange: (value: number) => void;
+// }> = ({ min, max, step, value, onValueChange }) => {
+//   return (
+//     <div className="w-full">
+//       <input
+//         type="range"
+//         min={min}
+//         max={max}
+//         step={step}
+//         value={value}
+//         onChange={(e) => onValueChange(Number(e.target.value))}
+//         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+//       />
+//     </div>
+//   );
+// };
 
 // Step Components
 const BasicInformationStep: React.FC<{ form: any }> = ({ form }) => (
@@ -456,6 +461,7 @@ const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
 };
 
 const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
+
   const categoryOptions = [
     { value: "vocalist", label: "Vocalist" },
     { value: "drummer", label: "Drummer" },
@@ -467,6 +473,20 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
     { value: "yes", label: "Yes" },
     { value: "no", label: "No" },
   ];
+
+  // State for disabling instrument_details
+  const [instrumentDetailsDisabled, setInstrumentDetailsDisabled] = useState(true);
+
+  // Watch instrument_avail field
+  React.useEffect(() => {
+    const value = form.watch("instrument_avail");
+    if (value === "yes") {
+      setInstrumentDetailsDisabled(false);
+    } else {
+      setInstrumentDetailsDisabled(true);
+      form.setValue("instrument_details", "");
+    }
+  }, [form.watch("instrument_avail")]);
 
   return (
     <div className="space-y-4">
@@ -534,7 +554,7 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
               <Input
                 {...field}
                 name="instrument_details"
-                disabled={form.getValues("instrument_avail") !== "yes"}
+                disabled={instrumentDetailsDisabled}
               />
             </FormControl>
             <FormMessage />
@@ -552,8 +572,8 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
               <Textarea
                 {...field}
                 placeholder="Describe your passion for music"
-                className="resize-none"
-                rows={14}
+                className="resize-y"
+                rows={5}
                 required
               />
             </FormControl>
@@ -569,15 +589,14 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
           <FormItem className="py-3">
             <FormLabel className="flex justify-between items-center">
               Experience Level
-              <span>{field.value || 0}/10</span>
+              <span>{field.value ?? 0}/10</span>
             </FormLabel>
             <FormControl>
               <Slider
-                min={0}
+                value={[field.value ?? 0]}
                 max={10}
                 step={1}
-                value={field.value || 0}
-                onValueChange={field.onChange}
+                onValueChange={([val]) => field.onChange(val)}
               />
             </FormControl>
             <FormMessage />
@@ -595,7 +614,8 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
               <Textarea
                 {...field}
                 placeholder="Describe about your experience in specified field (your achievements, participations etc)."
-                className="resize-none"
+                className="resize-y"
+                rows={5}
                 required
               />
             </FormControl>
@@ -614,7 +634,8 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
               <Textarea
                 {...field}
                 placeholder="Mention other fields you're interested in"
-                className="resize-none"
+                className="resize-y"
+                rows={5}
                 required
               />
             </FormControl>
