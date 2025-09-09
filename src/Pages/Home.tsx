@@ -3,24 +3,10 @@ import { Link } from "react-router-dom";
 import { Music, Headphones, Mic2, Award, Play, Disc3 } from "lucide-react";
 import { motion } from "framer-motion";
 import Logo from "../components/Logo";
-import { div } from "motion/react-client";
-import { NavigationMenuDemo } from "@/components/NavigationBar";
-
-import {
-  Navbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
-  NavbarMenuToggle,
-  NavbarMenu,
-  NavbarMenuItem,
-} from "@heroui/react";
 
 const Home: React.FC = () => {
   return (
     <>
-      {/*Navigation Bar*/}
-      <NavigationMenuDemo />
       <div className="min-h-screen bg-black text-white">
         {/* Hero Section */}
         <section className="relative h-screen flex items-center justify-center overflow-hidden">

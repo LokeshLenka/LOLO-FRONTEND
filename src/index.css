@@ -1,14 +1,16 @@
 @import "tailwindcss";
 @import "tw-animate-css";
- @plugin './lib/hero.ts';
+@plugin './lib/hero.ts';
+
+@plugin "tailwindcss-animate";
 
 /* @tailwind base;
 @tailwind components;
 @tailwind utilities;
 @tailwind themes; */
 
- @source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
- @custom-variant dark (&:is(.dark *));
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -115,7 +117,6 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-
 }
 
 @layer base {
@@ -134,7 +135,6 @@
   --color-lolo-cyan: #00ffff;
   --color-lolo-black: #000000;
   --color-lolo-white: #ffffff;
-  
 }
 
 /* Custom colors */
@@ -188,4 +188,3 @@
 .animate-bounce-slow {
   animation: bounce-slow 3s infinite;
 }
-
