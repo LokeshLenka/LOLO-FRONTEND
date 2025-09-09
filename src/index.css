@@ -124,7 +124,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-size: 1rem;
   }
 }
 
@@ -188,4 +187,3 @@
 .animate-bounce-slow {
   animation: bounce-slow 3s infinite;
 }
-
