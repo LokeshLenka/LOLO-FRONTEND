@@ -15,12 +15,12 @@ const Home: React.FC = () => {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,0,255,0.1),transparent_70%)]"></div>
           </div>
 
-          <Player
+          {/* <Player
             autoplay
             loop
             src={musicNotes}
             style={{ width: "300px", height: "300px", position: "absolute", top: "20%", left: "10%" }}
-          />
+          /> */}
 
           <div className="container mx-auto px-4 z-10">
             <motion.div
