@@ -23,7 +23,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
 
 // Form Schema
 const formSchema = z
@@ -164,7 +164,7 @@ const PasswordInput: React.FC<{
         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
         onClick={() => setShowPassword(!showPassword)}
       >
-        {showPassword ? "Hide" : "Show"}
+        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
       </Button>
     </div>
   );

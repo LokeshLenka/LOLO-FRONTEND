@@ -15,6 +15,13 @@ const Home: React.FC = () => {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,0,255,0.1),transparent_70%)]"></div>
           </div>
 
+          {/* <Player
+            autoplay
+            loop
+            src={musicNotes}
+            style={{ width: "300px", height: "300px", position: "absolute", top: "20%", left: "10%" }}
+          /> */}
+
           <div className="container mx-auto px-4 z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -22,9 +29,10 @@ const Home: React.FC = () => {
               transition={{ duration: 0.8 }}
               className="text-center"
             >
-              <div className="flex justify-center mb-6">
+              {/* LOGO */}
+              {/* <div className="flex justify-center mb-6">
                 <Logo size={120} />
-              </div>
+              </div> */}
               <h1 className="text-5xl md:text-7xl font-bold mb-6">
                 <span className="gradient-text">SRKR LOLO</span> Music
                 <br />
