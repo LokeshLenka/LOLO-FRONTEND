@@ -167,7 +167,7 @@
   }
   50% {
     transform: scale(1.4);
-    opacity: 0.8;
+    opacity: 1;
   }
 }
 
@@ -186,4 +186,12 @@
 }
 .animate-bounce-slow {
   animation: bounce-slow 3s infinite;
+}
+/* Hide scrollbars for all elements */
+::-webkit-scrollbar {
+  display: none;
+}
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }

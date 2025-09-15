@@ -164,7 +164,11 @@ const PasswordInput: React.FC<{
         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
         onClick={() => setShowPassword(!showPassword)}
       >
-        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        {showPassword ? (
+          <EyeOff className="w-4 h-4" />
+        ) : (
+          <Eye className="w-4 h-4" />
+        )}
       </Button>
     </div>
   );
@@ -226,7 +230,11 @@ const ToggleGroupItem: React.FC<{
 // Step Components
 const BasicInformationStep: React.FC<{ form: any }> = ({ form }) => (
   <div className="space-y-4">
-    <h1 className="mt-6 font-extrabold text-3xl tracking-tight">
+    <h1 className="mt-6 font-extrabold text-2xl tracking-tight text-center">
+      Management Registration
+    </h1>
+    <hr />
+    <h1 className="mt-6 font-extrabold text-lg tracking-tight">
       Basic Information
     </h1>
 
@@ -350,7 +358,11 @@ const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
 
   return (
     <div className="space-y-4">
-      <h1 className="mt-6 font-extrabold text-3xl tracking-tight">
+      <h1 className="mt-6 font-extrabold text-2xl tracking-tight text-center">
+        Management Registration
+      </h1>
+      <hr />
+      <h1 className="mt-6 font-extrabold text-lg tracking-tight">
         Academic Information
       </h1>
 
@@ -384,7 +396,7 @@ const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
                     <SelectValue placeholder="Select your branch" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent className="overflow-y-auto max-h-52">
                   {branchOptions.map(({ label, value }) => (
                     <SelectItem key={value} value={value}>
                       {label}
@@ -409,7 +421,7 @@ const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
                     <SelectValue placeholder="Select your year" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent className="overflow-y-auto max-h-52">
                   {yearOptions.map(({ label, value }) => (
                     <SelectItem key={value} value={value}>
                       {label}
@@ -443,7 +455,7 @@ const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
                     <SelectValue placeholder="" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent className="overflow-y-auto max-h-52">
                   {genderOptions.map(({ label, value }) => (
                     <SelectItem key={value} value={value}>
                       {label}
@@ -461,7 +473,6 @@ const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
 };
 
 const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
-
   const categoryOptions = [
     { value: "vocalist", label: "Vocalist" },
     { value: "drummer", label: "Drummer" },
@@ -475,7 +486,8 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
   ];
 
   // State for disabling instrument_details
-  const [instrumentDetailsDisabled, setInstrumentDetailsDisabled] = useState(true);
+  const [instrumentDetailsDisabled, setInstrumentDetailsDisabled] =
+    useState(true);
 
   // Watch instrument_avail field
   React.useEffect(() => {
@@ -490,7 +502,11 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
 
   return (
     <div className="space-y-4">
-      <h1 className="mt-6 font-extrabold text-3xl tracking-tight">
+      <h1 className="mt-6 font-extrabold text-2xl tracking-tight text-center">
+        Management Registration
+      </h1>
+      <hr />
+      <h1 className="mt-6 font-extrabold text-lg tracking-tight">
         Music Information
       </h1>
 
@@ -506,7 +522,7 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
                   <SelectValue placeholder="Select your category" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent>
+              <SelectContent className="overflow-y-auto max-h-52">
                 {categoryOptions.map(({ label, value }) => (
                   <SelectItem key={value} value={value}>
                     {label}
@@ -548,14 +564,10 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
         control={form.control}
         name="instrument_details"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel>Enter the name of the instrument you have</FormLabel>
+          <FormItem hidden={instrumentDetailsDisabled}>
+            <FormLabel>Enter instrument details</FormLabel>
             <FormControl>
-              <Input
-                {...field}
-                name="instrument_details"
-                disabled={instrumentDetailsDisabled}
-              />
+              <Input {...field} name="instrument_details" />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -572,7 +584,7 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
               <Textarea
                 {...field}
                 placeholder="Describe your passion for music"
-                className="resize-y"
+                className="resize-y overflow-y-auto"
                 rows={5}
                 required
               />
@@ -614,7 +626,7 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
               <Textarea
                 {...field}
                 placeholder="Describe about your experience in specified field (your achievements, participations etc)."
-                className="resize-y"
+                className="resize-y overflow-y-auto"
                 rows={5}
                 required
               />
@@ -634,7 +646,7 @@ const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
               <Textarea
                 {...field}
                 placeholder="Mention other fields you're interested in"
-                className="resize-y"
+                className="resize-y overflow-y-auto"
                 rows={5}
                 required
               />
@@ -756,7 +768,7 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
 };
 
 // Main Form Component
-export const DraftForm: React.FC = () => {
+export const ManagementSignUp: React.FC = () => {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
