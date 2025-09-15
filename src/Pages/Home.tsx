@@ -7,7 +7,7 @@ import Logo from "../components/Logo";
 const Home: React.FC = () => {
   return (
     <>
-      <div className="min-h-screen bg-black text-white">
+      <div className="min-h-screen bg-black text-white w-full">
         {/* Hero Section */}
         <section className="relative h-screen flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 z-0">
@@ -57,13 +57,15 @@ const Home: React.FC = () => {
           </div>
 
           {/* Animated circles */}
-          <div className="absolute -bottom-40 left-1/2 transform -translate-x-1/2 w-[800px] h-[800px] border-2 border-lolo-pink rounded-full animate-pulse-slow border-2 shadow-[0px_0px_50px_5px,inset_0px_0px_50px_5px] shadow-lolo-pink"></div>
+          <div className="absolute -bottom-60 sm:-bottom-64 md:-bottom-48 lg:-bottom-32 left-1/2 transform -translate-x-1/2 w-[800px] h-[800px] border-2 border-lolo-pink rounded-full animate-pulse-slow shadow-[0px_0px_50px_5px,inset_0px_0px_50px_5px] shadow-lolo-pink"></div>
+
           <div
-            className="absolute -bottom-20 left-1/2 transform -translate-x-1/2 w-[600px] h-[600px] border-2 border-lolo-cyan rounded-full animate-pulse-slow shadow-[0px_0px_30px_3px,inset_0px_0px_30px_3px] shadow-lolo-cyan"
+            className="absolute -bottom-40 sm:-bottom-48 md:-bottom-36 lg:-bottom-20 left-1/2 transform -translate-x-1/2 w-[600px] h-[600px] border-2 border-lolo-cyan rounded-full animate-pulse-slow shadow-[0px_0px_30px_3px,inset_0px_0px_30px_3px] shadow-lolo-cyan"
             style={{ animationDelay: "0.5s" }}
           ></div>
+
           <div
-            className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 w-[400px] h-[400px] border border-lolo-red rounded-full animate-pulse-slow shadow-[0px_0px_20px_2px,inset_0px_0px_20px_2px] shadow-lolo-red"
+            className="absolute -bottom-20 sm:-bottom-40 md:-bottom-28 lg:-bottom-16 left-1/2 transform -translate-x-1/2 w-[400px] h-[400px] border border-lolo-red rounded-full animate-pulse-slow shadow-[0px_0px_20px_2px,inset_0px_0px_20px_2px] shadow-lolo-red"
             style={{ animationDelay: "1s" }}
           ></div>
         </section>

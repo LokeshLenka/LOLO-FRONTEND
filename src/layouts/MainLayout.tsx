@@ -34,13 +34,12 @@ const MainLayout: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-black text-white">
       {/* Navbar */}
       <header
-        className={`fixed top-4 left-0 right-0 z-50 transition-all duration-300 w-[95%] rounded-lg justify-center mx-auto max-h-20
+        className={`fixed top-4 left-0 right-0 z-50 transition-all duration-300 w-[95%] rounded-lg justify-center mx-auto max-h-20 bg-transparent
              ${
                scrolled
                  ? "bg-black/40 backdrop-blur-sm shadow-lg"
                  : "bg-transparent"
-             }`
-            }
+             }`}
       >
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
@@ -81,18 +80,24 @@ const MainLayout: React.FC = () => {
                 Blog
               </Link>
               {user ? (
-                <Link to="/dashboard" className="btn btn-primary border-2 border-lolo-cyan px-6 py-3 hover:text-lolo-cyan rounded-md">
+                <Link
+                  to="/dashboard"
+                  className="btn btn-primary border-2 border-lolo-cyan px-4 py-2 hover:text-lolo-cyan rounded-md"
+                >
                   Dashboard
                 </Link>
               ) : (
                 <div className="flex items-center space-x-12">
                   <Link
                     to="/login"
-                    className="hover:text-lolo-pink transition-colors border-2 border-lolo-pink px-6 py-3 rounded-md"
+                    className="hover:text-lolo-pink transition-colors border-2 border-lolo-pink px-4 py-2 rounded-md"
                   >
                     Login
                   </Link>
-                  <Link to="/signup" className="btn btn-primary bg-lolo-pink px-6 py-3 rounded-md">
+                  <Link
+                    to="/signup"
+                    className="btn btn-primary bg-lolo-pink px-4 py-2 rounded-md hover:bg-lolo-pink/60"
+                  >
                     Sign Up
                   </Link>
                 </div>
@@ -169,7 +174,7 @@ const MainLayout: React.FC = () => {
                       <span>Login</span>
                     </Link>
                     <Link
-                      to="/register"
+                      to="/signup"
                       className="btn btn-primary w-full text-center"
                     >
                       Sign Up
@@ -183,7 +188,7 @@ const MainLayout: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow pt-20">
+      <main className="flex-grow">
         <Outlet />
       </main>
 
