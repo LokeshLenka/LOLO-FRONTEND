@@ -3,27 +3,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { BasicInformationStep } from "./steps/BasicInformationStep";
+import { AcademicInformationStep } from "./steps/AcademicInformationStep";
 
 // Form Schema
 const formSchema = z
@@ -38,19 +22,9 @@ const formSchema = z
     branch: z.string().min(1, "Branch is required"),
     year: z.string().min(1, "Year of study is required"),
     gender: z.string().min(1, "Gender is required"),
-    category_of_interest: z.string().min(1, "Category of interest is required"),
-    instrument_avail: z.string().min(1, "Instrument availability is required"),
-    instrument_details: z.string().optional(),
-    passion: z
-      .string()
-      .min(10, "Please describe your passion (at least 10 characters)"),
-    experience_level: z.number().min(0).max(10),
-    experience: z
-      .string()
-      .min(10, "Please describe your experience (at least 10 characters)"),
-    other_fields_of_interest: z
-      .string()
-      .min(5, "Please mention other interests (at least 5 characters)"),
+    lateral_status: z.string().optional(),
+    hostel_status: z.string().optional(),
+    college_hostel_status: z.string().optional(),
   })
   .refine((data) => data.password === data.confirm_password, {
     message: "Passwords don't match",
@@ -58,10 +32,6 @@ const formSchema = z
   });
 
 type FormData = z.infer<typeof formSchema>;
-
-// use state
-
-// const [Disabled, setDisabled] = useState(false);
 
 // Custom Hook for Multi-Step Form
 interface StepField {
@@ -92,17 +62,9 @@ const useMultiStepForm = (totalSteps: number, form: any) => {
         { name: "branch" },
         { name: "year" },
         { name: "gender" },
-      ],
-    },
-    3: {
-      fields: [
-        { name: "category_of_interest" },
-        { name: "instrument_avail" },
-        { name: "instrument_details" },
-        { name: "passion" },
-        { name: "experience_level" },
-        { name: "experience" },
-        { name: "other_fields_of_interest" },
+        { name: "lateral_status" },
+        { name: "hostel_status" },
+        { name: "college_hostel_status" },
       ],
     },
   };
@@ -141,524 +103,6 @@ const useMultiStepForm = (totalSteps: number, form: any) => {
   };
 };
 
-// Password Input Component
-const PasswordInput: React.FC<{
-  value?: string;
-  onChange?: (value: string) => void;
-  required?: boolean;
-}> = ({ value, onChange, required }) => {
-  const [showPassword, setShowPassword] = useState(false);
-
-  return (
-    <div className="relative">
-      <Input
-        type={showPassword ? "text" : "password"}
-        value={value || ""}
-        onChange={(e) => onChange?.(e.target.value)}
-        required={required}
-      />
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-        onClick={() => setShowPassword(!showPassword)}
-      >
-        {showPassword ? (
-          <EyeOff className="w-4 h-4" />
-        ) : (
-          <Eye className="w-4 h-4" />
-        )}
-      </Button>
-    </div>
-  );
-};
-
-// Toggle Group Component (simplified)
-const ToggleGroup: React.FC<{
-  value?: string;
-  onValueChange?: (value: string) => void;
-  children: React.ReactNode;
-  className?: string;
-}> = ({ value, onValueChange, children, className = "" }) => {
-  return <div className={`flex gap-2 ${className}`}>{children}</div>;
-};
-
-const ToggleGroupItem: React.FC<{
-  value: string;
-  children: React.ReactNode;
-  className?: string;
-}> = ({ value: itemValue, children, className = "" }) => {
-  return (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      className={className}
-      onClick={() => {
-        // This would be handled by parent context in real implementation
-      }}
-    >
-      {children}
-    </Button>
-  );
-};
-
-// // Slider Component
-// const Slider: React.FC<{
-//   min: number;
-//   max: number;
-//   step: number;
-//   value: number;
-//   onValueChange: (value: number) => void;
-// }> = ({ min, max, step, value, onValueChange }) => {
-//   return (
-//     <div className="w-full">
-//       <input
-//         type="range"
-//         min={min}
-//         max={max}
-//         step={step}
-//         value={value}
-//         onChange={(e) => onValueChange(Number(e.target.value))}
-//         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-//       />
-//     </div>
-//   );
-// };
-
-// Step Components
-const BasicInformationStep: React.FC<{ form: any }> = ({ form }) => (
-  <div className="space-y-4">
-    <h1 className="mt-6 font-extrabold text-2xl tracking-tight text-center">
-      Management Registration
-    </h1>
-    <hr />
-    <h1 className="mt-6 font-extrabold text-lg tracking-tight">
-      Basic Information
-    </h1>
-
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <FormField
-        control={form.control}
-        name="first_name"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>First Name *</FormLabel>
-            <FormControl>
-              <Input {...field} required />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="last_name"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Last Name *</FormLabel>
-            <FormControl>
-              <Input {...field} required />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    </div>
-
-    <FormField
-      control={form.control}
-      name="phone_number"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Phone Number *</FormLabel>
-          <FormControl>
-            <Input type="tel" {...field} required />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-
-    <FormField
-      control={form.control}
-      name="email"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Email *</FormLabel>
-          <FormControl>
-            <Input type="email" {...field} required />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <FormField
-        control={form.control}
-        name="password"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Password *</FormLabel>
-            <FormControl>
-              <PasswordInput {...field} required />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="confirm_password"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Confirm Password *</FormLabel>
-            <FormControl>
-              <PasswordInput {...field} required />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    </div>
-  </div>
-);
-
-const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
-  const branchOptions = [
-    { value: "csbs", label: "CSBS" },
-    { value: "aids", label: "AIDS" },
-    { value: "aiml", label: "AIML" },
-    { value: "cse", label: "CSE" },
-    { value: "csd", label: "CSD" },
-    { value: "cic", label: "CIC" },
-    { value: "civil", label: "CIVIL" },
-    { value: "mech", label: "MECH" },
-    { value: "ece", label: "ECE" },
-    { value: "eee", label: "EEE" },
-    { value: "csit", label: "CSIT" },
-  ];
-
-  const yearOptions = [
-    { value: "first_year", label: "First Year" },
-    { value: "second_year", label: "Second Year" },
-    { value: "third_year", label: "Third Year" },
-    { value: "fourth_year", label: "Fourth Year" },
-  ];
-
-  const genderOptions = [
-    { value: "male", label: "Male" },
-    { value: "female", label: "Female" },
-    { value: "others", label: "Others" },
-  ];
-
-  return (
-    <div className="space-y-4">
-      <h1 className="mt-6 font-extrabold text-2xl tracking-tight text-center">
-        Management Registration
-      </h1>
-      <hr />
-      <h1 className="mt-6 font-extrabold text-lg tracking-tight">
-        Academic Information
-      </h1>
-
-      <FormField
-        control={form.control}
-        name="reg_num"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Registration Number *</FormLabel>
-            <FormControl>
-              <Input {...field} required />
-            </FormControl>
-            <FormDescription>
-              Enter your college registration number
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="branch"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Branch *</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your branch" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className="overflow-y-auto max-h-52">
-                  {branchOptions.map(({ label, value }) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="year"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Year Of Study *</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your year" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className="overflow-y-auto max-h-52">
-                  {yearOptions.map(({ label, value }) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                Please specify current studying year
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-
-      <FormField
-        control={form.control}
-        name="gender"
-        render={({ field }) => {
-          return (
-            <FormItem className="w-full">
-              <FormLabel>Gender</FormLabel> *
-              <Select
-                onValueChange={field.onChange}
-                value={field.value}
-                required
-              >
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className="overflow-y-auto max-h-52">
-                  {genderOptions.map(({ label, value }) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          );
-        }}
-      />
-    </div>
-  );
-};
-
-const MusicInformationStep: React.FC<{ form: any }> = ({ form }) => {
-  const categoryOptions = [
-    { value: "vocalist", label: "Vocalist" },
-    { value: "drummer", label: "Drummer" },
-    { value: "pianist", label: "Pianist" },
-    { value: "guitarist", label: "Guitarist" },
-  ];
-
-  const instrumentAvailOptions = [
-    { value: "yes", label: "Yes" },
-    { value: "no", label: "No" },
-  ];
-
-  // State for disabling instrument_details
-  const [instrumentDetailsDisabled, setInstrumentDetailsDisabled] =
-    useState(true);
-
-  // Watch instrument_avail field
-  React.useEffect(() => {
-    const value = form.watch("instrument_avail");
-    if (value === "yes") {
-      setInstrumentDetailsDisabled(false);
-    } else {
-      setInstrumentDetailsDisabled(true);
-      form.setValue("instrument_details", "");
-    }
-  }, [form.watch("instrument_avail")]);
-
-  return (
-    <div className="space-y-4">
-      <h1 className="mt-6 font-extrabold text-2xl tracking-tight text-center">
-        Management Registration
-      </h1>
-      <hr />
-      <h1 className="mt-6 font-extrabold text-lg tracking-tight">
-        Music Information
-      </h1>
-
-      <FormField
-        control={form.control}
-        name="category_of_interest"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Category Of Interest *</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your category" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent className="overflow-y-auto max-h-52">
-                {categoryOptions.map(({ label, value }) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="instrument_avail"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Instrument Availability *</FormLabel>
-            <FormControl>
-              <div className="flex gap-4">
-                {instrumentAvailOptions.map(({ label, value }) => (
-                  <Button
-                    key={value}
-                    type="button"
-                    variant={field.value === value ? "default" : "outline"}
-                    onClick={() => field.onChange(value)}
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </div>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="instrument_details"
-        render={({ field }) => (
-          <FormItem hidden={instrumentDetailsDisabled}>
-            <FormLabel>Enter instrument details</FormLabel>
-            <FormControl>
-              <Input {...field} name="instrument_details" />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="passion"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Passion *</FormLabel>
-            <FormControl>
-              <Textarea
-                {...field}
-                placeholder="Describe your passion for music"
-                className="resize-y overflow-y-auto"
-                rows={5}
-                required
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="experience_level"
-        render={({ field }) => (
-          <FormItem className="py-3">
-            <FormLabel className="flex justify-between items-center">
-              Experience Level
-              <span>{field.value ?? 0}/10</span>
-            </FormLabel>
-            <FormControl>
-              <Slider
-                value={[field.value ?? 0]}
-                max={10}
-                step={1}
-                onValueChange={([val]: [number]) => field.onChange(val)}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="experience"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Experience *</FormLabel>
-            <FormControl>
-              <Textarea
-                {...field}
-                placeholder="Describe about your experience in specified field (your achievements, participations etc)."
-                className="resize-y overflow-y-auto"
-                rows={5}
-                required
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="other_fields_of_interest"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Other fields of interest *</FormLabel>
-            <FormControl>
-              <Textarea
-                {...field}
-                placeholder="Mention other fields you're interested in"
-                className="resize-y overflow-y-auto"
-                rows={5}
-                required
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    </div>
-  );
-};
-
 // Main Multi-Step Form Component
 const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
   const {
@@ -668,13 +112,17 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
     goToNext,
     goToPrevious,
     goToFirstStep,
-  } = useMultiStepForm(3, form);
+  } = useMultiStepForm(2, form);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const stepComponents = {
-    1: <BasicInformationStep form={form} />,
+    1: (
+      <BasicInformationStep
+        form={form}
+        registrationType="Management Registration"
+      />
+    ),
     2: <AcademicInformationStep form={form} />,
-    3: <MusicInformationStep form={form} />,
   };
 
   const handleSubmit = async (data: FormData) => {
@@ -697,9 +145,9 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
       {/* Progress Indicator */}
       <div className="flex flex-col items-center justify-start gap-2">
         <span className="text-sm text-muted-foreground">
-          Step {currentStep} of 3
+          Step {currentStep} of 2
         </span>
-        <Progress value={(currentStep / 3) * 100} className="w-full" />
+        <Progress value={(currentStep / 2) * 100} className="w-full" />
       </div>
 
       {/* Current Step Content */}
@@ -782,13 +230,9 @@ export const ManagementSignUp: React.FC = () => {
       branch: "",
       year: "",
       gender: "",
-      category_of_interest: "",
-      instrument_avail: "",
-      instrument_details: "",
-      passion: "",
-      experience_level: 0,
-      experience: "",
-      other_fields_of_interest: "",
+      lateral_status: "",
+      hostel_status: "",
+      college_hostel_status: "",
     },
   });
 

@@ -54,8 +54,8 @@ export default function SignUp() {
             control={form.control} // ✅ required
             name="category"
             render={({ field }) => (
-              <FormItem className="w-[300px] space-y-1">
-                <FormLabel className="">Category Of Interest *</FormLabel>
+              <FormItem className="-space-y-2 w-[300px] flex flex-col justify-center mx-auto">
+                <FormLabel className="text-xl text-center">Registration Type *</FormLabel>
                 <br />
                 <Select
                   onValueChange={(val) => {
@@ -64,7 +64,7 @@ export default function SignUp() {
                   }}
                   value={field.value}
                 >
-                  <FormControl className="mt-2">
+                  <FormControl className="">
                     <SelectTrigger>
                       <SelectValue placeholder="Select your category" />
                     </SelectTrigger>

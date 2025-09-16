@@ -34,7 +34,7 @@ const Home: React.FC = () => {
                 <Logo size={120} />
               </div> */}
               <h1 className="text-5xl md:text-7xl font-bold mb-6">
-                <span className="gradient-text">SRKR LOLO</span> Music
+                <span className="gradient-text">SRKR LOLO</span>
                 <br />
               </h1>
               <p className="text-lg">Living Out Loud Originals</p>
