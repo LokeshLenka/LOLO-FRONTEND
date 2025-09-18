@@ -6,12 +6,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
-  const branchOptions = [
+  const branches = [
     { value: "csbs", label: "CSBS" },
     { value: "aids", label: "AIDS" },
     { value: "aiml", label: "AIML" },
@@ -24,6 +30,8 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
     { value: "eee", label: "EEE" },
     { value: "csit", label: "CSIT" },
   ];
+
+  const branchOptions = branches.sort((a, b) => a.label.localeCompare(b.label));
 
   const yearOptions = [
     { value: "first_year", label: "First Year" },
