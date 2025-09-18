@@ -5,6 +5,7 @@ import Home from "./Pages/Home";
 import { AnimatePresence } from "motion/react";
 import SignUp from "./Pages/SignUp";
 import MainLayout from "./layouts/MainLayout";
+import LoginPage from "./Pages/Login";
 
 function App() {
   // const [count, setCount] = useState(0);
@@ -17,6 +18,7 @@ function App() {
           <Route index element={<Home />} />
         </Route>
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/login" element={<LoginPage />} />
       </Routes>
     </AnimatePresence>
   );
