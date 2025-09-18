@@ -40,15 +40,15 @@ export default function SignUp() {
     <div className="min-h-screen bg-gray-100">
       {/* Back Button */}
       <Button
-        className="fixed top-4 left-4 flex items-center gap-2 hover:bg-black hover:text-white border-2 border-black rounded-md transition-colors duration-300"
+        className="z-50 absolute top-4 left-4 flex items-center gap-2 hover:bg-black hover:text-white border-2 border-black rounded-md transition-colors duration-300"
         onClick={() => history.back()}
       >
-        <ChevronLeft />
-        <span className="hidden sm:inline">Back</span>
+        <ChevronLeft className="-ml-2" />
+        <span className="hidden sm:inline -ml-2 p-auto">Back</span>
       </Button>
 
       {/* Category Select Form */}
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-20 px-4 w-full mx-auto">
+      <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-14 px-4 w-full mx-auto">
         <Form {...form}>
           <FormField
             control={form.control} // ✅ required
@@ -85,7 +85,7 @@ export default function SignUp() {
       </div>
 
       {/* Conditional Form Section */}
-      <div className="mt-4 flex justify-center px-4">
+      <div className="mt-4 flex justify-center">
         {category === "music" ? <MusicSignUp /> : <ManagementSignUp />}
       </div>
     </div>
