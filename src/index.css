@@ -195,3 +195,11 @@ html {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+
+@font-face {
+  font-family: "astro";
+  src: url("./assets/fonts/AstroSpace-eZ2Bg.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
