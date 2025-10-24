@@ -4,11 +4,13 @@ import { Menu, X, Music, LogIn, User } from "lucide-react";
 import { motion } from "framer-motion";
 // import { useAuth } from '../contexts/AuthContext';
 import Logo from "../components/Logo";
+import Lolo_logo_1 from "../assets/logos/Lolo_logo_1.png";
+import { useAuth } from "@/context/AuthContext";
 
 const MainLayout: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const user = null; // Temporary placeholder, replace with actual user object from context
+  const { user } = useAuth(); // Temporary placeholder, replace with actual user object from context
   const location = useLocation();
 
   // Handle scroll effect for navbar
@@ -41,12 +43,11 @@ const MainLayout: React.FC = () => {
                  : "bg-transparent"
              }`}
       >
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex justify-between items-center">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
-              <Logo size={40} />
-              <span className="text-2xl font-bold gradient-text">LoLo</span>
+            <Link to="/" className="flex items-center justify-center space-x-2">
+              <img src={Lolo_logo_1} alt="LoLo Logo" className="h-14 w-14" />
             </Link>
 
             {/* Desktop Navigation */}
