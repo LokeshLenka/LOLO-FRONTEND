@@ -10,12 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@heroui/button": "^2.2.25",
+    "@heroui/button": "^2.2.27",
     "@heroui/navbar": "^2.2.23",
     "@heroui/react": "^2.8.3",
     "@heroui/system": "^2.4.21",
     "@heroui/theme": "^2.4.21",
     "@hookform/resolvers": "^5.2.1",
+    "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-navigation-menu": "^1.2.14",
     "@radix-ui/react-progress": "^1.1.7",
@@ -24,6 +25,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "^4.1.13",
     "@types/next": "^9.0.0",
+    "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.12",
@@ -32,7 +34,9 @@
     "motion": "^12.23.12",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-helmet-async": "^2.0.5",
     "react-hook-form": "^7.62.0",
+    "react-icons": "^5.5.0",
     "react-router-dom": "^7.8.2",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.13",
@@ -42,6 +46,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@svgr/webpack": "^8.1.0",
     "@types/node": "^24.3.1",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
@@ -56,6 +61,7 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
     "vite": "^7.1.2",
+    "vite-plugin-svgr": "^4.5.0",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }
