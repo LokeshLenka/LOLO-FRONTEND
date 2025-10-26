@@ -46,17 +46,17 @@ const navItems: NavItem[] = [
   {
     icon: <ClipboardPenLine />,
     name: "Event Registrations",
-    path: "/registrations",
+    path: "/dashboard/event-registrations",
   },
   {
     icon: <CircleStar />,
     name: "Credits",
-    path: "/credits",
+    path: "/dashboard/credits",
   },
   {
     icon: <CircleUser />,
     name: "My Profile",
-    path: "/profile",
+    path: "/dashboard/profile",
   },
 ];
 
