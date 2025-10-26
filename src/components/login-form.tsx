@@ -67,13 +67,19 @@ export default function LoginForm({
                     setUsername(e.target.value);
                     // Clear error when user types
                     if (fieldErrors.username) {
-                      setFieldErrors((prev) => ({ ...prev, username: undefined }));
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        username: undefined,
+                      }));
                     }
                   }}
                   disabled={loading}
                   required
                   autoComplete="username"
-                  className={fieldErrors.username ? "border-red-500" : ""}
+                  className={cn(
+                    "h-10",
+                    fieldErrors.username ? "border-red-500" : ""
+                  )}
                 />
                 {fieldErrors.username && (
                   <p className="text-sm text-red-600 dark:text-red-400">
@@ -100,13 +106,19 @@ export default function LoginForm({
                     setPassword(e.target.value);
                     // Clear error when user types
                     if (fieldErrors.password) {
-                      setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        password: undefined,
+                      }));
                     }
                   }}
                   disabled={loading}
                   required
                   autoComplete="current-password"
-                  className={fieldErrors.password ? "border-red-500" : ""}
+                  className={cn(
+                    "h-10",
+                    fieldErrors.username ? "border-red-500" : ""
+                  )}
                 />
                 {fieldErrors.password && (
                   <p className="text-sm text-red-600 dark:text-red-400">
@@ -114,7 +126,7 @@ export default function LoginForm({
                   </p>
                 )}
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full h-10 font-semibold" disabled={loading}>
                 {loading ? "Logging in..." : "Login"}
               </Button>
               {error && (
