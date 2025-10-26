@@ -4,15 +4,12 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 import { ThemeProvider } from "./context/ThemeContext";
-import { AppWrapper } from "./components/common/PageMeta";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider>
       <BrowserRouter>
-        <AppWrapper>
           <App />
-        </AppWrapper>
       </BrowserRouter>
     </ThemeProvider>
   </StrictMode>
