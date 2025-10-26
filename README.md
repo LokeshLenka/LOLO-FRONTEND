@@ -1,4 +1,4 @@
-# LOLO Frontend 🎶
+#                                                   LOLO Frontend 🎶
 
 A modern, feature-rich frontend application for the **LOLO platform** (Living Out Loud Originals), built with **React**, **TypeScript**, **Vite**, and **React Router v7**. This application connects to a Laravel backend to manage events, users, and credits for the SRKR Engineering College music community.
 
