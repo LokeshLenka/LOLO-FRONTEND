@@ -1,13 +1,16 @@
 import LoginForm from "@/components/login-form";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
+import { useNavigate } from "react-router";
 
 export default function Login() {
+  const navigate = useNavigate();
+
   return (<>
    {/* Back Button */}
       <Button
         className="z-10 absolute top-4 left-4 flex items-center bg-black rounded-md mx-auto px-auto"
-        onClick={() => history.back()}
+        onClick={() => navigate('/')}
       >
         <ChevronLeft className="-ml-2" />
         <span className="hidden sm:inline ">Back</span>
