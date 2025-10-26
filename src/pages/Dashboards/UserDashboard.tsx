@@ -1,70 +1,31 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
-// import SignIn from "./pages/AuthPages/SignIn";
-// import SignUp from "./pages/AuthPages/SignUp";
-// import UserProfiles from "./pages/UserProfiles";
-// import Videos from "./pages/UiElements/Videos";
-// // import Images from "./pages/UiElements/Images";
-// import Alerts from "./pages/UiElements/Alerts";
-// import Badges from "./pages/UiElements/Badges";
-// import Avatars from "./pages/UiElements/Avatars";
-// import Buttons from "./pages/UiElements/Buttons";
-// import LineChart from "./pages/Charts/LineChart";
-// import BarChart from "./pages/Charts/BarChart";
-// import Calendar from "./pages/Calendar";
-// import BasicTables from "./pages/Tables/BasicTables";
-// import FormElements from "./pages/Forms/FormElements";
-// import Blank from "./pages/Blank";
-// import AppLayout from "./layout/AppLayout";
-// import { ScrollToTop } from "./components/common/ScrollToTop";
-import NotFound from "../OtherPages/NotFound";
-import { ScrollToTop } from "@/components/common/ScrollToTop";
-import AppLayout from "@/layouts/AppLayout";
-import Alerts from "../UiElements/Alerts";
-import Avatars from "../UiElements/Avatars";
-// import Badges from "../UiElements/Badges";
-import Buttons from "../UiElements/Buttons";
-import Images from "../UiElements/Images";
-import Videos from "../UiElements/Videos";
-// import Home from "./pages/Dashboard/Home";
+import UserMetrics from "@/components/metrics/UserMetrics";
+import BasicTableOne from "@/components/ui/table/BasicTableOne";
 
 export default function UserDashboard() {
   return (
     <>
-        <ScrollToTop />
-        <Routes>
-          {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
-            <Route index element={<div>Welcome to your dashboard!</div>} />
-            {/* <Route path="profile" element={<UserProfiles />} /> */}
-            {/* <Route path="/calendar" element={<Calendar />} /> */}
-            {/* <Route path="/blank" element={<Blank />} /> */}
+      <div className="grid grid-cols-12 gap-4 md:gap-6">
+        <div className="col-span-12 space-y-6 xl:col-span-7">
+          {/* <UserMetrics /> */}
+          <BasicTableOne/>
 
-            {/* Forms */}
-            {/* <Route path="/form-elements" element={<FormElements />} /> */}
+          {/* <MonthlySalesChart /> */}
+        </div>
 
-            {/* Tables */}
-            {/* <Route path="/basic-tables" element={<BasicTables />} /> */}
+        <div className="col-span-12 xl:col-span-5">
+          {/* <MonthlyTarget /> */}
+        </div>
 
-            {/* Ui Elements */}
-            {/* <Route path="/alerts" element={<Alerts />} />
-            <Route path="/avatars" element={<Avatars />} />
-            <Route path="/badge" element={<Badges />} />
-            <Route path="/buttons" element={<Buttons />} />
-            <Route path="/images" element={<Images />} />
-            <Route path="/videos" element={<Videos />} /> */}
+        <div className="col-span-12">{/* <StatisticsChart /> */}</div>
 
-            {/* Charts */}
-            {/* <Route path="/line-chart" element={<LineChart />} /> */}
-            {/* <Route path="/bar-chart" element={<BarChart />} /> */}
-          </Route>
+        <div className="col-span-12 xl:col-span-5">
+          {/* <DemographicCard /> */}
+        </div>
 
-          {/* Auth Layout */}
-          {/* <Route path="/signin" element={<SignIn />} /> */}
-          {/* <Route path="/signup" element={<SignUp />} /> */}
-
-          {/* Fallback Route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <div className="col-span-12 xl:col-span-7">
+          {/* <RecentOrders /> */}
+        </div>
+      </div>
     </>
   );
 }
