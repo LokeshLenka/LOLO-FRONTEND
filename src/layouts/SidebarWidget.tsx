@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "../context/AuthContext";
 
 export default function SidebarWidget() {
-  const { logout } = useAuth();
+  // const { logout } = useAuth();
 
   return (
     <div className="fixed left-0 right-0 bottom-0 mx-auto w-full max-w-60 rounded-2xl bg-gray-50 px-4 py-5 text-center dark:bg-white/[0.03] z-50 mb-32 lg:mb-20">
@@ -21,9 +21,9 @@ export default function SidebarWidget() {
         <AlertDialogTrigger asChild>
           <Button
             aria-label="Logout"
-            className="flex items-center justify-center w-full p-6 font-medium text-theme-md rounded-md bg-lolo-red text-white hover:bg-lolo-red/50 hover:text-xl transition-all duration-200"
+            className="w-full h-12 flex items-center justify-center gap-2 py-4 px-6 rounded-lg font-semibold text-base bg-lolo-red text-white shadow-md hover:bg-lolo-red/80 focus:outline-none focus:ring-2 focus:ring-lolo-red/60 focus:ring-offset-2 transition-all duration-200"
           >
-            Logout
+            <span className="material-icons-outlined text-lg">Logout</span>
           </Button>
         </AlertDialogTrigger>
 
@@ -38,10 +38,13 @@ export default function SidebarWidget() {
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogCancel className="py-6">
+            <AlertDialogCancel className=" h-12 flex items-center justify-center gap-2 rounded-lg font-semibold text-base text-gray-700 bg-white/60 hover:bg-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-lolo-white/40 focus:ring-offset-2 transition-colors duration-200">
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction className="bg-lolo-red py-6" onClick={logout}>
+            <AlertDialogAction
+              className="h-12 flex items-center justify-center gap-2 py-4 px-6 rounded-lg font-semibold text-base bg-lolo-red text-white shadow-md hover:bg-lolo-red/80 focus:outline-none focus:ring-2 focus:ring-lolo-red/60 focus:ring-offset-2 transition-all duration-200"
+              // onClick={logout}
+            >
               Logout
             </AlertDialogAction>
           </AlertDialogFooter>

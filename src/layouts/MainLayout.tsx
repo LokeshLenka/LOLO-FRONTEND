@@ -10,7 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 const MainLayout: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user } = useAuth(); // Temporary placeholder, replace with actual user object from context
+  const user  = null; // Temporary placeholder, replace with actual user object from context
   const location = useLocation();
 
   // Handle scroll effect for navbar
@@ -36,12 +36,8 @@ const MainLayout: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-black text-white">
       {/* Navbar */}
       <header
-        className={`fixed top-4 left-0 right-0 z-50 transition-all duration-300 w-[95%] rounded-lg justify-center mx-auto max-h-20 bg-transparent
-             ${
-               scrolled
-                 ? "bg-black/40 backdrop-blur-sm shadow-lg"
-                 : "bg-transparent"
-             }`}
+        className={`fixed top-4 left-0 right-0 z-50 transition-all duration-300 w-full rounded-none justify-center mx-auto max-h-20 bg-transparent
+    ${scrolled ? "bg-black/40 backdrop-blur-sm shadow-lg" : "bg-transparent"}`}
       >
         <div className="container mx-auto px-4 py-3">
           <div className="flex justify-between items-center">
