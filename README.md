@@ -196,18 +196,9 @@ VITE_API_URL=https://api.yourdomain.com
 
 ---
 
-## 🐛 Known Issues
-
-- Browser storage (localStorage, sessionStorage) is not supported in Claude.ai artifacts
-- Some form validations require backend confirmation
-
----
-
 ## 📄 License
 
-This project is licensed under the MIT License.
 
----
 
 ## 👥 Team
 
@@ -220,20 +211,6 @@ This project is licensed under the MIT License.
 ---
 
 ## 📧 Support
-
-For issues and questions:
-- Create an issue on GitHub
-- Contact the development team
-- Visit [https://srkrec.edu.in](https://srkrec.edu.in)
-
----
-
-## 🎉 Acknowledgments
-
-- SRKR Engineering College
-- All contributors and maintainers
-- Open source community
-
 ---
 
 **Built with ❤️ by the LOLO Team**
