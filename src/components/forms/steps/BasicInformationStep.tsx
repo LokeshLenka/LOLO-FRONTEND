@@ -30,7 +30,7 @@ export const BasicInformationStep: React.FC<{
           <FormItem>
             <FormLabel>First Name *</FormLabel>
             <FormControl>
-              <Input {...field} required />
+              <Input {...field} className="h-10" required />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -44,7 +44,7 @@ export const BasicInformationStep: React.FC<{
           <FormItem>
             <FormLabel>Last Name *</FormLabel>
             <FormControl>
-              <Input {...field} required />
+              <Input {...field} className="h-10" required />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -59,7 +59,7 @@ export const BasicInformationStep: React.FC<{
           <FormItem>
             <FormLabel>Phone Number *</FormLabel>
             <FormControl>
-              <Input type="tel" {...field} required />
+              <Input type="tel" {...field} className="h-10" required />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -73,7 +73,7 @@ export const BasicInformationStep: React.FC<{
           <FormItem>
             <FormLabel>Email *</FormLabel>
             <FormControl>
-              <Input type="email" {...field} required />
+              <Input type="email" {...field} className="h-10" required />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -89,7 +89,7 @@ export const BasicInformationStep: React.FC<{
           <FormItem>
             <FormLabel>Password *</FormLabel>
             <FormControl>
-              <PasswordInput {...field} required />
+              <PasswordInput {...field} className="h-10" required />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -103,7 +103,7 @@ export const BasicInformationStep: React.FC<{
           <FormItem>
             <FormLabel>Confirm Password *</FormLabel>
             <FormControl>
-              <PasswordInput {...field} required />
+              <PasswordInput {...field} className="h-10" required />
             </FormControl>
             <FormMessage />
           </FormItem>

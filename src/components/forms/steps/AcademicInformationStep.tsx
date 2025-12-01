@@ -105,7 +105,7 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
           <FormItem>
             <FormLabel>Registration Number *</FormLabel>
             <FormControl>
-              <Input {...field} required />
+              <Input {...field} className="h-10" required />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -121,7 +121,7 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
             <FormItem>
               <FormLabel>Branch *</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
+                <FormControl className="h-10">
                   <SelectTrigger>
                     <SelectValue placeholder="Select your branch" />
                   </SelectTrigger>
@@ -151,7 +151,7 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
                   value={field.value}
                   required
                 >
-                  <FormControl>
+                  <FormControl className="h-10">
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="" />
                     </SelectTrigger>
@@ -180,7 +180,7 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
             <FormItem>
               <FormLabel>Year Of Study *</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
+                <FormControl className="h-10">
                   <SelectTrigger>
                     <SelectValue placeholder="Select your year" />
                   </SelectTrigger>
