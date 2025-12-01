@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@heroui/button";
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft, ChevronLeft } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -40,11 +40,11 @@ export default function SignUp() {
     <div className="min-h-screen bg-gray-100">
       {/* Back Button */}
       <Button
-        className="z-50 absolute top-4 left-4 flex items-center gap-2 hover:bg-black hover:text-white border-2 border-black rounded-md transition-colors duration-300"
+        className="z-10 absolute top-4 left-0 flex items-center bg-transparent h-12 rounded-md mx-auto"
         onClick={() => history.back()}
       >
-        <ChevronLeft className="-ml-2" />
-        <span className="hidden sm:inline -ml-2 p-auto">Back</span>
+        <ArrowLeft className="mr-2" />
+        <span className="hidden sm:inline ">Back</span>
       </Button>
 
       {/* Category Select Form */}
@@ -55,7 +55,9 @@ export default function SignUp() {
             name="category"
             render={({ field }) => (
               <FormItem className="-space-y-2 w-[300px] flex flex-col justify-center mx-auto">
-                <FormLabel className="text-xl text-center">Registration Type *</FormLabel>
+                <FormLabel className="text-xl text-center">
+                  Registration Type *
+                </FormLabel>
                 <br />
                 <Select
                   onValueChange={(val) => {
@@ -64,7 +66,7 @@ export default function SignUp() {
                   }}
                   value={field.value}
                 >
-                  <FormControl className="">
+                  <FormControl className="h-12">
                     <SelectTrigger>
                       <SelectValue placeholder="Select your category" />
                     </SelectTrigger>
