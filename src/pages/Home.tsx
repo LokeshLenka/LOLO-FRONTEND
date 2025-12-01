@@ -7,23 +7,26 @@ import {
   Award,
   Play,
   Disc3,
-  GraduationCap,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import Logo from "../components/Logo";
-import { Button, ButtonGroup } from "@heroui/button";
+import { Button } from "@heroui/button";
+
+// Import the FloatingLines component
+// Make sure the path matches where you created the file
+import FloatingLines from "../components/FloatingLines";
 
 const Home: React.FC = () => {
   return (
     <>
-      <div className="min-h-screen bg-black text-white w-full">
+      <div className="min-h-screen bg-black text-white w-full overflow-x-hidden">
         {/* Hero Section */}
         <section className="relative h-screen flex items-center justify-center overflow-hidden">
+          
+          {/* Background Layers */}
           <div className="absolute inset-0 z-0">
-            
             {/* Musical instruments background image */}
             <div
-              className="absolute inset-0 bg-contain bg-center bg-no-repeat opacity-30"
+              className="absolute inset-0 bg-contain bg-center bg-no-repeat opacity-40"
               style={{
                 backgroundImage: "url('/musical-ins.png')",
                 backgroundSize: "contain",
@@ -33,62 +36,61 @@ const Home: React.FC = () => {
             ></div>
             <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-80"></div>
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,0,255,0.1),transparent_70%)]"></div>
+            
+            {/* Floating Lines Component added here */}
+            <div className="absolute inset-0 opacity-60">
+               <FloatingLines />
+            </div>
           </div>
 
-          {/* <Player
-            autoplay
-            loop
-            src={musicNotes}
-            style={{ width: "300px", height: "300px", position: "absolute", top: "20%", left: "10%" }}
-          /> */}
-
-          <div className="container mx-auto px-4 z-10">
+          <div className="flex justify-center mx-auto p-4 z-10 top-1/2 transform">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center"
+              className="text-center "
             >
-              {/* LOGO */}
-              <div className="flex justify-center mb-6">
-                {/* <Logo size={120} /> */}
-              </div>
-              <h1 className="text-5xl md:text-8xl font-bold mb-3">
-                <span
-                  className=""
-                  style={{
-                    fontFamily: "'astro'",
-                  }}
+              <div className="mt-10 sm:mt-0">
+                <div className="">
+                  <h1 className="text-8xl sm:text-7xl md:text-8xl lg:text-8xl xl:text-9xl font-bold -rotate-6">
+                    <span style={{ fontFamily: "'OdeErik'" }}>Unleash</span>
+                  </h1>
+                  <p className="text-4xl sm:text-5xl md:text-5xl text-center -rotate-6 -mt-4 sm:-mt-6">
+                    <span style={{ fontFamily: "'ChopinScript'" }}>
+                      Your talent at
+                    </span>
+                  </p>
+                </div>
+
+                <p
+                  className="text-5xl sm:text-6xl md:text-7xl text-center font-bold mb-6 sm:mb-8"
+                  style={{ fontFamily: "'astro'" }}
                 >
                   SRKR LOLO
-                </span>
-                <br />
-              </h1>
-              <p className="text-lg">Living Out Loud Originals</p>
-              <p className="text-xl md:text-2xl mt-10 text-gray-300 max-w-3xl mx-auto">
-                Makes You Say "YoYo" - Experience music like never before with
-                our revolutionary platform.
+                </p>
+              </div>
+
+              <p className="text-lg sm:text-xl md:text-2xl mt-6 sm:mt-8 md:mt-10 text-gray-300 max-w-2xl leading-relaxed ">
+                Make you say
+                <span className="font-black bg-gradient-to-r from-lolo-pink via-lolo-cyan to-lolo-red bg-clip-text text-transparent">
+                  {" "}
+                  YoYo!{" "}
+                </span><br></br>
+                Blending cultures and hearts, turning campus energy into music
+                that lives beyond the stage.
               </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-                <ButtonGroup className="space-x-4">
-                  <Button className="border-2 border-lolo-red p-6 rounded-md hover:bg-lolo-red/20">
-                    {" "}
-                    <Link
-                      to="/register"
-                      className=""
-                    >
-                      Join LoLo
-                    </Link>
-                  </Button>
-                  <Button className="border-2 border-lolo-red p-6 rounded-md hover:bg-lolo-red/20">
-                    <Link
-                      to="/events"
-                      className=""
-                    >
-                      Explore Events
-                    </Link>
-                  </Button>
-                </ButtonGroup>{" "}
+
+              <div className="flex flex-col sm:flex-row justify-start gap-3 sm:gap-4 mt-8 sm:mt-10 w-full">
+                <Button className="w-[90%] sm:w-[40%] mx-auto border-2 border-lolo-pink px-6 sm:px-8 py-6 rounded-md hover:bg-lolo-pink/50 transition-all duration-300 bg-black/10 backdrop-blur-xs shadow-lg">
+                  <Link to="/signup" className="text-base sm:text-lg">
+                    Join LoLo
+                  </Link>
+                </Button>
+                <Button className="w-[90%] sm:w-[40%] mx-auto border-2 border-lolo-cyan px-6 sm:px-8 py-6 rounded-md hover:bg-lolo-cyan/50 transition-all duration-300 bg-black/10 backdrop-blur-xs shadow-lg">
+                  <Link to="/events" className="text-base sm:text-lg">
+                    Explore Events
+                  </Link>
+                </Button>
               </div>
             </motion.div>
           </div>
@@ -392,23 +394,13 @@ const Home: React.FC = () => {
             />
           </div>
 
-          {/* Animated circles */}
-          <div className="absolute -bottom-60 sm:-bottom-64 md:-bottom-48 lg:-bottom-32 left-1/2 transform -translate-x-1/2 w-[800px] h-[800px] border-2 border-lolo-pink rounded-full animate-pulse-slow shadow-[0px_0px_50px_5px,inset_0px_0px_50px_5px] shadow-lolo-pink"></div>
-
-          <div
-            className="absolute -bottom-40 sm:-bottom-48 md:-bottom-36 lg:-bottom-20 left-1/2 transform -translate-x-1/2 w-[600px] h-[600px] border-2 border-lolo-cyan rounded-full animate-pulse-slow shadow-[0px_0px_30px_3px,inset_0px_0px_30px_3px] shadow-lolo-cyan"
-            style={{ animationDelay: "0.5s" }}
-          ></div>
-
-          <div
-            className="absolute -bottom-20 sm:-bottom-40 md:-bottom-28 lg:-bottom-16 left-1/2 transform -translate-x-1/2 w-[400px] h-[400px] border border-lolo-red rounded-full animate-pulse-slow shadow-[0px_0px_20px_2px,inset_0px_0px_20px_2px] shadow-lolo-red"
-            style={{ animationDelay: "1s" }}
-          ></div>
+          {/* ANIMATED CIRCLES REMOVED HERE */}
+          
         </section>
 
         {/* Features Section */}
         <section className="py-20 bg-gray-900">
-          <div className="container mx-auto px-4">
+          <div className="min- mx-auto px-4">
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -417,9 +409,13 @@ const Home: React.FC = () => {
               className="text-center mb-16"
             >
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Why Choose <span className="gradient-text">LoLo</span>
+                What is{" "}
+                <span className="font-black bg-gradient-to-r from-lolo-pink via-lolo-cyan to-lolo-red bg-clip-text text-transparent">
+                  LOLO
+                </span>{" "}
+                ?
               </h2>
-              <div className="w-24 h-1 bg-lolo-pink mx-auto"></div>
+              <div className="w-52 h-1 bg-lolo-pink mx-auto flex self-center"></div>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -435,11 +431,11 @@ const Home: React.FC = () => {
                   <Headphones size={32} className="text-lolo-pink" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">
-                  Premium Sound Quality
+                  Redefining Contemporary Fusion
                 </h3>
                 <p className="text-gray-400">
-                  Experience crystal clear audio with our high-definition sound
-                  technology that brings your music to life.
+                  Seamlessly blending genres for a refreshingly experimental
+                  sound.
                 </p>
               </motion.div>
 
@@ -454,10 +450,12 @@ const Home: React.FC = () => {
                 <div className="w-16 h-16 rounded-full bg-lolo-cyan bg-opacity-20 flex items-center justify-center mb-6 group-hover:bg-opacity-30 transition-all duration-300">
                   <Disc3 size={32} className="text-lolo-cyan" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">Exclusive Content</h3>
+                <h3 className="text-xl font-bold mb-3">
+                  Immersive Soundscapes{" "}
+                </h3>
                 <p className="text-gray-400">
-                  Access exclusive tracks, remixes, and behind-the-scenes
-                  content from your favorite artists.
+                  Energetic rhythms, melodic storytelling, and bold
+                  experimentation.
                 </p>
               </motion.div>
 
@@ -472,10 +470,9 @@ const Home: React.FC = () => {
                 <div className="w-16 h-16 rounded-full bg-lolo-red bg-opacity-20 flex items-center justify-center mb-6 group-hover:bg-opacity-30 transition-all duration-300">
                   <Award size={32} className="text-lolo-red" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">Rewards Program</h3>
+                <h3 className="text-xl font-bold mb-3">Music That Resonates</h3>
                 <p className="text-gray-400">
-                  Earn credits and upgrade your membership tier from Bronze to
-                  Platinum for exclusive perks and benefits.
+                  Connecting audiences across generations and backgrounds
                 </p>
               </motion.div>
             </div>
@@ -484,7 +481,7 @@ const Home: React.FC = () => {
 
         {/* About Section */}
         <section className="py-20 bg-black">
-          <div className="container mx-auto px-4">
+          <div className="min- mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center gap-12">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -544,7 +541,7 @@ const Home: React.FC = () => {
                     <img
                       src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
                       alt="Music Studio"
-                      className="w-full h-full object-cover"
+                      className=" h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
                       <div className="w-20 h-20 rounded-full bg-lolo-pink bg-opacity-80 flex items-center justify-center cursor-pointer hover:bg-opacity-100 transition-all duration-300">
@@ -558,11 +555,9 @@ const Home: React.FC = () => {
           </div>
         </section>
 
-        {/* Membership Tiers */}
-
         {/* College Section */}
         <section className="py-20 bg-gray-900 relative overflow-hidden">
-          <div className="container mx-auto px-4">
+          <div className="min- mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
               {/* Left: College Image Area (2/3 width on large screens) */}
               <motion.div
@@ -582,7 +577,7 @@ const Home: React.FC = () => {
                     <img
                       src="https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
                       alt="SRKR College Campus"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className=" h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                     <div className="absolute bottom-4 left-4">
@@ -669,7 +664,7 @@ const Home: React.FC = () => {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,0,255,0.1),transparent_70%)]"></div>
           </div>
 
-          <div className="container mx-auto px-4 relative z-10">
+          <div className="min- mx-auto px-4 relative z-10">
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
