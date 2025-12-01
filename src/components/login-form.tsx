@@ -46,8 +46,8 @@ export default function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden">
-        <CardContent className="grid p-0 md:grid-cols-2">
+      <Card className="overflow-hidden p-0">
+        <CardContent className="grid p-0  md:grid-cols-2">
           <form onSubmit={handleSubmit} className="p-6 md:p-8">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center">
@@ -126,7 +126,11 @@ export default function LoginForm({
                   </p>
                 )}
               </div>
-              <Button type="submit" className="w-full h-10 font-semibold" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full h-10 font-semibold"
+                disabled={loading}
+              >
                 {loading ? "Logging in..." : "Login"}
               </Button>
               {error && (
@@ -151,7 +155,7 @@ export default function LoginForm({
             <img
               src={lolo_login_1}
               alt="SRKR LOLO Login"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+              className="absolute h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />
           </div>
         </CardContent>
