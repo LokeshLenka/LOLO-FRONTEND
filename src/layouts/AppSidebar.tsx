@@ -3,30 +3,14 @@ import { Link, useLocation } from "react-router";
 import LOLO_Logo_1 from "../assets/logos/Lolo_logo_1.png";
 
 // Assume these icons are imported from an icon library
-import {
-  BoxCubeIcon,
-  CalenderIcon,
-  ChevronDownIcon,
-  GridIcon,
-  HorizontaLDots,
-  ListIcon,
-  PageIcon,
-  PieChartIcon,
-  PlugInIcon,
-  TableIcon,
-  UserCircleIcon,
-} from "../icons";
+import { ChevronDownIcon, HorizontaLDots } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
 import {
   CircleStar,
   CircleUser,
   ClipboardPenLine,
-  ClipboardPenLineIcon,
   LayoutGrid,
-  Plus,
-  PlusCircleIcon,
-  PlusIcon,
 } from "lucide-react";
 
 type NavItem = {
@@ -40,7 +24,6 @@ const navItems: NavItem[] = [
   {
     icon: <LayoutGrid />,
     name: "Dashboard",
-    // subItems: [{ name: "Ecommerce", path: "/", pro: false }],
     path: "/dashboard",
   },
   {
@@ -75,7 +58,6 @@ const AppSidebar: React.FC = () => {
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // const isActive = (path: string) => location.pathname === path;
   const isActive = useCallback(
     (path: string) => location.pathname === path,
     [location.pathname]
@@ -139,8 +121,8 @@ const AppSidebar: React.FC = () => {
               onClick={() => handleSubmenuToggle(index, menuType)}
               className={`menu-item group ${
                 openSubmenu?.type === menuType && openSubmenu?.index === index
-                  ? "menu-item-active"
-                  : "menu-item-inactive"
+                  ? "bg-[#03a1b0]/10 text-[#03a1b0] dark:bg-white/5 dark:text-white" // Updated active colors
+                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200" // Updated inactive colors
               } cursor-pointer ${
                 !isExpanded && !isHovered
                   ? "lg:justify-center"
@@ -150,8 +132,8 @@ const AppSidebar: React.FC = () => {
               <span
                 className={`menu-item-icon-size  ${
                   openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? "menu-item-icon-active"
-                    : "menu-item-icon-inactive"
+                    ? "text-[#03a1b0]" // Updated icon active color
+                    : "text-gray-500 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-200"
                 }`}
               >
                 {nav.icon}
@@ -164,7 +146,7 @@ const AppSidebar: React.FC = () => {
                   className={`ml-auto w-5 h-5 transition-transform duration-200 ${
                     openSubmenu?.type === menuType &&
                     openSubmenu?.index === index
-                      ? "rotate-180 text-brand-500"
+                      ? "rotate-180 text-[#03a1b0]" // Updated chevron color
                       : ""
                   }`}
                 >
@@ -177,14 +159,16 @@ const AppSidebar: React.FC = () => {
               <Link
                 to={nav.path}
                 className={`menu-item group ${
-                  isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                  isActive(nav.path)
+                    ? "bg-[#03a1b0]/10 text-[#03a1b0] dark:bg-[#03a1b0]/20 dark:text-[#03a1b0]" // Updated active link colors
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200" // Updated inactive link colors
                 }`}
               >
                 <span
                   className={`menu-item-icon-size ${
                     isActive(nav.path)
-                      ? "menu-item-icon-active"
-                      : "menu-item-icon-inactive"
+                      ? "text-[#03a1b0]" // Updated active icon color
+                      : "text-gray-500 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-200"
                   }`}
                 >
                   {nav.icon}
@@ -215,8 +199,8 @@ const AppSidebar: React.FC = () => {
                       to={subItem.path}
                       className={`menu-dropdown-item ${
                         isActive(subItem.path)
-                          ? "menu-dropdown-item-active"
-                          : "menu-dropdown-item-inactive"
+                          ? "text-[#03a1b0] font-semibold bg-[#03a1b0]/5" // Updated submenu active
+                          : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200" // Updated submenu inactive
                       }`}
                     >
                       {subItem.name}
@@ -225,8 +209,8 @@ const AppSidebar: React.FC = () => {
                           <span
                             className={`ml-auto ${
                               isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
+                                ? "text-green-600 bg-green-100"
+                                : "text-gray-500 bg-gray-100"
                             } menu-dropdown-badge`}
                           >
                             new
@@ -236,8 +220,8 @@ const AppSidebar: React.FC = () => {
                           <span
                             className={`ml-auto ${
                               isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
+                                ? "text-purple-600 bg-purple-100"
+                                : "text-gray-500 bg-gray-100"
                             } menu-dropdown-badge`}
                           >
                             pro
@@ -265,7 +249,11 @@ const AppSidebar: React.FC = () => {
             ? "w-[290px]"
             : "w-[90px]"
         }
-        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
+        ${
+          isMobileOpen
+            ? "translate-x-0 !bg-white/95 !text-gray-900 dark:!bg-gray-900/95 dark:!text-gray-100 backdrop-blur-xl shadow-2xl" // Updated Mobile Overlay Colors
+            : "-translate-x-full"
+        }
         lg:translate-x-0`}
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -279,9 +267,13 @@ const AppSidebar: React.FC = () => {
           <>
             <Link
               to="/"
-              className="dark:hidden flex justify-center items-center"
+              className="dark:hidden flex justify-center items-center group"
             >
-              <img className="h-8 w-8" src={LOLO_Logo_1} alt="Logo" />
+              <img
+                className="h-8 w-8 transition-transform group-hover:scale-110"
+                src={LOLO_Logo_1}
+                alt="Logo"
+              />
               <span
                 className="m-auto ml-2 text-sm text-black"
                 style={{ fontFamily: "astro" }}
@@ -291,9 +283,13 @@ const AppSidebar: React.FC = () => {
             </Link>
             <Link
               to="/"
-              className="hidden dark:flex justify-center items-center"
+              className="hidden dark:flex justify-center items-center group"
             >
-              <img className="h-8 w-8" src={LOLO_Logo_1} alt="Logo" />
+              <img
+                className="h-8 w-8 transition-transform group-hover:scale-110"
+                src={LOLO_Logo_1}
+                alt="Logo"
+              />
               <span
                 className="m-auto ml-2 text-sm text-white"
                 style={{ fontFamily: "astro" }}
@@ -329,22 +325,6 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(navItems, "main")}
             </div>
-            {/* <div className="">
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(othersItems, "others")}
-            </div> */}
           </div>
         </nav>
         {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}

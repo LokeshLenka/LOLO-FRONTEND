@@ -19,13 +19,22 @@ const LayoutContent: React.FC = () => {
         } ${isMobileOpen ? "ml-0" : ""}`}
       >
         <AppHeader />
-        <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+        <div
+          className="p-4 min-h-screen mx-auto md:p-6 sm:overflow-hidden overflow-visible
+             bg-gradient-to-tl
+             from-lolo-pink/10 to-white 
+             dark:from-[#0c000b] dark:to-gray-900
+             backdrop-blur-9xl transition-all duration-500 
+             text-white dark:text-white"
+        >
           <Outlet />
         </div>
       </div>
     </div>
   );
 };
+
+// #0c000b
 
 const AppLayout: React.FC = () => {
   return (
