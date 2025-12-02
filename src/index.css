@@ -128,8 +128,6 @@
   }
 }
 
-
-
 /* Custom colors */
 @layer utilities {
   .text-lolo-red {
@@ -198,8 +196,55 @@ html {
   font-display: swap;
 }
 
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap")
-layer(base);
+@font-face {
+  font-family: "OdeErik";
+  src: url("./assets/fonts/Ode-Erik.TTF") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ChopinScript";
+  src: url("./assets/fonts/ChopinScript.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  /* font-display: swap; */
+}
+
+@font-face {
+  font-family: "Runtoe";
+  src: url("./assets/fonts/Runtoe-BL0B3.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  /* font-display: swap; */
+}
+
+
+
+
+@font-face {
+  font-family: "PoppinsRegular";
+  src: url("./assets/fonts/Poppins-Regular.ttf") format("truetype");
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Oooh+Baby&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Kapakana:ital@1&display=swap");
+
+/* @layer(base); */
+
+.oooh-baby-regular {
+  font-family: "Oooh Baby", cursive;
+  font-weight: 100;
+  font-style: normal;
+}
+
+.kapakana-cursive {
+  font-family: "Kapakana", cursive !important;
+  font-weight: 400;
+  font-style: italic; /* required */
+}
 
 @import "tailwindcss";
 
@@ -213,7 +258,7 @@ layer(base);
   --color-lolo-white: #ffffff;
 
   --font-*: initial;
-  --font-outfit: Outfit, sans-serif;
+  --font-poppins: "PoppinsRegular", sans-serif;
 
   --breakpoint-*: initial;
   --breakpoint-2xsm: 375px;
@@ -392,7 +437,7 @@ layer(base);
     cursor: pointer;
   }
   body {
-    @apply relative font-normal font-outfit z-1 bg-gray-50;
+    @apply relative font-normal z-1 bg-gray-50 font-poppins;
   }
 }
 
@@ -981,4 +1026,95 @@ span.flatpickr-weekday,
 
 .simplebar-scrollbar.simplebar-visible:before {
   @apply opacity-100;
+}
+
+/* text animations */
+@layer utilities {
+  /* Define the shimmer animation keyframes */
+  @keyframes text-shimmer {
+    0%,
+    100% {
+      background-size: 200% 200%;
+      background-position: left center;
+    }
+    50% {
+      background-size: 200% 200%;
+      background-position: right center;
+    }
+  }
+
+  /* Define the blob animation keyframes */
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+  }
+
+  /* Create utility classes for them */
+  .animate-text-shimmer {
+    animation: text-shimmer 3s ease infinite;
+  }
+
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+}
+
+@layer utilities {
+  @keyframes sparkle-float {
+    0%,
+    100% {
+      transform: translateY(0) scale(1) rotate(0deg);
+      opacity: 0.8;
+    }
+    50% {
+      transform: translateY(-10px) scale(1.2) rotate(180deg);
+      opacity: 1;
+    }
+  }
+  .animate-sparkle {
+    animation: sparkle-float 3s ease-in-out infinite;
+  }
+}
+@layer utilities {
+  @keyframes glitch-skew {
+    0% {
+      transform: skew(0deg);
+    }
+    20% {
+      transform: skew(-2deg);
+    }
+    40% {
+      transform: skew(2deg);
+    }
+    60% {
+      transform: skew(-1deg);
+    }
+    80% {
+      transform: skew(1deg);
+    }
+    100% {
+      transform: skew(0deg);
+    }
+  }
+  .animate-glitch {
+    animation: glitch-skew 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both
+      infinite;
+  }
+  /* Pause animation when not hovering (optional) */
+  .group:hover .animate-glitch {
+    animation-play-state: running;
+  }
+  .animate-glitch-paused {
+    animation-play-state: paused;
+  }
 }
