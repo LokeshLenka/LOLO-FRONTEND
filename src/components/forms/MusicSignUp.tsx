@@ -5,11 +5,11 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, Loader2 } from "lucide-react";
 import { BasicInformationStep } from "./steps/BasicInformationStep";
 import { AcademicInformationStep } from "./steps/AcademicInformationStep";
 
-// Form Schema
+// --- 1. Preserve EXACT Schema Logic ---
 const formSchema = z
   .object({
     first_name: z.string().min(1, "First name is required"),
@@ -33,7 +33,7 @@ const formSchema = z
 
 type FormData = z.infer<typeof formSchema>;
 
-// Custom Hook for Multi-Step Form
+// --- 2. Custom Hook Logic Preserved ---
 interface StepField {
   name: keyof FormData;
 }
@@ -103,7 +103,7 @@ const useMultiStepForm = (totalSteps: number, form: any) => {
   };
 };
 
-// Main Multi-Step Form Component
+// --- 3. Aesthetic Wrapper Component ---
 const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
   const {
     currentStep,
@@ -126,8 +126,7 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
     setIsSubmitting(true);
     try {
       console.log("Form submitted:", data);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API
       form.reset();
       goToFirstStep();
     } catch (error) {
@@ -138,72 +137,93 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
   };
 
   return (
-    <div className="flex flex-col gap-4 pt-3">
-      {/* Progress Indicator */}
-      <div className="flex flex-col items-center justify-start gap-2">
-        <span className="text-sm text-muted-foreground">
-          Step {currentStep} of 2
-        </span>
-        <Progress value={(currentStep / 2) * 100} className="w-full" />
+    <div className="flex flex-col gap-8">
+      {/* Aesthetic Progress Stepper */}
+      <div className="flex items-center justify-center gap-4 mb-2">
+        {[1, 2].map((step) => (
+          <div key={step} className="flex items-center">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border transition-all ${
+                currentStep >= step
+                  ? "bg-[#03a1b0] border-[#03a1b0] text-white"
+                  : "bg-transparent border-white/20 text-gray-500"
+              }`}
+            >
+              {currentStep > step ? <Check size={14} /> : step}
+            </div>
+            {step === 1 && (
+              <div
+                className={`w-16 h-0.5 mx-2 transition-all ${
+                  currentStep > 1 ? "bg-[#03a1b0]" : "bg-white/10"
+                }`}
+              />
+            )}
+          </div>
+        ))}
       </div>
 
-      {/* Current Step Content */}
-      <div className="min-h-[400px]">
-        {stepComponents[currentStep as keyof typeof stepComponents]}
+      {/* Step Content */}
+      <div className="min-h-[400px] animate-in fade-in slide-in-from-bottom-4 duration-500">
+        {stepComponents[currentStep as 1 | 2]}
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex items-center justify-between pt-4 border-t">
+      <div className="flex items-center justify-between pt-6 border-t border-white/10">
         <div className="flex items-center gap-2">
           {form.formState.isDirty && (
             <Button
               variant="outline"
               type="button"
-              size="sm"
               disabled={isSubmitting}
               onClick={() => {
                 goToFirstStep();
                 form.reset();
               }}
+              className="border-white/10 text-gray-400 hover:bg-white/5 hover:text-white bg-transparent"
             >
               Reset
             </Button>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {!isFirstStep && (
             <Button
-              size="sm"
               variant="ghost"
               onClick={goToPrevious}
               type="button"
               disabled={isSubmitting}
+              className="text-white hover:bg-white/10 hover:text-white"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4 mr-2" />
               Previous
             </Button>
           )}
 
           {isLastStep ? (
             <Button
-              size="sm"
               type="button"
               onClick={() => form.handleSubmit(handleSubmit)()}
               disabled={isSubmitting}
+              className="bg-[#03a1b0] hover:bg-[#028a96] text-white font-bold shadow-lg shadow-[#03a1b0]/20 min-w-[140px]"
             >
-              {isSubmitting ? "Submitting..." : "Submit"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting
+                </>
+              ) : (
+                "Submit Application"
+              )}
             </Button>
           ) : (
             <Button
-              size="sm"
               type="button"
-              variant="secondary"
               onClick={goToNext}
               disabled={isSubmitting}
+              className="bg-[#03a1b0] hover:bg-[#028a96] text-white font-bold min-w-[100px]"
             >
               Next
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           )}
         </div>
@@ -212,7 +232,6 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
   );
 };
 
-// Main Form Component
 export const MusicSignUp: React.FC = () => {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -234,14 +253,10 @@ export const MusicSignUp: React.FC = () => {
   });
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6">
-      <Form {...form}>
-        <form className="space-y-6">
-          <div className="bg-card border rounded-lg p-6">
-            <MultiStepForm form={form} />
-          </div>
-        </form>
-      </Form>
-    </div>
+    <Form {...form}>
+      <form className="w-full">
+        <MultiStepForm form={form} />
+      </form>
+    </Form>
   );
 };

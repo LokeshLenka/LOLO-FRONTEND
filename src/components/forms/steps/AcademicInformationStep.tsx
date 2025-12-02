@@ -56,10 +56,10 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
     { value: "no", label: "No" },
   ];
 
-  // State for disabling lateral status field
+  // --- Preserved Logic: State for disabling lateral status ---
   const [lateralStudentHidden, setlateralStudentHidden] = useState(true);
 
-  // Watch year field
+  // --- Preserved Logic: Watch year field ---
   React.useEffect(() => {
     const value = form.watch("year");
     if (
@@ -74,10 +74,10 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
     }
   }, [form.watch("year")]);
 
-  // State for disabling college_hostel_status field
+  // --- Preserved Logic: State for disabling college_hostel_status ---
   const [hostelStudentHidden, setHostelStudentHidden] = useState(true);
 
-  // Watch hostel_student field
+  // --- Preserved Logic: Watch hostel_student field ---
   React.useEffect(() => {
     const value = form.watch("hostel_status");
     if (value === "yes") {
@@ -88,192 +88,243 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
     }
   }, [form.watch("hostel_status")]);
 
+  // --- Helper Styles ---
+  const selectTriggerStyle =
+    "bg-white/5 border-white/10 text-white focus:ring-[#03a1b0]/50 h-12 data-[placeholder]:text-gray-400";
+  const selectContentStyle = "bg-[#0F111A] border-white/10 text-white";
+  const selectItemStyle = "focus:bg-white/10 focus:text-[#03a1b0]";
+
   return (
-    <div className="space-y-4">
-      <h1 className="mt-6 font-extrabold text-2xl tracking-tight text-center">
-        Music Registration
-      </h1>
-      <hr />
-      <h1 className="mt-6 font-extrabold text-lg tracking-tight">
-        Academic Information
-      </h1>
-      {/* {Registration Number} */}
+    <div className="space-y-6">
+      <div className="text-center space-y-2 mb-8">
+        <h2 className="text-2xl font-bold text-white">Music Registration</h2>
+        <div className="h-0.5 w-20 bg-[#03a1b0] mx-auto rounded-full" />
+        <h3 className="text-lg font-medium text-gray-300 pt-4">
+          Academic Information
+        </h3>
+      </div>
+
+      {/* Registration Number */}
       <FormField
         control={form.control}
         name="reg_num"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Registration Number *</FormLabel>
+            <FormLabel className="text-xs font-bold uppercase text-gray-500">
+              Registration Number *
+            </FormLabel>
             <FormControl>
-              <Input {...field} className="h-10" required />
+              <Input
+                {...field}
+                className="bg-white/5 border-white/10 text-white focus:ring-[#03a1b0]/50 h-12"
+                required
+              />
             </FormControl>
-            <FormMessage />
+            <FormMessage className="text-red-400 text-xs" />
           </FormItem>
         )}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* { Branch } */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Branch */}
         <FormField
           control={form.control}
           name="branch"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Branch *</FormLabel>
+              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+                Branch *
+              </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl className="h-10">
-                  <SelectTrigger>
+                <FormControl className="h-12">
+                  <SelectTrigger className={selectTriggerStyle}>
                     <SelectValue placeholder="Select your branch" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="overflow-y-auto max-h-52">
+                <SelectContent className={selectContentStyle}>
                   {branchOptions.map(({ label, value }) => (
-                    <SelectItem key={value} value={value}>
+                    <SelectItem
+                      key={value}
+                      value={value}
+                      className={selectItemStyle}
+                    >
                       {label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <FormMessage />
+              <FormMessage className="text-red-400 text-xs" />
             </FormItem>
           )}
         />
-        {/* { Gender } */}
+
+        {/* Gender */}
         <FormField
           control={form.control}
           name="gender"
-          render={({ field }) => {
-            return (
-              <FormItem className="w-full">
-                <FormLabel>Gender</FormLabel> *
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  required
-                >
-                  <FormControl className="h-10">
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="overflow-y-auto max-h-52">
-                    {genderOptions.map(({ label, value }) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            );
-          }}
+          render={({ field }) => (
+            <FormItem className="w-full">
+              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+                Gender *
+              </FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+                required
+              >
+                <FormControl className="h-12">
+                  <SelectTrigger className={`w-full ${selectTriggerStyle}`}>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className={selectContentStyle}>
+                  {genderOptions.map(({ label, value }) => (
+                    <SelectItem
+                      key={value}
+                      value={value}
+                      className={selectItemStyle}
+                    >
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage className="text-red-400 text-xs" />
+            </FormItem>
+          )}
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* { Year Of Study } */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Year Of Study */}
         <FormField
           control={form.control}
           name="year"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Year Of Study *</FormLabel>
+              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+                Year Of Study *
+              </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl className="h-10">
-                  <SelectTrigger>
+                <FormControl className="h-12">
+                  <SelectTrigger className={selectTriggerStyle}>
                     <SelectValue placeholder="Select your year" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="overflow-y-auto max-h-52">
+                <SelectContent className={selectContentStyle}>
                   {yearOptions.map(({ label, value }) => (
-                    <SelectItem key={value} value={value}>
+                    <SelectItem
+                      key={value}
+                      value={value}
+                      className={selectItemStyle}
+                    >
                       {label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <FormMessage />
+              <FormMessage className="text-red-400 text-xs" />
             </FormItem>
           )}
         />
 
-        {/* {Lateral Status} */}
+        {/* Lateral Status (Conditional) */}
         <FormField
           control={form.control}
           name="lateral_status"
           render={({ field }) => (
-            <FormItem hidden={lateralStudentHidden}>
-              <FormLabel>Are You A Lateral Student *</FormLabel>
+            <FormItem
+              className={lateralStudentHidden ? "hidden" : "block"} // Preserve visibility logic
+            >
+              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+                Are You A Lateral Student *
+              </FormLabel>
               <FormControl>
-                <div className="flex gap-4">
+                <div className="flex gap-3 mt-2">
                   {lateralStudentOptions.map(({ label, value }) => (
                     <Button
                       key={value}
                       type="button"
-                      variant={field.value === value ? "default" : "outline"}
                       onClick={() => field.onChange(value)}
                       disabled={lateralStudentHidden}
+                      className={`flex-1 h-10 border font-bold transition-all ${
+                        field.value === value
+                          ? "bg-[#03a1b0] border-[#03a1b0] text-white shadow-lg shadow-[#03a1b0]/20"
+                          : "bg-transparent border-white/10 text-gray-400 hover:text-white hover:bg-white/5"
+                      }`}
                     >
                       {label}
                     </Button>
                   ))}
                 </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-400 text-xs" />
             </FormItem>
           )}
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* {Hostel Status} */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Hostel Status */}
         <FormField
           control={form.control}
           name="hostel_status"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Are You A Hostel Student *</FormLabel>
+              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+                Are You A Hostel Student *
+              </FormLabel>
               <FormControl>
-                <div className="flex gap-4">
+                <div className="flex gap-3 mt-2">
                   {hostelStudentOptions.map(({ label, value }) => (
                     <Button
                       key={value}
                       type="button"
-                      variant={field.value === value ? "default" : "outline"}
                       onClick={() => field.onChange(value)}
+                      className={`flex-1 h-10 border font-bold transition-all ${
+                        field.value === value
+                          ? "bg-[#03a1b0] border-[#03a1b0] text-white shadow-lg shadow-[#03a1b0]/20"
+                          : "bg-transparent border-white/10 text-gray-400 hover:text-white hover:bg-white/5"
+                      }`}
                     >
                       {label}
                     </Button>
                   ))}
                 </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-400 text-xs" />
             </FormItem>
           )}
-        />{" "}
-        {/* {College Hostel Status} */}
+        />
+
+        {/* College Hostel Status (Conditional) */}
         <FormField
           control={form.control}
           name="college_hostel_status"
           render={({ field }) => (
-            <FormItem hidden={hostelStudentHidden}>
-              <FormLabel>Are You Residing In College Hostel *</FormLabel>
+            <FormItem className={hostelStudentHidden ? "hidden" : "block"}>
+              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+                Residing In College Hostel? *
+              </FormLabel>
               <FormControl>
-                <div className="flex gap-4">
+                <div className="flex gap-3 mt-2">
                   {hostelStudentOptions.map(({ label, value }) => (
                     <Button
                       key={value}
                       type="button"
-                      variant={field.value === value ? "default" : "outline"}
                       onClick={() => field.onChange(value)}
+                      className={`flex-1 h-10 border font-bold transition-all ${
+                        field.value === value
+                          ? "bg-[#03a1b0] border-[#03a1b0] text-white shadow-lg shadow-[#03a1b0]/20"
+                          : "bg-transparent border-white/10 text-gray-400 hover:text-white hover:bg-white/5"
+                      }`}
                     >
                       {label}
                     </Button>
                   ))}
                 </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-400 text-xs" />
             </FormItem>
           )}
         />
