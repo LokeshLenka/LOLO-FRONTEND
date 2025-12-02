@@ -1,13 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  Music,
-  Headphones,
-  Mic2,
-  Award,
-  Play,
-  Disc3,
-} from "lucide-react";
+import { Music, Headphones, Mic2, Award, Play, Disc3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@heroui/button";
 
@@ -21,12 +14,11 @@ const Home: React.FC = () => {
       <div className="min-h-screen bg-black text-white w-full overflow-x-hidden">
         {/* Hero Section */}
         <section className="relative h-screen flex items-center justify-center overflow-hidden">
-          
           {/* Background Layers */}
           <div className="absolute inset-0 z-0">
             {/* Musical instruments background image */}
             <div
-              className="absolute inset-0 bg-contain bg-center bg-no-repeat opacity-40"
+              className="absolute inset-0 bg-contain bg-center bg-no-repeat opacity-20"
               style={{
                 backgroundImage: "url('/musical-ins.png')",
                 backgroundSize: "contain",
@@ -36,10 +28,10 @@ const Home: React.FC = () => {
             ></div>
             <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-80"></div>
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,0,255,0.1),transparent_70%)]"></div>
-            
+
             {/* Floating Lines Component added here */}
-            <div className="absolute inset-0 opacity-60">
-               <FloatingLines />
+            <div className="absolute inset-0">
+              <FloatingLines />
             </div>
           </div>
 
@@ -52,11 +44,11 @@ const Home: React.FC = () => {
             >
               <div className="mt-10 sm:mt-0">
                 <div className="">
-                  <h1 className="text-8xl sm:text-7xl md:text-8xl lg:text-8xl xl:text-9xl font-bold -rotate-6">
+                  <h1 className="text-7xl sm:text-7xl md:text-8xl lg:text-8xl xl:text-9xl font-bold -rotate-6">
                     <span style={{ fontFamily: "'OdeErik'" }}>Unleash</span>
                   </h1>
                   <p className="text-4xl sm:text-5xl md:text-5xl text-center -rotate-6 -mt-4 sm:-mt-6">
-                    <span style={{ fontFamily: "'ChopinScript'" }}>
+                    <span style={{ fontFamily: "'OdeErik'" }}>
                       Your talent at
                     </span>
                   </p>
@@ -70,12 +62,13 @@ const Home: React.FC = () => {
                 </p>
               </div>
 
-              <p className="text-lg sm:text-xl md:text-2xl mt-6 sm:mt-8 md:mt-10 text-gray-300 max-w-2xl leading-relaxed ">
+              <p className="text-lg sm:text-xl md:text-2xl mt-6 sm:mt-8 md:mt-10 text-gray-300 max-w-2xl leading-relaxed">
                 Make you say
                 <span className="font-black bg-gradient-to-r from-lolo-pink via-lolo-cyan to-lolo-red bg-clip-text text-transparent">
                   {" "}
                   YoYo!{" "}
-                </span><br></br>
+                </span>
+                <br></br>
                 Blending cultures and hearts, turning campus energy into music
                 that lives beyond the stage.
               </p>
@@ -395,7 +388,6 @@ const Home: React.FC = () => {
           </div>
 
           {/* ANIMATED CIRCLES REMOVED HERE */}
-          
         </section>
 
         {/* Features Section */}
