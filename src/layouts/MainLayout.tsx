@@ -1,16 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Menu, X, Music, LogIn, User } from "lucide-react";
+import {
+  Menu,
+  X,
+  Music,
+  LogIn,
+  User,
+  Home,
+  UsersRound,
+  Users,
+  CalendarClock,
+  Clapperboard,
+} from "lucide-react";
 import { motion } from "framer-motion";
 // import { useAuth } from '../contexts/AuthContext';
 import Logo from "../components/Logo";
 import Lolo_logo_1 from "../assets/logos/Lolo_logo_1.png";
 import { useAuth } from "@/context/AuthContext";
+import { Button } from "@heroui/button";
 
 const MainLayout: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const user  = null; // Temporary placeholder, replace with actual user object from context
+  const user = null; // Temporary placeholder, replace with actual user object from context
   const location = useLocation();
 
   // Handle scroll effect for navbar
@@ -33,13 +45,13 @@ const MainLayout: React.FC = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-black text-white">
+    <div className="min-h-screen flex flex-col bg-black text-white min-w-full">
       {/* Navbar */}
       <header
-        className={`fixed top-4 left-0 right-0 z-50 transition-all duration-300 w-full rounded-none justify-center mx-auto max-h-20 bg-transparent
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 w-full rounded-md justify-center mx-auto max-h-20 bg-transparent px-0 lg:px-10
     ${scrolled ? "bg-black/40 backdrop-blur-sm shadow-lg" : "bg-transparent"}`}
       >
-        <div className="container mx-auto px-4 py-3">
+        <div className="w-full mx-auto px-4 py-3">
           <div className="flex justify-between items-center">
             {/* Logo */}
             <Link to="/" className="flex items-center justify-center space-x-2">
@@ -67,6 +79,29 @@ const MainLayout: React.FC = () => {
                 Events
               </Link>
               <Link
+                to="/publications"
+                className={`hover:text-lolo-pink transition-colors ${
+                  location.pathname === "/publications"
+                    ? "text-lolo-pink"
+                    : "text-white"
+                }`}
+              >
+                Publications
+              </Link>
+
+              <Link
+                to="/team"
+                className={`hover:text-lolo-pink transition-colors ${
+                  location.pathname === "/team"
+                    ? "text-lolo-pink"
+                    : "text-white"
+                }`}
+              >
+                Team
+              </Link>
+
+              {/* for future implementation */}
+              {/* <Link
                 to="/blog"
                 className={`hover:text-lolo-pink transition-colors ${
                   location.pathname.includes("/blog")
@@ -75,7 +110,7 @@ const MainLayout: React.FC = () => {
                 }`}
               >
                 Blog
-              </Link>
+              </Link> */}
               {user ? (
                 <Link
                   to="/dashboard"
@@ -118,9 +153,9 @@ const MainLayout: React.FC = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="md:hidden bg-gray-900 border-t border-gray-800"
+            className="md:hidden bg-black border-t-2 border-[#03a1b0]"
           >
-            <div className="container mx-auto px-4 py-4">
+            <div className="w-full mx-auto px-4 py-4">
               <nav className="flex flex-col space-y-4">
                 <Link
                   to="/"
@@ -128,7 +163,7 @@ const MainLayout: React.FC = () => {
                     location.pathname === "/" ? "text-lolo-pink" : "text-white"
                   }`}
                 >
-                  <Music size={18} />
+                  <Home size={18} />
                   <span>Home</span>
                 </Link>
                 <Link
@@ -139,10 +174,32 @@ const MainLayout: React.FC = () => {
                       : "text-white"
                   }`}
                 >
-                  <Music size={18} />
+                  <CalendarClock size={18} />
                   <span>Events</span>
                 </Link>
                 <Link
+                  to="/publications"
+                  className={`flex items-center space-x-2 py-2 ${
+                    location.pathname === "/publications"
+                      ? "text-lolo-pink"
+                      : "text-white"
+                  }`}
+                >
+                  <Clapperboard size={18} />
+                  <span>Publications</span>
+                </Link>
+                <Link
+                  to="/team"
+                  className={`flex items-center space-x-2 py-2 ${
+                    location.pathname === "/team"
+                      ? "text-lolo-pink"
+                      : "text-white"
+                  }`}
+                >
+                  <Users size={18} />
+                  <span>Team</span>
+                </Link>
+                {/* <Link
                   to="/blog"
                   className={`flex items-center space-x-2 py-2 ${
                     location.pathname.includes("/blog")
@@ -152,7 +209,7 @@ const MainLayout: React.FC = () => {
                 >
                   <Music size={18} />
                   <span>Blog</span>
-                </Link>
+                </Link> */}
                 {user ? (
                   <Link
                     to="/dashboard"
@@ -170,11 +227,13 @@ const MainLayout: React.FC = () => {
                       <LogIn size={18} />
                       <span>Login</span>
                     </Link>
-                    <Link
-                      to="/signup"
-                      className="btn btn-primary w-full text-center"
-                    >
-                      Sign Up
+
+                    <Link to="/signup">
+                      <div className="flex justify-center">
+                        <Button className="w-[90%] bg-lolo-pink/80 py-2 rounded-md ">
+                          Sign Up
+                        </Button>
+                      </div>
                     </Link>
                   </>
                 )}
@@ -191,11 +250,11 @@ const MainLayout: React.FC = () => {
 
       {/* Footer */}
       <footer className="bg-gray-900 border-t border-gray-800">
-        <div className="container mx-auto px-4 py-8">
+        <div className="min-w-full mx-auto px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <Logo size={30} />
+                <img src={Lolo_logo_1} alt="LoLo Logo" className="h-8 w-8" />
                 <span className="text-xl font-bold gradient-text">LoLo</span>
               </div>
               <p className="text-gray-400">Makes You Say "YoYo"</p>
@@ -211,14 +270,14 @@ const MainLayout: React.FC = () => {
                     Home
                   </Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link
                     to="/blog"
                     className="text-gray-400 hover:text-lolo-pink transition-colors"
                   >
                     Blog
                   </Link>
-                </li>
+                </li> */}
                 <li>
                   <Link
                     to="/login"
