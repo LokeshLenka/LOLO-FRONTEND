@@ -128,7 +128,7 @@ const MainLayout: React.FC = () => {
                   </Link>
                   <Link
                     to="/signup"
-                    className="btn btn-primary bg-lolo-pink px-4 py-2 rounded-md hover:bg-lolo-pink/60"
+                    className="btn btn-primary bg-lolo-pink px-4 py-2 rounded-md hover:bg-lolo-pink/60 border-2 border-lolo-pink"
                   >
                     Sign Up
                   </Link>
