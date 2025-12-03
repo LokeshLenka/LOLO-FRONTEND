@@ -8,7 +8,7 @@ import { useAuth } from "../context/AuthContext"; // Ensure this context handles
 import { Loader2, AlertCircle, ShieldAlert } from "lucide-react";
 
 interface ValidationErrors {
-  email?: string[];
+  username?: string[];
   password?: string[];
 }
 
@@ -16,7 +16,7 @@ export default function AdminLoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({});
 
@@ -29,11 +29,6 @@ export default function AdminLoginForm({
 
     // Validation logic
     const errors: ValidationErrors = {};
-    if (!email.trim()) {
-      errors.email = ["Please enter your admin email."];
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = ["Invalid email format."];
-    }
 
     if (!password) {
       errors.password = ["Please enter your password."];
@@ -45,8 +40,8 @@ export default function AdminLoginForm({
     }
 
     // Pass a flag or use a specific admin login function if your API distinguishes endpoints
-    // Example: await login(email, password, 'admin');
-    await login(email, password);
+    // Example: await login(username, password, 'admin');
+    await login(username, password, "admin");
   };
 
   return (
@@ -74,36 +69,36 @@ export default function AdminLoginForm({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email Field */}
+          {/* Username Field */}
           <div className="space-y-2">
             <Label
-              htmlFor="email"
+              htmlFor="username"
               className="text-xs font-bold uppercase text-gray-500 ml-1"
             >
-              Admin Email
+              Admin Username
             </Label>
             <Input
-              id="email"
-              type="email"
+              id="username"
+              type="text"
               placeholder="admin@srkrlolo.com"
-              value={email}
+              value={username}
               onChange={(e) => {
-                setEmail(e.target.value);
-                if (fieldErrors.email)
-                  setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                setUsername(e.target.value);
+                if (fieldErrors.username)
+                  setFieldErrors((prev) => ({ ...prev, username: undefined }));
               }}
               disabled={loading}
               required
-              autoComplete="email"
+              autoComplete="username"
               className={cn(
                 "bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-red-500/50 focus-visible:border-red-500 h-12 rounded-xl transition-all",
-                fieldErrors.email &&
+                fieldErrors.username &&
                   "border-red-500/50 focus-visible:ring-red-500/50"
               )}
             />
-            {fieldErrors.email && (
+            {fieldErrors.username && (
               <p className="text-xs text-red-400 ml-1 flex items-center gap-1">
-                <AlertCircle size={12} /> {fieldErrors.email[0]}
+                <AlertCircle size={12} /> {fieldErrors.username[0]}
               </p>
             )}
           </div>
