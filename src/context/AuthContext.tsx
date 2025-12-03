@@ -14,7 +14,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   error: string | null;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string, role?: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setInitialized(true);
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password: string, role?: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -66,7 +66,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("user", JSON.stringify(user));
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       console.log("User logged in:", data);
-      navigate("/dashboard");
+
+      if (role) {
+        navigate(`/${role}/dashboard`);
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || "Login failed.");
       setToken(null);
