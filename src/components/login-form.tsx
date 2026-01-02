@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import lolo_login_1 from "../assets/LOLO_Logo_1.jpg"; // Ensure this path is correct
 import { useAuth } from "../context/AuthContext";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, EyeOff, Eye } from "lucide-react";
 
 interface ValidationErrors {
   username?: string[];
@@ -18,6 +18,7 @@ export default function LoginForm({
 }: React.ComponentProps<"div">) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({});
   const { login, loading, error } = useAuth();
 
@@ -116,25 +117,46 @@ export default function LoginForm({
                 Forgot password?
               </a>
             </div>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (fieldErrors.password)
-                  setFieldErrors((prev) => ({ ...prev, password: undefined }));
-              }}
-              disabled={loading}
-              required
-              autoComplete="current-password"
-              className={cn(
-                "bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#03a1b0]/50 focus-visible:border-[#03a1b0] h-12 rounded-xl transition-all",
-                fieldErrors.password &&
-                  "border-red-500/50 focus-visible:ring-red-500/50"
-              )}
-            />
+
+            {/* Wrapper for Input + Icon */}
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (fieldErrors.password)
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      password: undefined,
+                    }));
+                }}
+                disabled={loading}
+                required
+                autoComplete="current-password"
+                className={cn(
+                  "bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#03a1b0]/50 focus-visible:border-[#03a1b0] h-12 rounded-xl transition-all pr-10", // Added pr-10 for icon space
+                  fieldErrors.password &&
+                    "border-red-500/50 focus-visible:ring-red-500/50"
+                )}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon" // Changed to icon size for better fit
+                className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white hover:bg-transparent"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5 mr-2" />
+                ) : (
+                  <Eye className="w-5 h-5 mr-2" />
+                )}
+              </Button>
+            </div>
+
             {fieldErrors.password && (
               <p className="text-xs text-red-400 ml-1 flex items-center gap-1">
                 <AlertCircle size={12} /> {fieldErrors.password[0]}
@@ -159,7 +181,7 @@ export default function LoginForm({
 
           {/* General Error Message */}
           {error && (
-            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-sm text-red-400">
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-xs text-red-400">
               <AlertCircle size={16} className="shrink-0" />
               <span>{error}</span>
             </div>
@@ -204,8 +226,8 @@ export default function LoginForm({
           <div className="h-1 w-12 bg-[#03a1b0] mb-4"></div>
           <h2 className="text-2xl font-black text-white mb-2">SRKR LOLO</h2>
           <p className="text-gray-300 text-sm leading-relaxed">
-            Experience the rhythm of campus life. Manage events, explore clubs,
-            and connect with the community.
+            Experience the rhythm of campus life. Join workshops, explore
+            events, and connect with the community.
           </p>
         </div>
       </div>
