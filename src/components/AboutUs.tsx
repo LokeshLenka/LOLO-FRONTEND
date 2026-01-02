@@ -149,7 +149,7 @@ const AboutUs = () => {
               className="p-8 rounded-[2.5rem] bg-neutral-900/50 border border-white/10 backdrop-blur-md relative overflow-hidden group flex flex-col justify-between hover:border-lolo-cyan/30 transition-colors cursor-pointer"
               onClick={() =>
                 window.open(
-                  "https://github.com/your-org/lolo-platform",
+                  "https://github.com/LokeshLenka/LOLO-FRONTEND ",
                   "_blank"
                 )
               }
@@ -253,7 +253,7 @@ const AboutUs = () => {
                     testament to that.
                   </p>
                   <a
-                    href="https://github.com/your-org/lolo-platform"
+                    href="https://github.com/LokeshLenka/LOLO-FRONTEND"
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-2 text-lolo-cyan font-bold text-sm hover:underline"

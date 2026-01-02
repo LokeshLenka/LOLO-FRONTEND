@@ -44,47 +44,47 @@ export interface TeamMember {
 
 // --- Mock Data (Moved outside for cleaner component) ---
 const TEAM_MEMBERS: TeamMember[] = [
-  {
-    id: "coord1",
-    name: "Dr. Vasundara",
-    role: "Faculty Coordinator",
-    image:
-      "https://images.unsplash.com/photo-1573496799652-408c2ac9fe98?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    bio: "Leading the MEFA department with a vision for student excellence.",
-    fullBio: "Dr. Vasundara has over 15 years of experience in academia...",
-    socialLinks: { email: "vasundara@college.edu" },
-    category: "coordinator",
-  },
-  {
-    id: "singer1",
-    name: "The SCS",
-    role: "Lead Vocalist",
-    image:
-      "https://images.unsplash.com/photo-1516280440614-6697288d5d38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    bio: "Soulful voice that captivates every audience at LOLO events.",
-    socialLinks: { instagram: "#", spotify: "#" },
-    category: "singer",
-  },
-  {
-    id: "inst1",
-    name: "Lowell",
-    role: "Lead Pianist",
-    image:
-      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    bio: "Classical training meets modern improvisation.",
-    socialLinks: { instagram: "#" },
-    category: "instrumentalist",
-  },
-  {
-    id: "tech1",
-    name: "Lokesh Lenka",
-    role: "Tech Lead",
-    image:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    bio: "Web developer, designer, and the brain behind LOLO digital.",
-    socialLinks: { linkedin: "#", github: "https://github.com/LokeshLenka" },
-    category: "technical",
-  },
+  // {
+  //   id: "coord1",
+  //   name: "Dr. Vasundara",
+  //   role: "Faculty Coordinator",
+  //   image:
+  //     "https://images.unsplash.com/photo-1573496799652-408c2ac9fe98?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  //   bio: "Leading the MEFA department with a vision for student excellence.",
+  //   fullBio: "Dr. Vasundara has over 15 years of experience in academia...",
+  //   socialLinks: { email: "vasundara@college.edu" },
+  //   category: "coordinator",
+  // },
+  // {
+  //   id: "singer1",
+  //   name: "The SCS",
+  //   role: "Lead Vocalist",
+  //   image:
+  //     "https://images.unsplash.com/photo-1516280440614-6697288d5d38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  //   bio: "Soulful voice that captivates every audience at LOLO events.",
+  //   socialLinks: { instagram: "#", spotify: "#" },
+  //   category: "singer",
+  // },
+  // {
+  //   id: "inst1",
+  //   name: "Lowell",
+  //   role: "Lead Pianist",
+  //   image:
+  //     "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  //   bio: "Classical training meets modern improvisation.",
+  //   socialLinks: { instagram: "#" },
+  //   category: "instrumentalist",
+  // },
+  // {
+  //   id: "tech1",
+  //   name: "Lokesh Lenka",
+  //   role: "Tech Lead",
+  //   image:
+  //     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  //   bio: "Web developer, designer, and the brain behind LOLO digital.",
+  //   socialLinks: { linkedin: "#", github: "https://github.com/LokeshLenka" },
+  //   category: "technical",
+  // },
   // Add more dummy data as needed
 ];
 

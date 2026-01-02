@@ -15,46 +15,46 @@ type Photo = {
 
 // --- Mock Data ---
 const PHOTOS: Photo[] = [
-  {
-    src: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1200",
-    category: "Concerts",
-    alt: "Live DJ Set",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800",
-    category: "Studio",
-    alt: "Recording Microphone",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1501612780327-45045538702b?q=80&w=1200",
-    category: "Concerts",
-    alt: "Crowd Hands",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1200",
-    category: "Studio",
-    alt: "Synth Setup",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?q=80&w=800",
-    category: "Concerts",
-    alt: "Stage Lighting",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=80&w=800",
-    category: "Events",
-    alt: "Club Neon",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200",
-    category: "Team",
-    alt: "Team Collaboration",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1574169208507-84376144848b?q=80&w=800",
-    category: "Events",
-    alt: "Audience Cheering",
-  },
+  // {
+  //   src: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1200",
+  //   category: "Concerts",
+  //   alt: "Live DJ Set",
+  // },
+  // {
+  //   src: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800",
+  //   category: "Studio",
+  //   alt: "Recording Microphone",
+  // },
+  // {
+  //   src: "https://images.unsplash.com/photo-1501612780327-45045538702b?q=80&w=1200",
+  //   category: "Concerts",
+  //   alt: "Crowd Hands",
+  // },
+  // {
+  //   src: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1200",
+  //   category: "Studio",
+  //   alt: "Synth Setup",
+  // },
+  // {
+  //   src: "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?q=80&w=800",
+  //   category: "Concerts",
+  //   alt: "Stage Lighting",
+  // },
+  // {
+  //   src: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=80&w=800",
+  //   category: "Events",
+  //   alt: "Club Neon",
+  // },
+  // {
+  //   src: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200",
+  //   category: "Team",
+  //   alt: "Team Collaboration",
+  // },
+  // {
+  //   src: "https://images.unsplash.com/photo-1574169208507-84376144848b?q=80&w=800",
+  //   category: "Events",
+  //   alt: "Audience Cheering",
+  // },
 ];
 
 const CATEGORIES = ["All", "Concerts", "Studio", "Events", "Team"];

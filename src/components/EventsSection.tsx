@@ -134,17 +134,17 @@ const EventsSection: React.FC = () => {
 
   // Mixed Data
   const spotlightItems: SpotlightItemProps[] = [
-    {
-      id: "1",
-      title: "Weekend LoLo: Acoustic Night",
-      subtitle: "This Saturday, 6 PM",
-      meta: "Campus Cafe",
-      image:
-        "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      status: "upcoming",
-      category: "Concert",
-      link: "/events/weekend-lolo",
-    },
+    // {
+    //   id: "1",
+    //   title: "Weekend LoLo: Acoustic Night",
+    //   subtitle: "This Saturday, 6 PM",
+    //   meta: "Campus Cafe",
+    //   image:
+    //     "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    //   status: "upcoming",
+    //   category: "Concert",
+    //   link: "/events/weekend-lolo",
+    // },
     {
       id: "2",
       title: "B.Tech Subbayya Screening",
@@ -156,39 +156,39 @@ const EventsSection: React.FC = () => {
       category: "Short Film",
       link: "/publications/prod-001",
     },
-    {
-      id: "3",
-      title: "Open Jam Session: Rock",
-      subtitle: "Every Friday",
-      meta: "Music Room",
-      image:
-        "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      status: "live",
-      category: "Jam Session",
-      link: "/events/jam",
-    },
-    {
-      id: "4",
-      title: "The Last Bencher OST Release",
-      subtitle: "Coming Soon",
-      meta: "Spotify",
-      image:
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      status: "featured",
-      category: "Release",
-      link: "/publications/prod-002",
-    },
-    {
-      id: "5",
-      title: "Tech Meets Music Workshop",
-      subtitle: "Mar 01, 2025",
-      meta: "Seminar Hall",
-      image:
-        "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      status: "upcoming",
-      category: "Jam Session",
-      link: "/events/workshop",
-    },
+    // {
+    //   id: "3",
+    //   title: "Open Jam Session: Rock",
+    //   subtitle: "Every Friday",
+    //   meta: "Music Room",
+    //   image:
+    //     "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    //   status: "live",
+    //   category: "Jam Session",
+    //   link: "/events/jam",
+    // },
+    // {
+    //   id: "4",
+    //   title: "The Last Bencher OST Release",
+    //   subtitle: "Coming Soon",
+    //   meta: "Spotify",
+    //   image:
+    //     "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    //   status: "featured",
+    //   category: "Release",
+    //   link: "/publications/prod-002",
+    // },
+    // {
+    //   id: "5",
+    //   title: "Tech Meets Music Workshop",
+    //   subtitle: "Mar 01, 2025",
+    //   meta: "Seminar Hall",
+    //   image:
+    //     "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    //   status: "upcoming",
+    //   category: "Jam Session",
+    //   link: "/events/workshop",
+    // },
   ];
 
   // --- Scroll Handlers ---
