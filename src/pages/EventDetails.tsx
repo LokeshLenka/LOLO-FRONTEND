@@ -76,13 +76,13 @@ const EventDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
 
+  const APP_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   useEffect(() => {
     const fetchEventDetails = async () => {
       if (!id) return;
       try {
-        const response = await axios.get(
-          `http://localhost:8000/api/events/${id}`
-        );
+        const response = await axios.get(`${APP_BASE_URL}/events/${id}`);
         setEvent(response.data.data || response.data);
       } catch (error) {
         console.error("Error fetching event details:", error);

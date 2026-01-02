@@ -99,9 +99,7 @@ const Event: React.FC = () => {
 
   const pageParam = parseInt(searchParams.get("page") || "1", 10);
   const perPageParam = parseInt(searchParams.get("per_page") || "9", 10);
-
-  // MUI TablePagination uses 0-based indexing
-  const muiPage = pageParam > 0 ? pageParam - 1 : 0;
+  const muiPage = pageParam > 0 ? pageParam - 1 : 0; // MUI uses 0-based indexing
 
   const statusParam = searchParams.get("status") || "All";
   const searchParam = searchParams.get("search") || "";
@@ -110,37 +108,72 @@ const Event: React.FC = () => {
   const [eventsData, setEventsData] = useState<LaravelPaginatedResponse | null>(
     null
   );
+  const [heroEvent, setHeroEvent] = useState<EventData | null>(null); // NEW: Separate state for featured event
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [localSearch, setLocalSearch] = useState(searchParam);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   useEffect(() => {
     setLocalSearch(searchParam);
   }, [searchParam]);
 
+  // --- Data Fetching Logic ---
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      // For page 1, fetch perPageParam + 1 items (1 featured + grid items)
-      // For other pages, fetch perPageParam items
-      const itemsToFetch = pageParam === 1 ? perPageParam + 1 : perPageParam;
+      // Determine if we are in the "Default View" where a featured event should be shown
+      // Conditions: Page 1, No Search, Default Sort (Newest), No Category Filter
+      const isDefaultView =
+        pageParam === 1 &&
+        !searchParam &&
+        sortParam === "date_desc" &&
+        statusParam === "All";
 
-      const response = await axios.get<ApiResponse>(
-        "https://lolo-backend.onrender.com/api/events",
-        {
-          params: {
-            page: pageParam,
-            per_page: itemsToFetch,
-            status: statusParam !== "All" ? statusParam : undefined,
-            search: searchParam || undefined,
-            sort: sortParam,
-          },
-        }
-      );
+      // Request one extra item on default view to fill the Featured slot + Grid
+      const itemsToFetch = isDefaultView ? perPageParam + 1 : perPageParam;
+
+      const response = await axios.get<ApiResponse>(`${API_BASE_URL}/events`, {
+        params: {
+          page: pageParam,
+          per_page: itemsToFetch,
+          status: statusParam !== "All" ? statusParam : undefined,
+          search: searchParam || undefined,
+          sort: sortParam,
+        },
+      });
+
       if (response.data.events && Array.isArray(response.data.events.data)) {
-        setEventsData(response.data.events);
+        const fetchedEvents = response.data.events.data;
+
+        if (isDefaultView && fetchedEvents.length > 0) {
+          // 1. Identify the latest event (Hero)
+          const latestEvent = [...fetchedEvents].sort(
+            (a, b) =>
+              new Date(b.start_date).getTime() -
+              new Date(a.start_date).getTime()
+          )[0];
+
+          setHeroEvent(latestEvent);
+
+          // 2. Filter the Hero out of the Grid data using UUID so it's not duplicated
+          const gridEvents = fetchedEvents.filter(
+            (e) => e.uuid !== latestEvent.uuid
+          );
+
+          // 3. Update main data state with the filtered list
+          setEventsData({
+            ...response.data.events,
+            data: gridEvents,
+          });
+        } else {
+          // Not default view (Searching/Sorting/Page 2+): No Featured Banner
+          setHeroEvent(null);
+          setEventsData(response.data.events);
+        }
       } else {
         setEventsData(null);
         setError("Unexpected response.");
@@ -151,13 +184,21 @@ const Event: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [pageParam, perPageParam, statusParam, searchParam, sortParam]);
+  }, [
+    pageParam,
+    perPageParam,
+    statusParam,
+    searchParam,
+    sortParam,
+    API_BASE_URL,
+  ]);
 
   useEffect(() => {
     fetchEvents();
     if (pageParam > 1) window.scrollTo({ top: 0, behavior: "smooth" });
   }, [fetchEvents, pageParam]);
 
+  // --- Event Handlers ---
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalSearch(e.target.value);
     setSearchParams((prev) => {
@@ -219,7 +260,7 @@ const Event: React.FC = () => {
     setIsFilterOpen(false);
   };
 
-  // Client-side filtering for immediate feedback
+  // Client-side search fallback (Optional optimization for immediate feedback)
   const filteredEvents = useMemo(() => {
     if (!eventsData?.data) return [];
     if (!localSearch) return eventsData.data;
@@ -232,37 +273,12 @@ const Event: React.FC = () => {
     );
   }, [eventsData, localSearch]);
 
-  // --- Featured Event Logic ---
-
-  // Find latest event by start_date
-  const getLatestEvent = (events: EventData[]) => {
-    if (!events.length) return null;
-    return [...events].sort(
-      (a, b) =>
-        new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
-    )[0];
-  };
-
-  const isFirstPage = pageParam === 1;
-  const hasEvents = filteredEvents.length > 0;
-
-  const featuredEvent =
-    isFirstPage && hasEvents && filteredEvents.length > 1
-      ? getLatestEvent(filteredEvents)
-      : null;
-
-  // Exclude featured event from regular grid ONLY if there are multiple results
-  const regularEvents = featuredEvent
-    ? filteredEvents.filter((e) => e.uuid !== featuredEvent.uuid)
-    : filteredEvents;
-
   const totalItems = eventsData?.total || 0;
 
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-[#03a1b0] selection:text-white pb-20">
       {/* Hero & Header */}
       <div className="relative overflow-hidden">
-        {/* Background Gradient */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-[radial-gradient(circle_at_center,rgba(3,161,176,0.08),transparent_70%)] blur-3xl"></div>
         </div>
@@ -300,7 +316,6 @@ const Event: React.FC = () => {
                 </span>
               </span>
             </h1>
-
             <p className="text-gray-400 text-lg max-w-2xl mx-auto mb-10">
               Join the most electrifying events, workshops, and gatherings at
               LOLO.
@@ -340,7 +355,6 @@ const Event: React.FC = () => {
       {/* Filters & Sorting Bar */}
       <div className="relative z-20 w-full border-b border-white/5 py-6 mb-12 bg-black/20 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {/* Status Tabs */}
           <div className="overflow-x-auto no-scrollbar w-full md:w-auto">
             <div className="flex gap-2 min-w-max">
               {CATEGORIES.map((category) => (
@@ -359,7 +373,6 @@ const Event: React.FC = () => {
             </div>
           </div>
 
-          {/* Sorting Dropdown */}
           <div className="relative ml-auto">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -400,9 +413,7 @@ const Event: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 min-h-[50vh]">
         {loading ? (
           <div className="space-y-8">
-            {isFirstPage && (
-              <div className="h-[500px] bg-white/5 rounded-3xl animate-pulse" />
-            )}
+            <div className="h-[500px] bg-white/5 rounded-3xl animate-pulse" />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3].map((i) => (
                 <div
@@ -423,10 +434,10 @@ const Event: React.FC = () => {
               Try Again
             </Button>
           </div>
-        ) : filteredEvents.length > 0 ? (
+        ) : (
           <div className="space-y-12">
-            {/* Featured Event (Page 1 Only) */}
-            {featuredEvent && (
+            {/* Featured Event - Rendered from separate 'heroEvent' state */}
+            {heroEvent && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -449,31 +460,31 @@ const Event: React.FC = () => {
                         </span>
                         <span
                           className={`px-3 py-2 rounded-xl text-sm font-bold uppercase tracking-wider border ${getEventTypeColor(
-                            featuredEvent.type
+                            heroEvent.type
                           )} backdrop-blur-md`}
                         >
-                          {featuredEvent.type}
+                          {heroEvent.type}
                         </span>
                         <span className="px-3 py-2 rounded-xl text-sm font-bold uppercase tracking-wider bg-black/60 text-white backdrop-blur-md border border-white/10">
-                          {featuredEvent.status}
+                          {heroEvent.status}
                         </span>
                       </div>
 
                       <img
                         src={
-                          featuredEvent.images?.[0]?.url ||
+                          heroEvent.images?.[0]?.url ||
                           "https://via.placeholder.com/800x600"
                         }
-                        alt={featuredEvent.name}
+                        alt={heroEvent.name}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
 
                       <div className="absolute bottom-6 left-6 bg-black/10 backdrop-blur-lg border border-white/10 rounded-xl px-5 py-3 flex flex-col items-center min-w-[90px] text-center shadow-xl">
                         <span className="text-sm font-bold text-white uppercase leading-none">
-                          {formatEventDate(featuredEvent.start_date).month}
+                          {formatEventDate(heroEvent.start_date).month}
                         </span>
                         <span className="text-4xl font-black text-white leading-none mt-1">
-                          {formatEventDate(featuredEvent.start_date).day}
+                          {formatEventDate(heroEvent.start_date).day}
                         </span>
                       </div>
                     </div>
@@ -484,34 +495,31 @@ const Event: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <Clock size={18} className="text-[#03a1b0]" />
                             <span className="text-sm font-medium">
-                              {formatEventDate(featuredEvent.start_date).time}
+                              {formatEventDate(heroEvent.start_date).time}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <MapPin size={18} className="text-[#03a1b0]" />
                             <span className="text-sm font-medium">
-                              {featuredEvent.venue}
+                              {heroEvent.venue}
                             </span>
                           </div>
                         </div>
 
                         <h3 className="text-3xl lg:text-4xl font-black text-white leading-tight mb-4 group-hover:text-[#03a1b0] transition-colors">
-                          {featuredEvent.name}
+                          {heroEvent.name}
                         </h3>
-
                         <p className="text-gray-300 text-base lg:text-lg leading-relaxed mb-6 line-clamp-4">
-                          {featuredEvent.description}
+                          {heroEvent.description}
                         </p>
 
-                        {formatDeadline(
-                          featuredEvent.registration_deadline
-                        ) && (
+                        {formatDeadline(heroEvent.registration_deadline) && (
                           <div className="inline-flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 rounded-xl mb-6">
                             <Hourglass
                               size={18}
                               className={
-                                featuredEvent.registration_deadline &&
-                                new Date(featuredEvent.registration_deadline) <
+                                heroEvent.registration_deadline &&
+                                new Date(heroEvent.registration_deadline) <
                                   new Date(Date.now() + 86400000 * 2)
                                   ? "text-orange-400"
                                   : "text-[#03a1b0]"
@@ -523,16 +531,15 @@ const Event: React.FC = () => {
                               </span>
                               <span
                                 className={`text-sm font-semibold ${
-                                  featuredEvent.registration_deadline &&
-                                  new Date(
-                                    featuredEvent.registration_deadline
-                                  ) < new Date(Date.now() + 86400000 * 2)
+                                  heroEvent.registration_deadline &&
+                                  new Date(heroEvent.registration_deadline) <
+                                    new Date(Date.now() + 86400000 * 2)
                                     ? "text-orange-300"
                                     : "text-gray-200"
                                 }`}
                               >
                                 {formatDeadline(
-                                  featuredEvent.registration_deadline
+                                  heroEvent.registration_deadline
                                 )}
                               </span>
                             </div>
@@ -541,10 +548,9 @@ const Event: React.FC = () => {
                       </div>
 
                       <div className="pt-6 border-t border-white/5">
-                        <Link to={`/events/${featuredEvent.uuid}`}>
+                        <Link to={`/events/${heroEvent.uuid}`}>
                           <Button className="w-full sm:w-auto bg-gradient-to-r from-[#03a1b0] to-purple-500 hover:from-[#028f9c] hover:to-purple-600 text-white border-0 rounded-xl px-8 h-14 transition-all group-hover:translate-x-1 flex items-center justify-center gap-3 text-lg font-bold shadow-lg shadow-[#03a1b0]/20">
-                            View Event Details
-                            <ArrowRight size={20} />
+                            View Event Details <ArrowRight size={20} />
                           </Button>
                         </Link>
                       </div>
@@ -555,9 +561,9 @@ const Event: React.FC = () => {
             )}
 
             {/* Regular Events Grid */}
-            {regularEvents.length > 0 && (
+            {filteredEvents.length > 0 ? (
               <>
-                {featuredEvent && (
+                {heroEvent && (
                   <div className="flex items-center gap-3 pt-8">
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
                     <h2 className="text-xl font-bold text-gray-400 uppercase tracking-wider">
@@ -568,7 +574,7 @@ const Event: React.FC = () => {
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {regularEvents.map((event) => {
+                  {filteredEvents.map((event) => {
                     const eventDate = formatEventDate(event.start_date);
                     const deadline = formatDeadline(
                       event.registration_deadline
@@ -630,7 +636,6 @@ const Event: React.FC = () => {
                           <h3 className="text-2xl font-bold text-white leading-tight mb-3 line-clamp-2 group-hover:text-[#03a1b0] transition-colors">
                             {event.name}
                           </h3>
-
                           <p className="text-gray-300 text-base leading-relaxed mb-6 line-clamp-2 flex-grow">
                             {event.description}
                           </p>
@@ -679,53 +684,58 @@ const Event: React.FC = () => {
                   })}
                 </div>
               </>
+            ) : (
+              // Show empty state only if there are no grid events AND no hero event
+              !heroEvent && (
+                <div className="py-24 text-center bg-white/[0.02] border border-white/5 rounded-3xl">
+                  <Search size={48} className="text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-300 text-xl font-bold">
+                    No events found
+                  </p>
+                  <p className="text-gray-500 mt-2">
+                    We couldn't find any events matching your criteria.
+                  </p>
+                  <button
+                    onClick={clearSearch}
+                    className="text-[#03a1b0] text-base mt-4 hover:underline font-medium"
+                  >
+                    Clear filters
+                  </button>
+                </div>
+              )
             )}
-          </div>
-        ) : (
-          <div className="py-24 text-center bg-white/[0.02] border border-white/5 rounded-3xl">
-            <Search size={48} className="text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-300 text-xl font-bold">No events found</p>
-            <p className="text-gray-500 mt-2">
-              We couldn't find any events matching your criteria.
-            </p>
-            <button
-              onClick={clearSearch}
-              className="text-[#03a1b0] text-base mt-4 hover:underline font-medium"
-            >
-              Clear filters
-            </button>
-          </div>
-        )}
 
-        {/* Pagination */}
-        {totalItems > 0 && (
-          <div className="mt-12 flex flex-col sm:flex-row justify-center sm:justify-end items-center gap-4">
-            <div className="bg-white/5 border border-white/10 rounded-lg overflow-hidden w-full sm:w-auto">
-              <TablePagination
-                component="div"
-                count={totalItems}
-                page={muiPage}
-                onPageChange={handlePageChange}
-                rowsPerPage={perPageParam}
-                onRowsPerPageChange={handleRowsPerPageChange}
-                rowsPerPageOptions={[9, 18, 27]}
-                labelRowsPerPage="Per page:"
-                sx={{
-                  color: "inherit",
-                  width: "100%",
-                  ".MuiToolbar-root": {
-                    paddingLeft: 2,
-                    paddingRight: 2,
-                    flexWrap: "wrap",
-                    justifyContent: "center",
-                  },
-                  ".MuiTablePagination-selectLabel": { margin: 0 },
-                  ".MuiTablePagination-displayedRows": { margin: 0 },
-                  ".MuiSvgIcon-root": { color: "inherit" },
-                  ".MuiTablePagination-actions": { marginLeft: 1 },
-                }}
-              />
-            </div>
+            {/* Pagination */}
+            {totalItems > 0 && (
+              <div className="mt-12 flex flex-col sm:flex-row justify-center sm:justify-end items-center gap-4">
+                <div className="bg-white/5 border border-white/10 rounded-lg overflow-hidden w-full sm:w-auto">
+                  <TablePagination
+                    component="div"
+                    count={totalItems}
+                    page={muiPage}
+                    onPageChange={handlePageChange}
+                    rowsPerPage={perPageParam}
+                    onRowsPerPageChange={handleRowsPerPageChange}
+                    rowsPerPageOptions={[9, 18, 27]}
+                    labelRowsPerPage="Per page:"
+                    sx={{
+                      color: "inherit",
+                      width: "100%",
+                      ".MuiToolbar-root": {
+                        paddingLeft: 2,
+                        paddingRight: 2,
+                        flexWrap: "wrap",
+                        justifyContent: "center",
+                      },
+                      ".MuiTablePagination-selectLabel": { margin: 0 },
+                      ".MuiTablePagination-displayedRows": { margin: 0 },
+                      ".MuiSvgIcon-root": { color: "inherit" },
+                      ".MuiTablePagination-actions": { marginLeft: 1 },
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
