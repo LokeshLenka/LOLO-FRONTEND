@@ -8,8 +8,8 @@ export default function NotFound() {
         <GridShape />
         <div className="mx-auto w-full max-w-[242px] text-center sm:max-w-[472px]">
           <h1
-            className="mb-8 font-bold text-gray-800 text-title-md dark:text-white/90 xl:text-title-2xl"
-            style={{ fontFamily: "'astro'" }}
+            className="mb-8 font-bold text-gray-600 text-title-md dark:text-white/90 xl:text-title-2xl"
+            style={{ fontFamily: "'OdeErik'" }}
           >
             ERROR
           </h1>

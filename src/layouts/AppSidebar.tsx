@@ -20,26 +20,32 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
+const rawUser = localStorage.getItem("user");
+const username = rawUser ? JSON.parse(rawUser) : "";
+const dashboard = `/${username}/dashboard`;
+
+// console.log("Dashboard Path:", dashboard);
+
 const navItems: NavItem[] = [
   {
     icon: <LayoutGrid />,
     name: "Dashboard",
-    path: "/dashboard",
+    path: `${dashboard}`,
   },
   {
     icon: <ClipboardPenLine />,
     name: "Event Registrations",
-    path: "/dashboard/event-registrations",
+    path: `${dashboard}/event-registrations`,
   },
   {
     icon: <CircleStar />,
     name: "Credits",
-    path: "/dashboard/credits",
+    path: `${dashboard}/credits`,
   },
   {
     icon: <CircleUser />,
     name: "My Profile",
-    path: "/dashboard/profile",
+    path: `${dashboard}/profile`,
   },
 ];
 
