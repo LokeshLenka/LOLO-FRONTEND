@@ -4,7 +4,6 @@ import {
   Card,
   CardBody,
   Button,
-  Avatar,
   Chip,
   Progress,
   Modal,
@@ -26,9 +25,7 @@ import {
   Zap,
   Music,
   Info,
-  Medal,
 } from "lucide-react";
-import type { ClassNames } from "@emotion/react";
 
 // --- Constants & Types ---
 

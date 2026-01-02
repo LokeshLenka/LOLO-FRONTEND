@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button/button";
 import { useAuth } from "../context/AuthContext";
 
 export default function SidebarWidget() {

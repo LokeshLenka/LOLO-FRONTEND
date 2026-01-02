@@ -1,58 +1,49 @@
 "use client";
 import {
-    Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
-import { CircleUser, Phone, Mail } from "lucide-react";
-import {
-    Select,
-    SelectTrigger,
-    SelectContent,
-    SelectItem,
-    SelectValue,
-} from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Button } from "@/components/ui/button";
+import { Phone, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button/button";
 
 export default function SignUpForm() {
   const formSchema = z
-  .object({
-    "text-input-0": z.string().min(1, { message: "This field is required" }),
-    "text-input-1": z.string().min(1, { message: "This field is required" }),
-    "tel-input-0": z
-      .string()
-      .min(1, { message: "This field is required" })
-      .min(10, { message: "Must be at least 10 characters" })
-      .max(10, { message: "Must be at most 10 characters" }),
-    "email-input-0": z
-      .string()
-      .email({ message: "Invalid email address" })
-      .min(1, { message: "This field is required" }),
-    "password-input-0": z
-      .string()
-      .min(1, { message: "This field is required" })
-      .min(8, { message: "Must be at least 8 characters" }),
-    "confirm-password-input-1": z
-      .string()
-      .min(1, { message: "This field is required" })
-      .min(8, { message: "Must be at least 8 characters" }),
-  })
-  .refine(
-    (data) => data["password-input-0"] === data["confirm-password-input-1"],
-    {
-      message: "Passwords do not match",
-      path: ["confirm-password-input-1"],
-    }
-  );
+    .object({
+      "text-input-0": z.string().min(1, { message: "This field is required" }),
+      "text-input-1": z.string().min(1, { message: "This field is required" }),
+      "tel-input-0": z
+        .string()
+        .min(1, { message: "This field is required" })
+        .min(10, { message: "Must be at least 10 characters" })
+        .max(10, { message: "Must be at most 10 characters" }),
+      "email-input-0": z
+        .string()
+        .email({ message: "Invalid email address" })
+        .min(1, { message: "This field is required" }),
+      "password-input-0": z
+        .string()
+        .min(1, { message: "This field is required" })
+        .min(8, { message: "Must be at least 8 characters" }),
+      "confirm-password-input-1": z
+        .string()
+        .min(1, { message: "This field is required" })
+        .min(8, { message: "Must be at least 8 characters" }),
+    })
+    .refine(
+      (data) => data["password-input-0"] === data["confirm-password-input-1"],
+      {
+        message: "Passwords do not match",
+        path: ["confirm-password-input-1"],
+      }
+    );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

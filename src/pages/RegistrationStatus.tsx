@@ -13,7 +13,7 @@ import {
   Search,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button/button";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 

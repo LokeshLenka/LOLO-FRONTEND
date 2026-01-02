@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "framer-motion";
 import {
   Music,
@@ -10,7 +9,7 @@ import {
   Code,
   ArrowUpRight,
 } from "lucide-react";
-import DetailedTimeline from "./DetailedTimeline";
+// import DetailedTimeline from "./DetailedTimeline";
 
 const AboutUs = () => {
   return (
@@ -268,7 +267,7 @@ const AboutUs = () => {
         </div>
       </section>
 
-      <DetailedTimeline />
+      {/* <DetailedTimeline /> */}
     </>
   );
 };

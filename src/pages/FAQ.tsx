@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Minus, MessageCircle, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -144,9 +144,7 @@ export default function FAQ() {
             className="text-4xl md:text-6xl font-bold mb-6"
           >
             Frequently Asked <br />
-            <span className="text-lolo-pink font-club">
-              Questions
-            </span>
+            <span className="text-lolo-pink font-club">Questions</span>
           </motion.h1>
 
           <motion.p

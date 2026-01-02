@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
-import { Link } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
 import LOLO_Logo_1 from "../assets/logos/Lolo_logo_1.png";
-import type { px } from "framer-motion";
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
-import UserDropdown from "@/components/header/UserDropdown";
+// import UserDropdown from "@/components/header/UserDropdown";
 import { ChevronDown, ChevronUp } from "lucide-react";
 // import { C } from "node_modules/react-router/dist/development/index-react-server-client-DRhjXpk2.d.mts";
 // import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
@@ -161,7 +159,7 @@ const AppHeader: React.FC = () => {
             {/* <!-- Notification Menu Area --> */}
           </div>
           {/* <!-- User Area --> */}
-          <UserDropdown />
+          {/* <UserDropdown /> */}
         </div>
       </div>
     </header>

@@ -1,6 +1,6 @@
 import { useState, forwardRef } from "react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button/button";
 import { Eye, EyeOff } from "lucide-react";
 
 // forwardRef lets it accept `ref` from react-hook-form

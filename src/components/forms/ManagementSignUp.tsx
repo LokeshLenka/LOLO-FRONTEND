@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button/button";
 import { Form } from "@/components/ui/form";
-import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, ChevronRight, Check, Loader2 } from "lucide-react";
 import { BasicInformationStep } from "./steps/BasicInformationStep";
 import { AcademicInformationStep } from "./steps/AcademicInformationStep";
@@ -93,15 +92,15 @@ const useMultiStepForm = (totalSteps: number, form: any) => {
     },
   };
 
-  const additionalFields: Record<number, StepField[]> = {
-    4: [
-      { name: "role" },
-      { name: "registration_type" },
-      { name: "experience" },
-      { name: "interest_towards_lolo" },
-      { name: "any_club" },
-    ], // these values are fixed
-  };
+  // const additionalFields: Record<number, StepField[]> = {
+  //   4: [
+  //     { name: "role" },
+  //     { name: "registration_type" },
+  //     { name: "experience" },
+  //     { name: "interest_towards_lolo" },
+  //     { name: "any_club" },
+  //   ], // these values are fixed
+  // };
 
   const isFirstStep = currentStep === 1;
   const isLastStep = currentStep === totalSteps;

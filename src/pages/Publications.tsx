@@ -1,15 +1,13 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search,
-  ExternalLink,
   Clapperboard,
   Music,
   Mic2,
   X,
   ArrowRight,
-  Play,
   Film,
 } from "lucide-react";
 

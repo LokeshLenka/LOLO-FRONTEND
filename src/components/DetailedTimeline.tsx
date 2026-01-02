@@ -1,8 +1,4 @@
-import React from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-
-// Define the shape of our detailed data
 interface DetailedEvent {
   date: string;
   title: string;
@@ -63,8 +59,6 @@ const categoryColors = {
 };
 
 const DetailedTimeline = () => {
-  const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-[#030303] text-neutral-200 p-6 md:p-12 font-sans relative overflow-hidden">
       {/* Background decoration */}
@@ -74,7 +68,6 @@ const DetailedTimeline = () => {
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Navigation Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -133,7 +126,7 @@ const DetailedTimeline = () => {
             </motion.div>
           ))}
         </div>
-          </div>
+      </div>
     </div>
   );
 };

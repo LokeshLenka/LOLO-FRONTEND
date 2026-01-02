@@ -1,9 +1,9 @@
-import ComponentCard from "../../components/common/ComponentCard";
+// import ComponentCard from "../../components/com  mon/ComponentCard";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import FourIsToThree from "../../components/ui/videos/FourIsToThree";
-import OneIsToOne from "../../components/ui/videos/OneIsToOne";
-import SixteenIsToNine from "../../components/ui/videos/SixteenIsToNine";
-import TwentyOneIsToNine from "../../components/ui/videos/TwentyOneIsToNine";
+// import FourIsToThree from "../../components/ui/videos/FourIsToThree";
+// import OneIsToOne from "../../components/ui/videos/OneIsToOne";
+// import SixteenIsToNine from "../../components/ui/videos/SixteenIsToNine";
+// import TwentyOneIsToNine from "../../components/ui/videos/TwentyOneIsToNine";
 
 export default function Videos() {
   return (
@@ -11,7 +11,7 @@ export default function Videos() {
       <PageBreadcrumb pageTitle="Videos" />
       <div className="grid grid-cols-1 gap-5 sm:gap-6 xl:grid-cols-2">
         <div className="space-y-5 sm:space-y-6">
-          <ComponentCard title="Video Ratio 16:9">
+          {/* <ComponentCard title="Video Ratio 16:9">
             <SixteenIsToNine />
           </ComponentCard>
           <ComponentCard title="Video Ratio 4:3">
@@ -24,7 +24,7 @@ export default function Videos() {
           </ComponentCard>
           <ComponentCard title="Video Ratio 1:1">
             <OneIsToOne />
-          </ComponentCard>
+          </ComponentCard> */}
         </div>
       </div>
     </>

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useScroll, useTransform, motion, useSpring } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom"; // CHANGED: Standard React Router import
-import { Button } from "@heroui/button";
-import { ArrowRight } from "lucide-react";
+// import { useNavigate } from "react-router-dom"; // CHANGED: Standard React Router import
+// import { Button } from "@heroui/button";
+// import { ArrowRight } from "lucide-react";
 import SectionHeader from "./HomeSectionHeader";
 
 interface TimelineEntry {
@@ -10,13 +10,7 @@ interface TimelineEntry {
   content: React.ReactNode;
 }
 
-const TimelineItem = ({
-  item,
-  index,
-}: {
-  item: TimelineEntry;
-  index: number;
-}) => {
+const TimelineItem = ({ item }: { item: TimelineEntry; index: number }) => {
   const itemRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -79,7 +73,6 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
   const [height, setHeight] = useState(0);
 
   // CHANGED: Using standard React Router hook
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (ref.current) {
@@ -132,7 +125,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
       </div>
 
       {/* Button with navigate function */}
-      <Link to="/about" className="w-[85%] sm:w-auto mx-auto flex justify-center mb-10">
+      {/* <Link to="/about" className="w-[85%] sm:w-auto mx-auto flex justify-center mb-10">
         <Button className="w-full sm:w-auto px-10 py-6 rounded-full bg-white text-black font-bold text-lg hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all duration-300 border-none group ease-in-out ">
           View Full Journey
           <ArrowRight
@@ -140,7 +133,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
             className="ml-2 group-hover:translate-x-1 transition-transform"
           />
         </Button>
-      </Link>
+      </Link> */}
     </div>
   );
 };

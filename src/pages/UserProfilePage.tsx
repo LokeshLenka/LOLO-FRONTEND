@@ -1,12 +1,8 @@
 // src/components/profile/ProfileCard.tsx
-import React from "react";
-import { Card, CardBody, Avatar, Chip, Divider, Button } from "@heroui/react";
+import { Card, CardBody, Avatar, Chip, Divider } from "@heroui/react";
 import {
   User,
   Briefcase,
-  Calendar,
-  Phone,
-  MapPin,
   Music,
   Shield,
   Activity,

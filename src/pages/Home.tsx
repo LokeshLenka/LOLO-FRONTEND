@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { motion, useAnimation } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   Music,
@@ -9,9 +9,7 @@ import {
   Disc3,
   Award,
   ChevronDown,
-  Play,
   Headphones,
-  Clapperboard,
   CalendarDays,
 } from "lucide-react";
 import { Button } from "@heroui/button";
@@ -22,77 +20,31 @@ import EventsSection from "@/components/EventsSection";
 import SectionHeader from "@/components/HomeSectionHeader";
 
 // --- COMPONENT: Rhythmic Audio Visualizer (Hero) ---
-const AudioVisualizer = () => {
-  return (
-    <div className="flex items-end justify-center gap-1 h-16 sm:h-24 mb-6 opacity-60">
-      {[...Array(12)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="w-2 sm:w-3 bg-gradient-to-t from-lolo-pink to-lolo-cyan rounded-full"
-          animate={{
-            height: ["20%", "80%", "40%", "100%", "30%"],
-          }}
-          transition={{
-            duration: 1.2,
-            repeat: Infinity,
-            repeatType: "reverse",
-            ease: "easeInOut",
-            delay: i * 0.1, // Stagger effect
-          }}
-        />
-      ))}
-    </div>
-  );
-};
+// const AudioVisualizer = () => {
+//   return (
+//     <div className="flex items-end justify-center gap-1 h-16 sm:h-24 mb-6 opacity-60">
+//       {[...Array(12)].map((_, i) => (
+//         <motion.div
+//           key={i}
+//           className="w-2 sm:w-3 bg-gradient-to-t from-lolo-pink to-lolo-cyan rounded-full"
+//           animate={{
+//             height: ["20%", "80%", "40%", "100%", "30%"],
+//           }}
+//           transition={{
+//             duration: 1.2,
+//             repeat: Infinity,
+//             repeatType: "reverse",
+//             ease: "easeInOut",
+//             delay: i * 0.1, // Stagger effect
+//           }}
+//         />
+//       ))}
+//     </div>
+//   );
+// };
 
 // --- COMPONENT: Floating Music Particles (Background) ---
 // --- COMPONENT: Floating Music Particles (Background) ---
-const FloatingMusicParticles = () => {
-  const icons = [Music, Disc3, Mic2, Music, Music];
-  return (
-    // Changed z-index to 0 to sit behind content but visible
-    // Added h-full to ensure it covers the whole page
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-20">
-      {[...Array(20)].map((_, i) => {
-        const Icon = icons[i % icons.length];
-        // Randomize start position
-        const randomX = Math.random() * 100;
-        const randomDelay = Math.random() * 5;
-        const randomDuration = Math.random() * 10 + 10; // 10-20s duration
-
-        return (
-          <motion.div
-            key={i}
-            // Use 'vh' and 'vw' for positioning
-            initial={{
-              opacity: 0,
-              y: "110vh",
-              x: `${randomX}vw`,
-              scale: 0.5,
-            }}
-            animate={{
-              // Increased opacity: goes up to 0.4 (40%) which is clearly visible
-              opacity: [0, 0.4, 0],
-              y: "-10vh",
-              rotate: [0, 360],
-              x: [`${randomX}vw`, `${randomX + (Math.random() * 10 - 5)}vw`], // Slight horizontal drift
-            }}
-            transition={{
-              duration: randomDuration,
-              repeat: Infinity,
-              ease: "linear",
-              delay: randomDelay,
-            }}
-            // Changed text-white/5 to text-white/20 for better visibility base
-            className="absolute text-white/20"
-          >
-            <Icon size={Math.random() * 30 + 20} />
-          </motion.div>
-        );
-      })}
-    </div>
-  );
-};
 
 // --- COMPONENT: Sound Wave Divider ---
 const SoundWaveDivider = () => (

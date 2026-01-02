@@ -1,17 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Share2,
   Play,
-  Calendar,
   User,
   Music,
   Video,
   Award,
-  ExternalLink,
-  Headphones,
 } from "lucide-react";
 import { Chip, Divider } from "@heroui/react";
 import { Button } from "@heroui/button";

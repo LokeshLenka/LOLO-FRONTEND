@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import lolo_login_1 from "../assets/LOLO_Logo_1.jpg"; // Reuse or change image

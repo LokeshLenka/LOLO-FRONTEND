@@ -1,13 +1,5 @@
-import React from "react";
 import { Link } from "react-router-dom";
-import {
-  Twitter,
-  Instagram,
-  Youtube,
-  Mail,
-  ArrowRight,
-  Heart,
-} from "lucide-react";
+import { Instagram, Youtube, Heart } from "lucide-react";
 import Lolo_logo_1 from "../assets/logos/Lolo_logo_1.png";
 
 const Footer = () => {

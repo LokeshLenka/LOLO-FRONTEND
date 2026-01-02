@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -10,22 +10,37 @@ import {
   Instagram,
   Mail,
   Globe,
-  Music,
-  Award,
   Calendar,
   MapPin,
-  Mic2,
   User,
 } from "lucide-react";
-import { Button } from "@heroui/button";
 import { Divider } from "@heroui/react";
 
-// must come BEFORE usage
-import type { TeamMember } from "@/types";
-
-type Props = {
-  member: TeamMember;
+export type TeamMember = {
+  id: string;
+  name: string;
+  role: string;
+  image: string;
+  bio?: string;
+  fullBio?: string;
+  category: string;
+  joinDate?: string;
+  socialLinks: {
+    linkedin?: string;
+    github?: string;
+    twitter?: string;
+    instagram?: string;
+    website?: string;
+    email?: string;
+  };
 };
+
+// must come BEFORE usage
+// import type { TeamMember } from "@/types";
+
+// type Props = {
+//   member: TeamMember;
+// };
 
 // MOCK DATA (Replace with API Call)
 const MOCK_MEMBER: TeamMember = {
@@ -49,7 +64,7 @@ const MOCK_MEMBER: TeamMember = {
 };
 
 const TeamDetails: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  // const { id } = useParams<{ id: string }>();
   // const { data: member } = useFetchMember(id);
   const member = MOCK_MEMBER; // Using mock
 

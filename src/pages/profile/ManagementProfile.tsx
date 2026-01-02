@@ -1,5 +1,4 @@
 // src/pages/profile/ManagementProfile.tsx
-import React from "react";
 import ProfileCard, { type UserProfileData } from "./ProfileCard";
 import {
   Briefcase,

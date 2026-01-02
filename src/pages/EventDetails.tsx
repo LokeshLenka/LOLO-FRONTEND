@@ -18,7 +18,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { Button } from "@heroui/button";
-import { Chip, Divider } from "@heroui/react";
+import { Divider } from "@heroui/react";
 import axios from "axios";
 
 // --- Interfaces ---

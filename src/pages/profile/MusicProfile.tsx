@@ -1,5 +1,4 @@
 // src/pages/profile/MusicProfile.tsx
-import React from "react";
 import {
   Briefcase,
   Calendar,

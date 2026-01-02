@@ -2,15 +2,11 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   Search,
-  Calendar,
   Clock,
   MapPin,
   ArrowRight,
   X,
   AlertCircle,
-  PlayCircle,
-  Music,
-  Mic2,
   ChevronDown,
   ArrowUpDown,
   Star,

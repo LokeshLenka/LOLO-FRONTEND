@@ -8,7 +8,7 @@ import {
   Info,
   Search,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button/button";
 import { motion } from "framer-motion";
 
 export default function SuccessRegistration() {

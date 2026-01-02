@@ -297,7 +297,7 @@ const EventsSection: React.FC = () => {
         className="flex gap-6 overflow-x-auto pb-12 px-6 md:px-[calc((100vw-80rem)/2+1.5rem)] snap-x snap-mandatory scroll-smooth no-scrollbar"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {spotlightItems.map((item, index) => (
+        {spotlightItems.map((item) => (
           <div key={item.id} className="snap-center">
             <Link to={item.link}>
               <SpotlightCard item={item} />

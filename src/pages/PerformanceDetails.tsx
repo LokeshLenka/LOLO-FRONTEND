@@ -18,7 +18,7 @@ import {
   Disc,
 } from "lucide-react";
 import { Button } from "@heroui/button";
-import { Chip, Divider, Avatar, Skeleton } from "@heroui/react";
+import { Divider, Avatar } from "@heroui/react";
 
 // --- Interfaces ---
 interface Song {

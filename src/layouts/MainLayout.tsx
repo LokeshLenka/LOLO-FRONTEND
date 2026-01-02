@@ -2,7 +2,7 @@
 import Header from "@/components/Header";
 import Footer from "@/pages/Footer";
 import React, { useEffect, useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 
 const MainLayout: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
