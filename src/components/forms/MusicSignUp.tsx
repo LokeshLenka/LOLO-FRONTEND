@@ -9,6 +9,8 @@ import { BasicInformationStep } from "./steps/BasicInformationStep";
 import { AcademicInformationStep } from "./steps/AcademicInformationStep";
 import axios from "axios";
 import { MusicStep } from "./steps/MusicStep";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 // --- 1. FIXED Schema Logic ---
 // Make all required fields explicitly required and optional fields explicitly optional
@@ -22,7 +24,7 @@ const formSchema = z
       .min(10, "Phone number must be at least 10 digits")
       .max(10, "Phone number must not be greater than 10 digits"),
     email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     password_confirmation: z.string().min(6, "Confirm password is required"),
     reg_num: z
       .string()
@@ -33,9 +35,9 @@ const formSchema = z
     gender: z.string().min(1, "Gender is required"),
     sub_role: z.string().min(1, "Sub role is required"), // Make it required for step 3
 
-    other_fields_of_interest: z.string().optional(),
-    experience: z.string().optional(),
-    passion: z.string().optional(),
+    other_fields_of_interest: z.string(),
+    experience: z.string(),
+    passion: z.string(),
     instrument_avail: z.boolean(),
 
     // Optional fields (explicitly)
@@ -49,7 +51,7 @@ const formSchema = z
   })
   .refine((data) => data.password === data.password_confirmation, {
     message: "Passwords don't match",
-    path: ["confirm_password"],
+    path: ["password_confirmation"],
   });
 
 type FormData = z.infer<typeof formSchema>;
@@ -164,13 +166,38 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
     3: <MusicStep form={form} registrationType="Music Registration" />,
   };
 
-  const API_BASE_URL = "http://localhost:8000/api";
+  const navigate = useNavigate();
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const handleSubmit = async (data: FormData) => {
     setIsSubmitting(true);
-    console.log(API_BASE_URL);
+    const toastId = toast.loading("Submitting your registration...");
+
     try {
-      const { ...submitData } = data;
+      const submitData = {
+        ...data,
+        // 1. Convert Booleans to integers (0/1)
+        lateral_status: data.lateral_status ? 1 : 0,
+        hostel_status: data.hostel_status ? 1 : 0,
+        college_hostel_status: data.college_hostel_status ? 1 : 0,
+        instrument_avail: data.instrument_avail ? 1 : 0,
+
+        // 2. FIX: Send "N/A" instead of "" or "default".
+        // Laravel converts "" to null, which causes the crash.
+        other_fields_of_interest:
+          data.other_fields_of_interest === "default" ||
+          !data.other_fields_of_interest
+            ? "N/A"
+            : data.other_fields_of_interest,
+
+        experience:
+          data.experience === "default" || !data.experience
+            ? "N/A"
+            : data.experience,
+
+        passion:
+          data.passion === "default" || !data.passion ? "N/A" : data.passion,
+      };
 
       const response = await axios.post(
         `${API_BASE_URL}/register`,
@@ -184,30 +211,50 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
       );
 
       if (response.status === 200 || response.status === 201) {
-        console.log("Success:", response.data);
-        // Optional: Add toast notification here
-        // toast.success("Registration successful!");
+        toast.success("Registration Successful!", {
+          id: toastId,
+          description: "Redirecting to confirmation page...",
+          duration: 2000,
+        });
 
         form.reset();
-        goToFirstStep();
+
+        setTimeout(() => {
+          navigate("/success", {
+            state: {
+              email: response.data.data.user,
+              status: response.data.data.status,
+              data: response.data.data,
+            },
+          });
+        }, 1000);
       }
     } catch (error: any) {
       console.error("Submission error:", error);
 
-      // Handle specific Axios errors
+      let errorMessage = "Something went wrong. Please try again.";
+
       if (error.response) {
-        // Server responded with a status code outside 2xx
-        console.error("Response data:", error.response.data);
-        console.error("Response status:", error.response.status);
-        // alert(`Error: ${error.response.data.message || "Registration failed"}`);
+        // If 500 error persists, allow the user to see it might be a duplicate data issue
+        if (error.response.status === 500) {
+          errorMessage =
+            "Server Error: Please check if this Registration Number is already registered.";
+        } else {
+          errorMessage = error.response.data.message || "Registration failed.";
+          if (error.response.data.errors) {
+            const firstError = Object.values(error.response.data.errors)[0];
+            if (Array.isArray(firstError)) errorMessage = String(firstError[0]);
+          }
+        }
       } else if (error.request) {
-        // Request made but no response received
-        console.error("No response received:", error.request);
-        // alert("Server not responding. Please try again later.");
-      } else {
-        // Error setting up request
-        console.error("Error message:", error.message);
+        errorMessage = "Server not reachable. Check your connection.";
       }
+
+      toast.error("Registration Failed", {
+        id: toastId,
+        description: errorMessage,
+        duration: 10000,
+      });
     } finally {
       setIsSubmitting(false);
     }

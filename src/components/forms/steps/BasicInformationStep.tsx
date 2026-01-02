@@ -67,7 +67,7 @@ export const BasicInformationStep: React.FC<{
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <FormField
         control={form.control}
-        name="phone_number"
+        name="phone_no"
         render={({ field }) => (
           <FormItem>
             <FormLabel className="text-xs font-bold uppercase text-gray-500">
@@ -132,7 +132,7 @@ export const BasicInformationStep: React.FC<{
 
       <FormField
         control={form.control}
-        name="confirm_password"
+        name="password_confirmation"
         render={({ field }) => (
           <FormItem>
             <FormLabel className="text-xs font-bold uppercase text-gray-500">

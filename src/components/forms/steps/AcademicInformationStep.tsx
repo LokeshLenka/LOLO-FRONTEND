@@ -16,44 +16,53 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
+export const AcademicInformationStep: React.FC<{
+  form: any;
+  registrationType: string;
+}> = ({ form, registrationType }) => {
   const branches = [
-    { value: "csbs", label: "CSBS" },
     { value: "aids", label: "AIDS" },
     { value: "aiml", label: "AIML" },
-    { value: "cse", label: "CSE" },
-    { value: "csd", label: "CSD" },
     { value: "cic", label: "CIC" },
     { value: "civil", label: "CIVIL" },
-    { value: "mech", label: "MECH" },
+    { value: "csbs", label: "CSBS" },
+    { value: "csd", label: "CSD" },
+    { value: "cse", label: "CSE" },
+    { value: "csg", label: "CSG" }, // added
+    { value: "csit", label: "CSIT" }, // already there but placed correctly
     { value: "ece", label: "ECE" },
     { value: "eee", label: "EEE" },
-    { value: "csit", label: "CSIT" },
+    { value: "it", label: "IT" }, // added
+    { value: "mech", label: "MECH" },
   ];
 
   const branchOptions = branches.sort((a, b) => a.label.localeCompare(b.label));
 
   const yearOptions = [
-    { value: "first_year", label: "First Year" },
-    { value: "second_year", label: "Second Year" },
-    { value: "third_year", label: "Third Year" },
-    { value: "fourth_year", label: "Fourth Year" },
+    { value: "first", label: "First Year" },
+    { value: "second", label: "Second Year" },
+    { value: "third", label: "Third Year" },
+    { value: "fourth", label: "Fourth Year" },
   ];
 
   const genderOptions = [
     { value: "male", label: "Male" },
     { value: "female", label: "Female" },
-    { value: "others", label: "Others" },
   ];
 
   const lateralStudentOptions = [
-    { value: "yes", label: "Yes" },
-    { value: "no", label: "No" },
+    { value: true, label: "Yes" },
+    { value: false, label: "No" },
   ];
 
   const hostelStudentOptions = [
-    { value: "yes", label: "Yes" },
-    { value: "no", label: "No" },
+    { value: true, label: "Yes" },
+    { value: false, label: "No" },
+  ];
+
+  const collegeHostelStudentOptions = [
+    { value: true, label: "Yes" },
+    { value: false, label: "No" },
   ];
 
   // --- Preserved Logic: State for disabling lateral status ---
@@ -62,15 +71,11 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
   // --- Preserved Logic: Watch year field ---
   React.useEffect(() => {
     const value = form.watch("year");
-    if (
-      value === "second_year" ||
-      value === "third_year" ||
-      value === "fourth_year"
-    ) {
+    if (value === "second" || value === "third" || value === "fourth") {
       setlateralStudentHidden(false);
     } else {
       setlateralStudentHidden(true);
-      form.setValue("lateral_status", "no");
+      form.setValue("lateral_status", false);
     }
   }, [form.watch("year")]);
 
@@ -80,11 +85,11 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
   // --- Preserved Logic: Watch hostel_student field ---
   React.useEffect(() => {
     const value = form.watch("hostel_status");
-    if (value === "yes") {
+    if (value === true) {
       setHostelStudentHidden(false);
     } else {
       setHostelStudentHidden(true);
-      form.setValue("hostel_status", "no");
+      form.setValue("hostel_status", false);
     }
   }, [form.watch("hostel_status")]);
 
@@ -97,7 +102,7 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2 mb-8">
-        <h2 className="text-2xl font-bold text-white">Music Registration</h2>
+        <h2 className="text-2xl font-bold text-white">{registrationType}</h2>
         <div className="h-0.5 w-20 bg-[#03a1b0] mx-auto rounded-full" />
         <h3 className="text-lg font-medium text-gray-300 pt-4">
           Academic Information
@@ -243,7 +248,7 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
                 <div className="flex gap-3 mt-2">
                   {lateralStudentOptions.map(({ label, value }) => (
                     <Button
-                      key={value}
+                      key={Number(value)}
                       type="button"
                       onClick={() => field.onChange(value)}
                       disabled={lateralStudentHidden}
@@ -278,7 +283,7 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
                 <div className="flex gap-3 mt-2">
                   {hostelStudentOptions.map(({ label, value }) => (
                     <Button
-                      key={value}
+                      key={Number(value)}
                       type="button"
                       onClick={() => field.onChange(value)}
                       className={`flex-1 h-10 border font-bold transition-all ${
@@ -308,9 +313,9 @@ export const AcademicInformationStep: React.FC<{ form: any }> = ({ form }) => {
               </FormLabel>
               <FormControl>
                 <div className="flex gap-3 mt-2">
-                  {hostelStudentOptions.map(({ label, value }) => (
+                  {collegeHostelStudentOptions.map(({ label, value }) => (
                     <Button
-                      key={value}
+                      key={Number(value)}
                       type="button"
                       onClick={() => field.onChange(value)}
                       className={`flex-1 h-10 border font-bold transition-all ${
