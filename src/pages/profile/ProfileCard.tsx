@@ -241,13 +241,13 @@ export default function ProfileCard({ data }: { data: UserProfileData }) {
                         </span>
                       </div>
                     </div>
-                    {/* <Divider className="bg-black/5 dark:bg-white/5" /> */}
-                    {/* <Button
+                    <Divider className="bg-black/5 dark:bg-white/5" />
+                    <Button
                       className="w-full bg-black dark:bg-white text-white dark:text-black font-bold shadow-lg"
                       size="sm"
                     >
                       Change Password
-                    </Button> */}
+                    </Button>
                   </div>
                 </div>
               </div>

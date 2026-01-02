@@ -39,13 +39,15 @@ export default function SignUp() {
 
       {/* Back Button */}
       <button
-        className="z-50 absolute top-6 left-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+        className="z-50 absolute sm:fixed top-6 left-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
         onClick={() => history.back()}
       >
         <div className="p-2 rounded-full bg-white/5 group-hover:bg-white/10 border border-white/5 transition-all">
           <ArrowLeft size={18} />
         </div>
-        <span className="hidden sm:inline font-medium text-sm">Back to Home</span>
+        <span className="hidden sm:inline font-medium text-sm">
+          Back to Home
+        </span>
       </button>
 
       {/* Main Container */}

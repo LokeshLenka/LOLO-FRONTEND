@@ -15,7 +15,7 @@ export default function Login() {
 
       {/* Back Button */}
       <button
-        className="z-50 absolute top-6 left-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+        className="z-50 absolute top-4 sm:top-6 left-6 flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
         onClick={() => navigate("/")}
       >
         <div className="p-2 rounded-full bg-white/5 group-hover:bg-white/10 border border-white/5 transition-all">
@@ -31,7 +31,7 @@ export default function Login() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-4xl relative z-10"
+        className="w-full max-w-4xl relative z-10 mt-10 sm:mt-0"
       >
         <LoginForm />
       </motion.div>
