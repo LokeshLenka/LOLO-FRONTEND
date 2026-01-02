@@ -1,13 +1,15 @@
-"use client"; 
 import React, { useEffect, useRef, useState } from "react";
 import { useScroll, useTransform, motion, useSpring } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom"; // CHANGED: Standard React Router import
+import { Button } from "@heroui/button";
+import { ArrowRight } from "lucide-react";
+import SectionHeader from "./HomeSectionHeader";
 
 interface TimelineEntry {
   title: string;
   content: React.ReactNode;
 }
 
-// Separate component to handle individual item scroll tracking
 const TimelineItem = ({
   item,
   index,
@@ -17,38 +19,33 @@ const TimelineItem = ({
 }) => {
   const itemRef = useRef<HTMLDivElement>(null);
 
-  // Track scroll progress of this specific item relative to the viewport
   const { scrollYProgress } = useScroll({
     target: itemRef,
-    offset: ["start end", "center center"], // Starts when top of item hits bottom of screen, ends when center of item hits center of screen
+    offset: ["start end", "center center"],
   });
 
-  // Transform scroll progress into a scale/color value for the dot
-  // When scrollYProgress is 1 (item is centered/active), dot is fully active
   const dotScale = useTransform(scrollYProgress, [0.5, 1], [1, 1.5]);
   const dotColor = useTransform(
     scrollYProgress,
     [0.5, 1],
     ["#262626", "#ec4899"]
-  ); // neutral-800 to lolo-pink
+  );
   const dotBorder = useTransform(
     scrollYProgress,
     [0.5, 1],
     ["#404040", "#22d3ee"]
-  ); // neutral-700 to lolo-cyan
+  );
   const dotGlow = useTransform(
     scrollYProgress,
     [0.5, 1],
     ["0px 0px 0px rgba(0,0,0,0)", "0px 0px 20px rgba(236,72,153,0.8)"]
   );
 
-  // Smooth out the values
   const smoothScale = useSpring(dotScale, { stiffness: 200, damping: 20 });
 
   return (
     <div ref={itemRef} className="flex justify-start pt-10 md:pt-40 md:gap-10">
       <div className="sticky flex flex-col md:flex-row z-40 items-center top-40 self-start max-w-xs lg:max-w-sm md:w-full">
-        {/* Animated Dot */}
         <div className="h-10 absolute left-3 md:left-3 w-10 rounded-full bg-black flex items-center justify-center z-50">
           <motion.div
             style={{
@@ -81,6 +78,9 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
 
+  // CHANGED: Using standard React Router hook
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (ref.current) {
       const rect = ref.current.getBoundingClientRect();
@@ -98,18 +98,19 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
 
   return (
     <div className="w-full bg-[#030303] font-sans md:px-10" ref={containerRef}>
-      <div className="max-w-7xl mx-auto py-20 px-4 md:px-8 lg:px-10">
-        <h2 className="text-lg md:text-4xl mb-4 text-white max-w-4xl font-bold">
-          The Journey of{" "}
-          <span className="text-lolo-cyan font-club">SRKR LOLO</span>
-        </h2>
-        <p className="text-gray-400 text-sm md:text-base max-w-sm">
-          From a small idea to an officially approved musical powerhouse.
-        </p>
+      <div className="max-w-7xl mx-auto py-10 px-4 md:px-8 lg:px-10">
+        <SectionHeader
+          title={
+            <>
+              The Journey of{" "}
+              <span className="text-lolo-pink font-club">SRKR LOLO</span>
+            </>
+          }
+          subtitle="From a small idea to an officially approved musical powerhouse."
+        />
       </div>
 
       <div ref={ref} className="relative max-w-7xl mx-auto pb-20">
-        {/* Render each item using the new component */}
         {data.map((item, index) => (
           <TimelineItem key={index} item={item} index={index} />
         ))}
@@ -118,17 +119,28 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
           style={{
             height: height + "px",
           }}
-          className="absolute md:left-8 left-8 top-0 overflow-hidden w-[2px] bg-[linear-gradient(to_bottom,var(--tw-gradient-stops))] from-transparent from-[0%] via-neutral-700 to-transparent to-[99%]  [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)] "
+          className="absolute md:left-8 left-8 top-0 overflow-hidden w-[2px] bg-[linear-gradient(to_bottom,var(--tw-gradient-stops))] from-transparent from-[0%] via-neutral-700 to-transparent to-[99%] [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)]"
         >
           <motion.div
             style={{
               height: heightTransform,
               opacity: opacityTransform,
             }}
-            className="absolute inset-x-0 top-0  w-[2px] bg-gradient-to-t from-lolo-pink via-lolo-cyan to-transparent from-[0%] via-[10%] rounded-full"
+            className="absolute inset-x-0 top-0 w-[2px] bg-gradient-to-t from-lolo-pink via-lolo-cyan to-transparent from-[0%] via-[10%] rounded-full"
           />
         </div>
       </div>
+
+      {/* Button with navigate function */}
+      <Link to="/about" className="w-[85%] sm:w-auto mx-auto flex justify-center mb-10">
+        <Button className="w-full sm:w-auto px-10 py-6 rounded-full bg-white text-black font-bold text-lg hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all duration-300 border-none group ease-in-out ">
+          View Full Journey
+          <ArrowRight
+            size={20}
+            className="ml-2 group-hover:translate-x-1 transition-transform"
+          />
+        </Button>
+      </Link>
     </div>
   );
 };
