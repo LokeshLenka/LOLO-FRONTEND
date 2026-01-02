@@ -17,52 +17,47 @@ import { Chip, Divider } from "@heroui/react";
 import { Button } from "@heroui/button";
 
 // --- Mock Data for Details (Replace with API call) ---
-const PUBLICATION_DATA = {
-  uuid: "prod-001",
-  title: "B.tech Subbayya",
-  year: "2025",
-  type: "Short Film",
-  status: "Released",
-  director: "Rajesh Kumar",
-  lolo_role: "Original Score & Sound Design",
-  description: `
-    <p><strong>B.tech Subbayya</strong> is a comedic yet touching narrative exploring the pressures of engineering life and youthful ambition in a small town college setting.</p>
-    <p>LOLO Studios was approached to handle the complete sonic landscape of the film. From the bustling canteen ambient noises to the emotional climax in the exam hall, the sound design was crafted to immerse the audience in the protagonist's world.</p>
-    <p>The project features an original soundtrack with 3 songs and a background score that blends traditional instruments with modern synth-wave elements to represent the clash between tradition and technology.</p>
-  `,
-  thumbnail_url:
-    "https://images.unsplash.com/photo-1485846234645-a62644f84728?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
-  trailer_url: "https://youtube.com",
-  full_video_url: "#",
-  credits: [
-    {
-      name: "Karthik R.",
-      role: "Music Director",
-      image: "https://i.pravatar.cc/150?u=1",
-    },
-    {
-      name: "Sneha P.",
-      role: "Lead Vocalist",
-      image: "https://i.pravatar.cc/150?u=2",
-    },
-    {
-      name: "Arun Kumar",
-      role: "Sound Engineer",
-      image: "https://i.pravatar.cc/150?u=3",
-    },
-    { name: "LOLO Ensemble", role: "Backing Vocals", image: null },
-  ],
-  tracks: [
-    { title: "The Engineering Anthem", duration: "3:45" },
-    { title: "Subbayya's Theme (Sad)", duration: "2:10" },
-    { title: "Victory Lap", duration: "4:00" },
-  ],
-};
+const PUBLICATIONS_DATA = [
+  {
+    uuid: "prod-001",
+    title: "Subbayya B.Tech",
+    year: "2025",
+    type: "Short Film",
+    status: "Released",
+    director: "",
+    lolo_role: "Original Score & Sound Design",
+    description: `
+      <p><strong>B.Tech Subbayya</strong> explores the struggle of a B.Tech graduate for a job and the conflict between his past and present situations. A narrative that resonates with every engineering student.</p>
+      <p>LOLO Studios handled the complete sonic landscape, from the ambient noises of college life to the emotional background score that underscores the protagonist's journey. The sound design was crucial in highlighting the gritty reality versus the protagonist's dreams.</p>
+    `,
+    thumbnail_url: "https://img.youtube.com/vi/FIVPKLOL-3A/maxresdefault.jpg",
+
+    trailer_url: "https://www.youtube.com/watch?v=Gq0-IihFBJw",
+    full_video_url: "https://www.youtube.com/watch?v=FIVPKLOL-3A",
+
+    credits: [
+      // { name: "Santhosh Manapuram", role: "Director", image: null },
+      // { name: "Abhilash Nekkalapu", role: "Lead Actor", image: null },
+      // { name: "SK Photography", role: "DOP & Editing", image: null },
+      { name: "Lowell", role: "Pianoist", image: null },
+      { name: "Shanmukh", role: "Guitarist", image: null },
+      { name: "Chandra Shekar", role: "Vocalist", image: null },
+    ],
+    tracks: [
+      { title: "The Struggle Theme", duration: "3:12" },
+      { title: "Past vs Present", duration: "2:45" },
+      { title: "Graduate's Hope", duration: "4:00" },
+    ],
+  },
+];
 
 export default function PublicationDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const data = PUBLICATION_DATA;
+
+  // LOGIC UPDATE: Find data based on ID
+  const data =
+    PUBLICATIONS_DATA.find((p) => p.uuid === id) || PUBLICATIONS_DATA[0];
 
   // Safe Back Handler
   const handleBack = (e: React.MouseEvent) => {
@@ -157,14 +152,26 @@ export default function PublicationDetails() {
 
               {/* UPDATED BUTTON SECTION */}
               <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                <Button className="w-full sm:w-auto bg-white text-black font-bold px-8 py-6 rounded-full hover:bg-gray-200 flex items-center justify-center gap-3 text-lg transition-transform active:scale-95">
-                  <Play fill="black" size={20} className="shrink-0" />
-                  <span>Watch Film</span>
-                </Button>
-                <Button className="w-full sm:w-auto bg-white/10 text-white font-bold px-8 py-6 rounded-full hover:bg-white/20 flex items-center justify-center gap-3 text-lg border border-white/10 transition-transform active:scale-95">
-                  <Video size={20} className="shrink-0" />
-                  <span>Trailer</span>
-                </Button>
+                <Link
+                  to={data.full_video_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button className="w-full sm:w-auto bg-white text-black font-bold px-8 py-6 rounded-full hover:bg-gray-200 flex items-center justify-center gap-3 text-lg transition-transform active:scale-95">
+                    <Play fill="black" size={20} className="shrink-0" />
+                    <span>Watch Film</span>
+                  </Button>
+                </Link>
+                <Link
+                  to={data.trailer_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button className="w-full sm:w-auto bg-white/10 text-white font-bold px-8 py-6 rounded-full hover:bg-white/20 flex items-center justify-center gap-3 text-lg border border-white/10 transition-transform active:scale-95">
+                    <Video size={20} className="shrink-0" />
+                    <span>Trailer</span>
+                  </Button>
+                </Link>
               </div>
             </motion.div>
           </div>
@@ -225,7 +232,7 @@ export default function PublicationDetails() {
         </div>
 
         {/* Right: Soundtrack / Side Info */}
-        <aside className="lg:col-span-1">
+        {/* <aside className="lg:col-span-1">
           <div className="sticky top-24 p-8 rounded-3xl bg-[#0F111A] border border-[#03a1b0]/30 shadow-2xl shadow-[#03a1b0]/10">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-3 bg-[#03a1b0]/20 rounded-full text-[#03a1b0]">
@@ -261,7 +268,7 @@ export default function PublicationDetails() {
               Stream on Spotify <ExternalLink size={18} />
             </Button>
           </div>
-        </aside>
+        </aside> */}
       </main>
     </div>
   );

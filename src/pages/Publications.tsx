@@ -32,56 +32,14 @@ const PRODUCTIONS: Production[] = [
   {
     id: "1",
     uuid: "prod-001",
-    title: "B.tech Subbayya",
+    title: "Subbayya B.Tech ",
     year: "2025",
     type: "Short Film",
     lolo_role: "Original Score & Sound Design",
-    director: "Rajesh Kumar",
+    director: "",
     description:
-      "A comedic yet touching narrative exploring the pressures of engineering life and youthful ambition in a small town college setting. LOLO produced the entire background score and the viral title track.",
-    thumbnail_url:
-      "https://images.unsplash.com/photo-1485846234645-a62644f84728?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    link: "#",
-  },
-  {
-    id: "2",
-    uuid: "prod-002",
-    title: "Echoes of Silence",
-    year: "2024",
-    type: "Music Video",
-    lolo_role: "Music Production & Vocals",
-    director: "Sarah Lee",
-    description:
-      "Visual storytelling for the hit single by The Void. Explored themes of isolation using experimental lighting techniques. Produced, Mixed and Mastered at LOLO Studios.",
-    thumbnail_url:
-      "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    link: "#",
-  },
-  {
-    id: "3",
-    uuid: "prod-003",
-    title: "The Last Act",
-    year: "2023",
-    type: "Feature Film",
-    lolo_role: "Background Score",
-    director: "K. Viswanath (Tribute)",
-    description:
-      "A gritty drama about a failing theater troupe. LOLO provided a classical-fusion score that received critical acclaim at local film festivals.",
-    thumbnail_url:
-      "https://images.unsplash.com/photo-1503095392269-27528ca38925?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: "4",
-    uuid: "prod-004",
-    title: "Campus Chronicles",
-    year: "2023",
-    type: "Web Series",
-    lolo_role: "Title Track Composer",
-    director: "Student Council",
-    description:
-      "The official web series documenting student life at SRKR. The high-energy title track composed by LOLO became the campus anthem.",
-    thumbnail_url:
-      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "A narrative exploring the struggle of a B.Tech graduate for a job and the conflict between his past and present situations. LOLO Studios handled the complete sonic landscape and emotional background score.",
+    thumbnail_url: "https://img.youtube.com/vi/FIVPKLOL-3A/maxresdefault.jpg",
     link: "#",
   },
 ];
@@ -255,11 +213,11 @@ export default function Publication() {
                   </div>
 
                   {/* Play Button Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  {/* <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="w-12 h-12 bg-[#03a1b0]/90 rounded-full flex items-center justify-center text-white shadow-lg backdrop-blur-sm transform scale-75 group-hover:scale-100 transition-transform">
                       <Play size={20} fill="currentColor" />
                     </div>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Content Section (Right Side) */}
