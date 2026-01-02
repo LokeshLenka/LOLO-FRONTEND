@@ -165,20 +165,20 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           {/* Protected Dashboard Routes */}
-          {/* <Route element={<PrivateRoute />}> */}
-          <Route path=":id/dashboard" element={<AppLayout />}>
-            <Route index element={<UserDashboard />} />
-            <Route
-              path="event-registrations"
-              element={<EventRegistrationCards />}
-            />
-            <Route path="credits" element={<CreditsCard />} />
-            <Route
-              path="profile"
-              element={<UserProfilePage data={MOCK_PROFILE_DATA} />}
-            />
+          <Route element={<PrivateRoute />}>
+            <Route path=":id/dashboard" element={<AppLayout />}>
+              <Route index element={<UserDashboard />} />
+              <Route
+                path="event-registrations"
+                element={<EventRegistrationCards />}
+              />
+              <Route path="credits" element={<CreditsCard />} />
+              <Route
+                path="profile"
+                element={<UserProfilePage data={MOCK_PROFILE_DATA} />}
+              />
+            </Route>
           </Route>
-          {/* </Route> */}
 
           <Route path="/success" element={<SuccessRegistration />} />
           <Route path="/registration-status" element={<RegistrationStatus />} />
