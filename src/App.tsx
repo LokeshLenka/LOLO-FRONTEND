@@ -144,16 +144,13 @@ function App() {
             <Route path="/home" element={<Home />} />
             <Route path="/events" element={<Events />} />
             <Route path="/performances" element={<ConcertGallery />} />
+
             <Route path="/publications" element={<Publication />} />
             <Route path="/team" element={<Team />} />
-
             <Route path="/about" element={<AboutUs />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/gallery" element={<Gallery />} />
-
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/login" element={<Login />} />
 
             <Route path="/timeline-detail" element={<DetailedTimeline />} />
           </Route>
@@ -163,6 +160,8 @@ function App() {
           <Route path="/performances/:id" element={<ConcertDetails />} />
           <Route path="/publications/:id" element={<PublicationDetails />} />
           <Route path="/team/:id" element={<TeamDetails />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
 
           {/* Protected Dashboard Routes */}
           <Route element={<PrivateRoute />}>
