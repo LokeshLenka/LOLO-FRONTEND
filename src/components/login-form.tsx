@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import lolo_login_1 from "../assets/LOLO_Logo_1.jpg"; // Ensure this path is correct
+import lolo_login_1 from "../assets/LOLO_Logo_1.jpg";
 import { useAuth } from "../context/AuthContext";
 import { Loader2, AlertCircle, EyeOff, Eye } from "lucide-react";
 
@@ -20,7 +20,9 @@ export default function LoginForm({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({});
-  const { login, loading, error } = useAuth();
+
+  // FIX: Removed 'error' from destructuring
+  const { login, loading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,8 +32,9 @@ export default function LoginForm({
     const errors: ValidationErrors = {};
     if (!username.trim()) {
       errors.username = ["Please enter your username."];
-    } else if (username.trim().length < 10) {
-      errors.username = ["Username must be at least 10 characters."];
+    } else if (username.trim().length < 3) {
+      // Changed to 3, 10 might be too strict for some usernames
+      errors.username = ["Username must be at least 3 characters."];
     }
     if (!password) {
       errors.password = ["Please enter your password."];
@@ -78,7 +81,7 @@ export default function LoginForm({
             <Input
               id="username"
               type="text"
-              placeholder="2X0707XXXX"
+              placeholder="Enter your username"
               value={username}
               onChange={(e) => {
                 setUsername(e.target.value);
@@ -118,7 +121,6 @@ export default function LoginForm({
               </a>
             </div>
 
-            {/* Wrapper for Input + Icon */}
             <div className="relative">
               <Input
                 id="password"
@@ -137,7 +139,7 @@ export default function LoginForm({
                 required
                 autoComplete="current-password"
                 className={cn(
-                  "bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#03a1b0]/50 focus-visible:border-[#03a1b0] h-12 rounded-xl transition-all pr-10", // Added pr-10 for icon space
+                  "bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#03a1b0]/50 focus-visible:border-[#03a1b0] h-12 rounded-xl transition-all pr-10",
                   fieldErrors.password &&
                     "border-red-500/50 focus-visible:ring-red-500/50"
                 )}
@@ -145,7 +147,7 @@ export default function LoginForm({
               <Button
                 type="button"
                 variant="ghost"
-                size="icon" // Changed to icon size for better fit
+                size="icon"
                 className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white hover:bg-transparent"
                 onClick={() => setShowPassword((prev) => !prev)}
               >
@@ -179,13 +181,7 @@ export default function LoginForm({
             )}
           </Button>
 
-          {/* General Error Message */}
-          {error && (
-            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-xs text-red-400">
-              <AlertCircle size={16} className="shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
+          {/* FIX: Removed the general error display block since we use Toast now */}
 
           {/* Divider */}
           <div className="relative my-6">
@@ -221,7 +217,6 @@ export default function LoginForm({
           className="h-full w-full object-cover opacity-80 transition-all duration-1000"
         />
 
-        {/* Overlay Text on Image */}
         <div className="absolute bottom-0 left-0 w-full p-8 z-20">
           <div className="h-1 w-12 bg-[#03a1b0] mb-4"></div>
           <h2 className="text-2xl font-black text-white mb-2">SRKR LOLO</h2>

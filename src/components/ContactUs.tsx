@@ -1,10 +1,166 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Mail, Instagram, ArrowRight, ChevronDown } from "lucide-react";
+import axios from "axios";
+import { toast } from "sonner";
+import {
+  MapPin,
+  Mail,
+  Instagram,
+  ArrowRight,
+  ChevronDown,
+  Send,
+  Loader2,
+} from "lucide-react";
+
+// ✅ TYPE DEFINITIONS
+interface FormData {
+  name: string;
+  email: string;
+  role: string;
+  custom_role: string;
+  message: string;
+}
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  custom_role?: string;
+  message?: string;
+}
 
 const ContactUs = () => {
+  // ✅ TYPED STATE
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    email: "",
+    role: "Student",
+    custom_role: "",
+    message: "",
+  });
+
+  const [errors, setErrors] = useState<FormErrors>({}); // ✅ FIXED: Now TypeScript knows the shape
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [role, setRole] = useState("Student");
   const [customRole, setCustomRole] = useState("");
+
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+
+  // ✅ Form validation with proper typing
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    else if (formData.name.trim().length < 2)
+      newErrors.name = "Name must be at least 2 characters";
+
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      newErrors.email = "Please enter a valid email";
+
+    if (role === "Others" && !customRole.trim()) {
+      newErrors.custom_role = "Please specify your role";
+    }
+
+    if (!formData.message.trim()) newErrors.message = "Message is required";
+    else if (formData.message.trim().length < 10)
+      newErrors.message = "Message must be at least 10 characters";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // ✅ Typed change handler
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // ✅ TypeScript-safe error clearing
+    if (errors[name as keyof FormErrors]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name as keyof FormErrors]: "",
+      }));
+    }
+  };
+
+  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newRole = e.target.value;
+    setRole(newRole);
+    setFormData((prev) => ({
+      ...prev,
+      role: newRole,
+      custom_role: "",
+    }));
+    setCustomRole("");
+  };
+
+  const handleCustomRoleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCustomRole(value);
+    setFormData((prev) => ({ ...prev, custom_role: value }));
+
+    if (errors.custom_role) {
+      setErrors((prev) => ({ ...prev, custom_role: "" }));
+    }
+  };
+
+  // ✅ Typed form submission
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const payload = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        role: formData.role,
+        custom_role: role === "Others" ? customRole.trim() : null,
+        message: formData.message.trim(),
+      };
+
+      await axios.post(`${API_BASE_URL}/contact-message`, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      toast.success(
+        "Message sent successfully! We'll get back to you soon."
+      );
+
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        role: "Student",
+        custom_role: "",
+        message: "",
+      });
+      setRole("Student");
+      setCustomRole("");
+      setErrors({});
+    } catch (error: any) {
+      if (error.response?.status === 429) {
+        toast.error("Too many requests. Please wait a moment.");
+      } else if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Failed to send message. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <section className="relative py-24 bg-[#030303] overflow-hidden">
@@ -83,122 +239,198 @@ const ContactUs = () => {
             </div>
           </motion.div>
 
-          {/* Right Side: Enhanced Form */}
+          {/* Right Side: Form */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="bg-white/[0.02] backdrop-blur-xl border border-white/5 p-8 md:p-10 rounded-[2.5rem]"
           >
-            <form className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Name Input */}
-                <div className="space-y-2 group relative">
-                  <label className="text-xs uppercase tracking-wider font-bold text-neutral-500 group-focus-within:text-lolo-cyan transition-colors">
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-wider font-bold text-neutral-500">
                     Name
                   </label>
                   <input
+                    name="name"
                     type="text"
-                    className="w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-cyan transition-colors duration-300"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className={`w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-cyan transition-all duration-300 pr-8 ${
+                      errors.name
+                        ? "border-red-400 focus:border-red-400"
+                        : "hover:border-white/20 focus:border-lolo-cyan"
+                    }`}
                     placeholder="Jane Doe"
                   />
-                  {/* Animated Border Bottom */}
-                  {/* <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-lolo-cyan transition-all duration-500 group-focus-within:w-full" /> */}
+                  {errors.name && (
+                    <p className="text-red-400 text-xs mt-1 animate-pulse">
+                      {errors.name}
+                    </p>
+                  )}
                 </div>
 
                 {/* Role Select */}
-                <div className="space-y-2 group relative">
-                  <label className="text-xs uppercase tracking-wider font-bold text-neutral-500 group-focus-within:text-lolo-cyan transition-colors">
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-wider font-bold text-neutral-500">
                     I am a
                   </label>
                   <div className="relative">
                     <select
+                      name="role"
                       value={role}
-                      onChange={(e) => setRole(e.target.value)}
-                      className="w-full bg-transparent border-b border-white/10 py-3 text-white focus:outline-none focus:border-lolo-cyan transition-colors duration-300 appearance-none cursor-pointer"
+                      onChange={handleRoleChange}
+                      className="w-full bg-transparent border-b border-white/10 py-3 text-white focus:outline-none focus:border-lolo-cyan transition-all duration-300 appearance-none cursor-pointer pr-8"
                     >
-                      <option className="bg-neutral-900 text-neutral-300">
+                      <option
+                        className="bg-neutral-900 text-neutral-300"
+                        value="Student"
+                      >
                         Student
                       </option>
-                      <option className="bg-neutral-900 text-neutral-300">
+                      <option
+                        className="bg-neutral-900 text-neutral-300"
+                        value="Musician"
+                      >
                         Musician
                       </option>
-                      <option className="bg-neutral-900 text-neutral-300">
+                      <option
+                        className="bg-neutral-900 text-neutral-300"
+                        value="Faculty"
+                      >
                         Faculty
                       </option>
-                      <option className="bg-neutral-900 text-neutral-300">
+                      <option
+                        className="bg-neutral-900 text-neutral-300"
+                        value="Sponsor"
+                      >
                         Sponsor
                       </option>
-                      <option className="bg-neutral-900 text-neutral-300">
+                      <option
+                        className="bg-neutral-900 text-neutral-300"
+                        value="Others"
+                      >
                         Others
                       </option>
                     </select>
-                    <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none w-4 h-4 group-hover:text-white transition-colors" />
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none w-4 h-4" />
                   </div>
-                  {/* <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-lolo-cyan transition-all duration-500 group-focus-within:w-full" /> */}
                 </div>
               </div>
 
-              {/* Dynamic Role Specification Input */}
+              {/* Dynamic Custom Role Input */}
               <AnimatePresence>
                 {role === "Others" && (
                   <motion.div
                     initial={{ opacity: 0, height: 0, y: -10 }}
                     animate={{ opacity: 1, height: "auto", y: 0 }}
                     exit={{ opacity: 0, height: 0, y: -10 }}
-                    className="overflow-hidden"
+                    className="overflow-hidden space-y-2"
                   >
-                    <div className="space-y-2 group relative">
-                      <label className="text-xs uppercase tracking-wider font-bold text-lolo-pink group-focus-within:text-white transition-colors">
-                        Please Specify Role
-                      </label>
-                      <input
-                        type="text"
-                        value={customRole}
-                        onChange={(e) => setCustomRole(e.target.value)}
-                        className="w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-pink transition-colors duration-300"
-                        placeholder="e.g. Alumni, Sound Engineer..."
-                        autoFocus
-                      />
-                      {/* <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-lolo-pink transition-all duration-500 group-focus-within:w-full" /> */}
-                    </div>
+                    <label className="text-xs uppercase tracking-wider font-bold text-neutral-500">
+                      Please Specify Role
+                    </label>
+                    <input
+                      name="custom_role"
+                      type="text"
+                      value={customRole}
+                      onChange={(e) => {
+                        setCustomRole(e.target.value);
+                        setFormData((prev) => ({
+                          ...prev,
+                          custom_role: e.target.value,
+                        }));
+                      }}
+                      className={`w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-pink transition-all duration-300 pr-8 ${
+                        errors.custom_role
+                          ? "border-red-400 focus:border-red-400"
+                          : "hover:border-white/20 focus:border-lolo-pink"
+                      }`}
+                      placeholder="e.g. Alumni, Sound Engineer..."
+                    />
+                    {errors.custom_role && (
+                      <p className="text-red-400 text-xs mt-1 animate-pulse">
+                        {errors.custom_role}
+                      </p>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
 
               {/* Email Input */}
-              <div className="space-y-2 group relative">
-                <label className="text-xs uppercase tracking-wider font-bold text-neutral-500 group-focus-within:text-lolo-cyan transition-colors">
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-wider font-bold text-neutral-500">
                   Email
                 </label>
                 <input
+                  name="email"
                   type="email"
-                  className="w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-cyan transition-colors duration-300"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-cyan transition-all duration-300 pr-8 ${
+                    errors.email
+                      ? "border-red-400 focus:border-red-400"
+                      : "hover:border-white/20 focus:border-lolo-cyan"
+                  }`}
                   placeholder="jane@example.com"
                 />
-                {/* <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-lolo-cyan transition-all duration-500 group-focus-within:w-full" /> */}
+                {errors.email && (
+                  <p className="text-red-400 text-xs mt-1 animate-pulse">
+                    {errors.email}
+                  </p>
+                )}
               </div>
 
               {/* Message Input */}
-              <div className="space-y-2 group relative">
-                <label className="text-xs uppercase tracking-wider font-bold text-neutral-500 group-focus-within:text-lolo-cyan transition-colors">
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-wider font-bold text-neutral-500">
                   Message
                 </label>
                 <textarea
+                  name="message"
                   rows={4}
-                  className="w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-cyan transition-colors duration-300 resize-none leading-relaxed"
+                  value={formData.message}
+                  onChange={handleChange}
+                  className={`w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-cyan transition-all duration-300 resize-none leading-relaxed pr-8 ${
+                    errors.message
+                      ? "border-red-400 focus:border-red-400"
+                      : "hover:border-white/20 focus:border-lolo-cyan"
+                  }`}
                   placeholder="Tell us about your project, idea, or just say hi..."
                 />
-                {/* <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-lolo-cyan transition-all duration-500 group-focus-within:w-full" /> */}
+                {errors.message && (
+                  <p className="text-red-400 text-xs mt-1 animate-pulse">
+                    {errors.message}
+                  </p>
+                )}
               </div>
 
               {/* Submit Button */}
-              <div className="pt-4">
-                <button className="group w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-white text-black rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all duration-300">
-                  Send Message
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </button>
-              </div>
+              <motion.button
+                type="submit"
+                disabled={isSubmitting}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`group w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-white text-black rounded-full font-bold text-sm transition-all duration-300 ${
+                  isSubmitting
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] hover:bg-opacity-90"
+                }`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    Send Message
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </>
+                )}
+              </motion.button>
             </form>
           </motion.div>
         </div>

@@ -1,5 +1,5 @@
 // src/components/NavDropdown.tsx
-import   { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   ChevronDown,
@@ -10,6 +10,7 @@ import {
   Handshake,
   Mail,
   Image,
+  Users2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -60,6 +61,17 @@ export default function NavDropdown({ isMobile = false }: NavDropdownProps) {
         { label: "About Us", path: "/about", icon: Handshake },
         { label: "Contact Us", path: "/contact", icon: Mail },
         { label: "FAQ", path: "/faq", icon: HelpCircle },
+      ],
+    },
+    {
+      section: "Developers",
+      items: [
+        {
+          label: "API Documentation",
+          path: "/api-docs",
+          icon: Sparkles,
+        },
+        { label: "Tech Team", path: "/tech-team", icon: Users2 },
       ],
     },
   ];
