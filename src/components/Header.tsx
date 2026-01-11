@@ -22,7 +22,7 @@ interface HeaderProps {
 const NAV_ITEMS = [
   { label: "Home", path: "/", icon: Home },
   { label: "Events", path: "/events", icon: CalendarClock },
-  { label: "Performances", path: "/performances", icon: Clapperboard },
+  { label: "Concerts", path: "/concerts", icon: Clapperboard },
   { label: "Publications", path: "/publications", icon: Clapperboard },
 ];
 
