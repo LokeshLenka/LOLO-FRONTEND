@@ -10,7 +10,10 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-// --- Types ---
+/* =======================
+   Types
+======================= */
+
 interface User {
   username: string;
   name: string;
@@ -29,198 +32,228 @@ interface AuthContextType {
   profile: UserProfile | null;
   token: string | null;
   loading: boolean;
+  error: string | null;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (
+    username: string,
+    password: string,
+    role?: "admin" | "user"
+  ) => Promise<void>;
   logout: () => void;
   hasPromotedRole: () => boolean;
   getPromotedRoleLabel: () => string;
 }
 
+/* =======================
+   Context Setup
+======================= */
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
   return context;
 };
+
+/* =======================
+   Provider
+======================= */
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // Start true to check localStorage first
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Use Env variable for API URL
+  const navigate = useNavigate();
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  // --- 1. Initialization Logic ---
+  /* =======================
+     1. Initialize from localStorage
+  ======================= */
+
   useEffect(() => {
-    const initializeAuth = () => {
-      const storedToken = localStorage.getItem("authToken");
-      const storedUser = localStorage.getItem("user");
-      const storedProfile = localStorage.getItem("userProfile");
+    const storedToken = localStorage.getItem("authToken");
+    const storedUser = localStorage.getItem("user");
+    const storedProfile = localStorage.getItem("userProfile");
 
-      if (storedToken && storedUser && storedProfile) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
+      if (storedProfile) {
         setProfile(JSON.parse(storedProfile));
-        axios.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${storedToken}`;
       }
-      setLoading(false);
-    };
 
-    initializeAuth();
+      axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+    }
+
+    setLoading(false);
   }, []);
 
-  // --- 2. Axios Interceptor for 401s ---
+  /* =======================
+     2. Axios 401 Interceptor
+  ======================= */
+
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       (response) => response,
-      (error) => {
-        if (error.response?.status === 401) {
-          // Token expired or invalid
+      (err) => {
+        if (err.response?.status === 401) {
           logout();
         }
-        return Promise.reject(error);
+        return Promise.reject(err);
       }
     );
 
     return () => {
       axios.interceptors.response.eject(interceptor);
     };
-  }, [navigate]); // navigate dependency to ensure correct redirect context
+  }, []);
 
-  // --- 3. Login Function ---
-  // ... imports and other code ...
+  /* =======================
+     3. Login
+  ======================= */
 
-  const login = async (username: string, password: string) => {
+  const login = async (
+    username: string,
+    password: string,
+    role: "admin" | "user" = "user"
+  ) => {
     setLoading(true);
+    setError(null);
     const toastId = toast.loading("Signing in...");
 
     try {
-      console.log("Sending Login Request:", { username, password }); // DEBUG LOG
+      const endpoint =
+        role === "admin"
+          ? `${API_BASE_URL}/admin/login`
+          : `${API_BASE_URL}/login`;
 
-      const response = await axios.post(`${API_BASE_URL}/login`, {
-        username: username, // Ensure this matches your backend validation (username vs email)
-        password: password,
+      const response = await axios.post(endpoint, {
+        username,
+        password,
       });
-
-      console.log("Login Response:", response.data); // DEBUG LOG
 
       const data = response.data;
 
-      // Handle various response wrappers common in Laravel resources
       const accessToken = data.token || data.access_token || data.data?.token;
       const userData = data.user || data.data?.user;
       const profileData = data.profile || data.data?.profile;
 
       if (!accessToken || !userData) {
-        throw new Error("Authentication successful but no token received.");
+        throw new Error("No token received from server.");
       }
 
-      // Update State
+      // State
       setToken(accessToken);
       setUser(userData);
-      setProfile(profileData || null);
+      setProfile(profileData ?? null);
 
-      // Persist
+      // Storage
       localStorage.setItem("authToken", accessToken);
       localStorage.setItem("user", JSON.stringify(userData));
       if (profileData) {
         localStorage.setItem("userProfile", JSON.stringify(profileData));
       }
 
-      // Set Header
+      // Axios header
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
       toast.success(`Welcome back, ${userData.name || userData.username}!`, {
         id: toastId,
-        duration: 3000,
       });
 
       // Redirect
-      const targetRole = profileData?.primary_role || "public";
-      navigate(`/${targetRole}/dashboard`);
-    } catch (err: any) {
-      console.error("Login Failed Details:", err); // DEBUG LOG
-
-      let errorMsg = "Login failed. Please check your credentials.";
-
-      if (err.response) {
-        // Server responded with a status code outside 2xx range
-        const serverData = err.response.data;
-
-        if (serverData.errors) {
-          // Laravel Validation Errors (e.g., { errors: { username: ["Invalid..."] } })
-          const firstField = Object.keys(serverData.errors)[0];
-          errorMsg = serverData.errors[firstField][0];
-        } else if (serverData.message) {
-          // Generic Laravel error message
-          errorMsg = serverData.message;
-        }
-      } else if (err.request) {
-        // Request was made but no response received
-        errorMsg = "No response from server. Check your internet connection.";
+      if (role === "admin") {
+        navigate("/admin/dashboard");
       } else {
-        // Something happened in setting up the request
-        errorMsg = err.message;
+        const targetRole = profileData?.primary_role || "public";
+        navigate(`/${targetRole}/dashboard`);
+      }
+    } catch (err: any) {
+      let message = "Login failed. Please try again.";
+
+      if (err.response?.data) {
+        const server = err.response.data;
+        if (server.errors) {
+          const key = Object.keys(server.errors)[0];
+          message = server.errors[key][0];
+        } else if (server.message) {
+          message = server.message;
+        }
+      } else if (err.message) {
+        message = err.message;
       }
 
-      toast.error(errorMsg, { id: toastId, duration: 4000 });
+      setError(message);
+      toast.error(message, { id: toastId });
     } finally {
       setLoading(false);
     }
   };
 
-  // ... rest of the file ...
+  /* =======================
+     4. Logout
+  ======================= */
 
-  // --- 4. Logout Function ---
   const logout = useCallback(async () => {
-    // Clear Local State immediately for UX
     setToken(null);
     setUser(null);
     setProfile(null);
+    setError(null);
+
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
     localStorage.removeItem("userProfile");
+
     delete axios.defaults.headers.common["Authorization"];
 
     navigate("/login");
-    toast.dismiss(); // Clear any pending toasts
+    toast.dismiss();
 
     try {
-      // Attempt server-side logout (fire and forget)
       await axios.post(`${API_BASE_URL}/logout`);
-    } catch (error) {
-      // Ignore logout errors (token might be already expired)
+    } catch {
+      // ignore
     }
   }, [navigate, API_BASE_URL]);
 
-  // --- 5. Helper Functions ---
+  /* =======================
+     5. Helpers
+  ======================= */
+
   const hasPromotedRole = () => {
     return !!profile?.has_promoted_role;
   };
 
   const getPromotedRoleLabel = () => {
     if (!profile?.promoted_role) return "";
+
     const labels: Record<string, string> = {
       credit_manager: "Credit Manager",
       executive_body_member: "Executive Member",
       membership_head: "Membership Head",
     };
+
     return (
       labels[profile.promoted_role] || profile.promoted_role.replace(/_/g, " ")
     );
   };
+
+  /* =======================
+     Context Value
+  ======================= */
 
   const value: AuthContextType = {
     user,
     profile,
     token,
     loading,
+    error,
     isAuthenticated: !!token,
     login,
     logout,
@@ -228,7 +261,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     getPromotedRoleLabel,
   };
 
-  // Prevent rendering children until initial check is done
-  // (Optional: You could render a global loading spinner here)
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
