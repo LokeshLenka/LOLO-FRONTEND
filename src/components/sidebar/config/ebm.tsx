@@ -2,9 +2,7 @@ import {
   CheckCircle2,
   UserPlus,
   CalendarPlus,
-  ClipboardList,
   LayoutDashboard,
-  Users,
 } from "lucide-react";
 
 export const getEBMNavItems = (basePath: string) => [

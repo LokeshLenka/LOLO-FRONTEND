@@ -3,7 +3,6 @@ import {
   Code2,
   Cpu,
   Server,
-  Shield,
   GitBranch,
   Github,
   Linkedin,

@@ -8,7 +8,6 @@ import {
   Instagram,
   ArrowRight,
   ChevronDown,
-  Send,
   Loader2,
 } from "lucide-react";
 
@@ -100,15 +99,15 @@ const ContactUs = () => {
     setCustomRole("");
   };
 
-  const handleCustomRoleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setCustomRole(value);
-    setFormData((prev) => ({ ...prev, custom_role: value }));
+  // const handleCustomRoleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const value = e.target.value;
+  //   setCustomRole(value);
+  //   setFormData((prev) => ({ ...prev, custom_role: value }));
 
-    if (errors.custom_role) {
-      setErrors((prev) => ({ ...prev, custom_role: "" }));
-    }
-  };
+  //   if (errors.custom_role) {
+  //     setErrors((prev) => ({ ...prev, custom_role: "" }));
+  //   }
+  // };
 
   // ✅ Typed form submission
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {

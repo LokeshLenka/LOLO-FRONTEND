@@ -1,181 +1,215 @@
-// import { useState } from "react";
-// import { DropdownItem } from "../ui/dropdown/DropdownItem";
-// import { Dropdown } from "../ui/dropdown/Dropdown";
-// import { Check, CircleUserRound } from "lucide-react";
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Dropdown } from "../ui/dropdown/Dropdown";
+import {
+  Check,
+  CircleUserRound,
+  ChevronRight,
+  LayoutDashboard,
+} from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
-// export default function UserDropdown() {
-//   const [isOpen, setIsOpen] = useState(false);
-//   // Profile selection logic
-//   // Profiles array with category
-//   const baseProfiles = ["Music", "Management"];
-//   // const promotedProfiles = ["CM", "MH", "EBM"];
-//   // UserProfiles: always one from baseProfiles, optionally one from promotedProfiles
+export default function UserDropdown() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [profilesOpen, setProfilesOpen] = useState(false);
 
-//   const UserProfiles = ["Management", "Promoted : MCH"]; // Example: user has Music and EBM
+  const { user, profile, getPromotedRoleLabel } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-//   // const [selectedProfiles, setSelectedProfiles] =
-//   //   useState<string[]>(UserProfiles);
+  // --- 1. Fix Path Generation Logic ---
+  const getDashboardPath = (roleType: "primary" | "promoted") => {
+    // Ensure we have a username, otherwise fallback to generic
+    const username = user?.username || "user";
 
-//   const [activeProfile, setActiveProfile] = useState<string>(
-//     UserProfiles[0] ?? baseProfiles[0]
-//   );
-//   const [profilesOpen, setProfilesOpen] = useState(false);
+    if (roleType === "primary") {
+      // Standard Dashboard: /2507070003/dashboard
+      return `/${username}/dashboard`;
+    }
 
-//   function toggleDropdown() {
-//     setIsOpen(!isOpen);
-//   }
-//   function closeDropdown() {
-//     setIsOpen(false);
-//   }
-//   function handleProfileClick(p: string) {
-//     setActiveProfile(p);
-//     setProfilesOpen(false);
-//     closeDropdown();
-//   }
+    if (roleType === "promoted" && profile?.promoted_role) {
+      // Promoted Dashboard: /2507070003/executive_body_member/dashboard
+      return `/${username}/${profile.promoted_role}/dashboard`;
+    }
 
-//   return (
-//     <div className="relative">
-//       <button
-//         onClick={toggleDropdown}
-//         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
-//       >
-//         <span className="rounded-full h-12 w-12">
-//           {/* <img src="/images/user/owner.jpg" alt="User" /> */}
-//           <CircleUserRound className="mt-2 ml-2" size={30} />
-//         </span>
-//         <span className="block mr-1 font-medium text-theme-sm">Lokesh</span>
-//         <svg
-//           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
-//             isOpen ? "rotate-180" : ""
-//           }`}
-//           width="18"
-//           height="20"
-//           viewBox="0 0 18 20"
-//           fill="none"
-//           xmlns="http://www.w3.org/2000/svg"
-//         >
-//           <path
-//             d="M4.3125 8.65625L9 13.3437L13.6875 8.65625"
-//             stroke="currentColor"
-//             strokeWidth="1.5"
-//             strokeLinecap="round"
-//             strokeLinejoin="round"
-//           />
-//         </svg>
-//       </button>
-//       <Dropdown
-//         isOpen={isOpen}
-//         onClose={closeDropdown}
-//         className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
-//       >
-//         <div>
-//           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-//             Lokesh Lenka
-//           </span>
-//           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-//             lenkalokesh12@gmail.com
-//           </span>
-//         </div>
-//         <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
-//           <li className="relative">
-//             <div>
-//               <button
-//                 type="button"
-//                 onClick={() => setProfilesOpen((s) => !s)}
-//                 className="flex w-full items-center justify-between gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-//               >
-//                 <div className="flex flex-col items-start">
-//                   <span className="block">Profiles</span>
-//                   <span className="mt-0.5 text-theme-xs text-gray-500 dark:text-gray-400">
-//                     Active: {activeProfile}
-//                   </span>
-//                 </div>
-//                 <svg
-//                   className={`transition-transform duration-150 ${
-//                     profilesOpen ? "rotate-180" : ""
-//                   }`}
-//                   width="18"
-//                   height="20"
-//                   viewBox="0 0 18 20"
-//                   fill="none"
-//                   xmlns="http://www.w3.org/2000/svg"
-//                 >
-//                   <path
-//                     d="M4.3125 8.65625L9 13.3437L13.6875 8.65625"
-//                     stroke="currentColor"
-//                     strokeWidth="1.5"
-//                     strokeLinecap="round"
-//                     strokeLinejoin="round"
-//                   />
-//                 </svg>
-//               </button>
-//               {profilesOpen && (
-//                 <div className="absolute left-0 z-10 mt-2 w-[220px] rounded-lg border border-gray-200 bg-white p-2 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
-//                   <div className="mb-1 px-1 text-theme-xs text-gray-500">
-//                     Switch profiles
-//                   </div>
-//                   <ul className="flex flex-col gap-1">
-//                     {selectedProfiles.map((p) => {
-//                       const isActive = activeProfile === p;
-//                       return (
-//                         <li key={p}>
-//                           <DropdownItem
-//                             onItemClick={() => handleProfileClick(p)}
-//                             tag="button"
-//                             className="flex items-center justify-between gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-//                           >
-//                             <div className="flex items-center gap-3">
-//                               <span
-//                                 className={
-//                                   isActive ? "font-semibold text-green-500" : ""
-//                                 }
-//                               >
-//                                 {p}
-//                               </span>
-//                             </div>
-//                             <div className="flex items-center gap-2">
-//                               {isActive && (
-//                                 <span className="text-theme-xs text-gray-500">
-//                                   <Check className="text-green-500" />
-//                                 </span>
-//                               )}
-//                             </div>
-//                           </DropdownItem>
-//                         </li>
-//                       );
-//                     })}
-//                   </ul>
-//                 </div>
-//               )}
-//             </div>
-//           </li>
-//           {/* <li>
-//             <DropdownItem
-//               onItemClick={closeDropdown}
-//               tag="a"
-//               to="/support"
-//               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-//             >
-//               <svg
-//                 className="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
-//                 width="24"
-//                 height="24"
-//                 viewBox="0 0 24 24"
-//                 fill="none"
-//                 xmlns="http://www.w3.org/2000/svg"
-//               >
-//                 <path
-//                   fillRule="evenodd"
-//                   clipRule="evenodd"
-//                   d="M3.5 12C3.5 7.30558 7.30558 3.5 12 3.5C16.6944 3.5 20.5 7.30558 20.5 12C20.5 16.6944 16.6944 20.5 12 20.5C7.30558 20.5 3.5 16.6944 3.5 12ZM12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM11.0991 7.52507C11.0991 8.02213 11.5021 8.42507 11.9991 8.42507H12.0001C12.4972 8.42507 12.9001 8.02213 12.9001 7.52507C12.9001 7.02802 12.4972 6.62507 12.0001 6.62507H11.9991C11.5021 6.62507 11.0991 7.02802 11.0991 7.52507ZM12.0001 17.3714C11.5859 17.3714 11.2501 17.0356 11.2501 16.6214V10.9449C11.2501 10.5307 11.5859 10.1949 12.0001 10.1949C12.4143 10.1949 12.7501 10.5307 12.7501 10.9449V16.6214C12.7501 17.0356 12.4143 17.3714 12.0001 17.3714Z"
-//                   fill=""
-//                 />
-//               </svg>
-//               Support
-//             </DropdownItem>
-//           </li> */}
-//         </ul>
-//       </Dropdown>
-//     </div>
-//   );
-// }
+    return "/dashboard";
+  };
+
+  // --- 2. Build Available Profiles ---
+  const availableProfiles = [];
+
+  // Primary Profile (Management/Music)
+  if (profile?.primary_role) {
+    availableProfiles.push({
+      id: profile.primary_role,
+      label:
+        profile.primary_role.charAt(0).toUpperCase() +
+        profile.primary_role.slice(1),
+      path: getDashboardPath("primary"),
+      type: "primary",
+    });
+  }
+
+  // Promoted Profile (EBM, Credit Manager, etc.)
+  if (profile?.has_promoted_role && profile.promoted_role) {
+    availableProfiles.push({
+      id: profile.promoted_role,
+      label: getPromotedRoleLabel(),
+      path: getDashboardPath("promoted"),
+      type: "promoted",
+    });
+  }
+
+  // Determine Active Profile
+  // We check if the current path *contains* the promoted role string for the promoted profile
+  // Otherwise default to primary
+  const activeProfileId =
+    availableProfiles.find((p) => location.pathname.includes(p.id))?.id ||
+    profile?.primary_role;
+
+  function toggleDropdown() {
+    setIsOpen(!isOpen);
+    if (isOpen) setProfilesOpen(false);
+  }
+
+  function closeDropdown() {
+    setIsOpen(false);
+    setProfilesOpen(false);
+  }
+
+  function handleProfileClick(path: string) {
+    navigate(path);
+    closeDropdown();
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={toggleDropdown}
+        className="flex items-center gap-3 text-gray-700 dropdown-toggle dark:text-gray-400 group"
+      >
+        <span className="h-10 w-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-[#03a1b0] group-hover:bg-[#03a1b0]/10 transition-colors shadow-sm">
+          <CircleUserRound size={24} />
+        </span>
+
+        <div className="hidden md:block text-left">
+          <span className="block text-sm font-bold text-gray-900 dark:text-white truncate max-w-[120px]">
+            {user?.name || user?.username}
+          </span>
+          <span className="block text-xs text-gray-500 dark:text-gray-400 capitalize truncate max-w-[120px]">
+            {profile?.primary_role || "Member"}
+          </span>
+        </div>
+
+        <svg
+          className={`hidden md:block stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+          width="18"
+          height="20"
+          viewBox="0 0 18 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M4.3125 8.65625L9 13.3437L13.6875 8.65625"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+
+      <Dropdown
+        isOpen={isOpen}
+        onClose={closeDropdown}
+        className="absolute right-0 mt-3 w-72 flex flex-col rounded-2xl border border-gray-200 bg-white p-2 shadow-2xl dark:border-gray-800 dark:bg-[#18181b] z-50 transform origin-top-right transition-all"
+      >
+        <div className="px-4 py-3 mb-2 border-b border-gray-100 dark:border-white/5">
+          <span className="block text-sm font-bold text-gray-900 dark:text-white truncate">
+            {user?.name || user?.username}
+          </span>
+          <span className="block text-xs text-gray-500 dark:text-gray-400 truncate">
+            {user?.email}
+          </span>
+        </div>
+
+        <ul className="flex flex-col gap-1">
+          <li className="relative">
+            <button
+              type="button"
+              onClick={() => setProfilesOpen((s) => !s)}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                ${
+                  profilesOpen
+                    ? "bg-gray-50 text-gray-900 dark:bg-white/5 dark:text-white"
+                    : "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
+                }`}
+            >
+              <div className="flex items-center gap-3">
+                <LayoutDashboard size={18} className="text-gray-400" />
+                <span>Switch Dashboard</span>
+              </div>
+              <ChevronRight
+                size={16}
+                className={`text-gray-400 transition-transform duration-200 ${
+                  profilesOpen ? "rotate-90" : ""
+                }`}
+              />
+            </button>
+
+            {profilesOpen && (
+              <div className="mt-1 ml-4 pl-3 border-l-2 border-gray-100 dark:border-white/10 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                {availableProfiles.map((p) => {
+                  const isActive = activeProfileId === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => handleProfileClick(p.path)}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors text-left
+                        ${
+                          isActive
+                            ? "bg-[#03a1b0]/10 text-[#03a1b0] font-semibold"
+                            : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
+                        }`}
+                    >
+                      <span className="truncate">{p.label}</span>
+                      {isActive && (
+                        <Check size={14} className="text-[#03a1b0] shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </li>
+
+          {/* <li>
+            <button
+              onClick={() => navigate("/settings")}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5 transition-colors"
+            >
+              <User size={18} className="text-gray-400" />
+              Account Settings
+            </button>
+          </li> */}
+
+          {/* <li className="mt-1 pt-1 border-t border-gray-100 dark:border-white/5">
+            <DropdownItem
+              onItemClick={() => {
+                logout();
+                closeDropdown();
+              }}
+              tag="button"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition-colors"
+            >
+              <LogOut size={18} />
+              Sign Out
+            </DropdownItem>
+          </li> */}
+        </ul>
+      </Dropdown>
+    </div>
+  );
+}
