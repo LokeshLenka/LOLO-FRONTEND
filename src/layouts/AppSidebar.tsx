@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 
 import SidebarWidget from "./SidebarWidget"; // Keep your existing widget
 import { Link } from "react-router-dom";
-import LOLO_Logo_1 from "/home/lokesh/lolo/lolo-frontend/LOLO-FRONTEND/public/lolo_logos/Lolo_logo_1.png";
+import LOLO_Logo_1 from "../assets/logos/Lolo_logo_1.png";
 import { MoreHorizontal } from "lucide-react";
 import { useSidebar } from "@/context/SidebarContext";
 import { useAuth } from "@/context/AuthContext";
