@@ -49,6 +49,9 @@ import {
 } from "lucide-react";
 import ConcertGallery from "./pages/Performances";
 import ConcertDetails from "./pages/PerformanceDetails";
+import DeveloperHub from "./components/DeveloperHub";
+import TechTeam from "./components/TechTeam";
+import Concerts from "./pages/Performances";
 
 // --- Private Route Component ---
 function PrivateRoute() {
@@ -139,29 +142,40 @@ function App() {
 
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
+          {/* ================= PUBLIC ROUTES ================= */}
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Home />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/concerts" element={<ConcertGallery />} />
+            <Route path="home" element={<Home />} />
 
-            <Route path="/publications" element={<Publication />} />
-            <Route path="/team" element={<Team />} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/gallery" element={<Gallery />} />
+            {/* Feature Pages */}
+            <Route path="events" element={<Events />} />
+            <Route path="concerts" element={<Concerts />} />
+            <Route path="publications" element={<Publication />} />
+            <Route path="team" element={<Team />} />
+            <Route path="gallery" element={<Gallery />} />
 
-            <Route path="/timeline-detail" element={<DetailedTimeline />} />
+            {/* Info Pages */}
+            <Route path="about" element={<AboutUs />} />
+            <Route path="contact" element={<ContactUs />} />
+            <Route path="faq" element={<FAQ />} />
+
+            {/* Technical Pages */}
+            <Route path="tech-team" element={<TechTeam />} />
+            <Route path="api-docs" element={<DeveloperHub />} />
+            <Route path="timeline-detail" element={<DetailedTimeline />} />
           </Route>
-
-          {/* Independent Pages */}
+          {/* ================= INDEPENDENT PUBLIC PAGES ================= */}
+          {/* Details Pages (Full Screen or different layout) */}
           <Route path="/events/:id" element={<EventDetails />} />
           <Route path="/concerts/:id" element={<ConcertDetails />} />
           <Route path="/publications/:id" element={<PublicationDetails />} />
           <Route path="/team/:id" element={<TeamDetails />} />
+          {/* Auth & Status Pages */}
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/success" element={<SuccessRegistration />} />
+          <Route path="/registration-status" element={<RegistrationStatus />} />
 
           {/* Protected Dashboard Routes */}
           <Route element={<PrivateRoute />}>
