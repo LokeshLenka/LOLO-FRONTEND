@@ -73,7 +73,7 @@ const DeveloperHub = () => {
       <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-lolo-pink/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-lolo-cyan/10 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto px-6 relative z-10 w-full">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10 w-full">
         {/* Header Section */}
         <div className="text-center max-w-2xl mx-auto mb-16">
           <motion.div

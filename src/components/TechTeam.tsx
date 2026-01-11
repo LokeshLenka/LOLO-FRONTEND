@@ -154,7 +154,7 @@ const TechTeam = () => {
       <div className="absolute top-1/4 left-0 w-[520px] h-[520px] bg-lolo-pink/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-0 w-[520px] h-[520px] bg-lolo-cyan/10 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         {/* Header */}
         <div className="mb-20 text-center max-w-3xl mx-auto">
           <motion.h2
@@ -286,7 +286,7 @@ const TechTeam = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="rounded-[2rem] bg-white/[0.02] border border-white/10 backdrop-blur-md p-8 md:p-12"
+          className="rounded-[2rem] bg-white/[0.02] border border-white/10 backdrop-blur-md px-4 py-6 md:p-12"
         >
           <div className="flex items-start justify-between gap-6 flex-wrap mb-8">
             <div>

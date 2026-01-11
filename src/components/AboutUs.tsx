@@ -19,7 +19,7 @@ const AboutUs = () => {
         <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-lolo-pink/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] bg-lolo-cyan/10 rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
           {/* Header */}
           <div className="mb-20 text-center max-w-3xl mx-auto">
             <motion.h2
