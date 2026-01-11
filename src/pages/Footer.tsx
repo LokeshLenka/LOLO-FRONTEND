@@ -166,7 +166,15 @@ const Footer = () => {
             <span className="flex items-center gap-1 text-gray-600">
               Made with{" "}
               <Heart size={10} className="fill-red-500 text-red-500" /> by{" "}
-              <span className="text-gray-400">Tech Team</span>
+              <span className="text-gray-400">
+                <Link
+                  to="/tech-team"
+                  className="hover:text-white transition-colors"
+                >
+                  {" "}
+                  Tech Team
+                </Link>
+              </span>
             </span>
           </div>
         </div>

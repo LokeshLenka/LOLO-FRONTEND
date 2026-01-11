@@ -123,8 +123,9 @@ export default function FAQ() {
 
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans pb-20 pt-24 relative overflow-hidden">
-      {/* Ambient Background */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-lolo-pink/10 rounded-full blur-[120px] pointer-events-none opacity-40" />
+      {/* --- ADDED: Dual Ambient Glow (Same as AboutUs) --- */}
+      <div className="absolute top-20 left-0 w-[700px] h-[700px] bg-lolo-pink/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-50 right-0 w-[700px] h-[700px] bg-lolo-cyan/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-3xl mx-auto px-6 relative z-10">
         {/* Header */}

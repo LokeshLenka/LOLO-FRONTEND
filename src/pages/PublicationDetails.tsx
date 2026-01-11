@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   Share2,
@@ -9,6 +9,7 @@ import {
   Music,
   Video,
   Award,
+  CheckCircle2,
 } from "lucide-react";
 import { Chip, Divider } from "@heroui/react";
 import { Button } from "@heroui/button";
@@ -51,6 +52,7 @@ const PUBLICATIONS_DATA = [
 export default function PublicationDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [showToast, setShowToast] = useState(false);
 
   // LOGIC UPDATE: Find data based on ID
   const data =
@@ -98,7 +100,19 @@ export default function PublicationDetails() {
             </div>
             <span className="inline">Back to Publications</span>
           </a>
-          <button className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all">
+          {/* <button className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all">
+            <Share2 size={18} />
+          </button> */}
+
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              setShowToast(true);
+              setTimeout(() => setShowToast(false), 2000);
+            }}
+            className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all active:scale-95"
+            title="Share"
+          >
             <Share2 size={18} />
           </button>
         </div>
@@ -266,6 +280,20 @@ export default function PublicationDetails() {
             </Button>
           </div>
         </aside> */}
+        <AnimatePresence>
+          {showToast && (
+            <motion.div
+              key="toast"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="fixed bottom-6 right-6 z-50 bg-white text-black px-5 py-4 rounded-xl shadow-2xl font-bold flex items-center gap-3 border border-gray-200"
+            >
+              <CheckCircle2 size={20} className="text-green-600" />
+              <span>Link copied to clipboard!</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );
