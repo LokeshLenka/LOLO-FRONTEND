@@ -2,55 +2,41 @@ import "./App.css";
 import {
   Route,
   Routes,
-  useLocation,
+  useLocation, // Now safe to use directly in App
   Navigate,
   Outlet,
-  useParams,
 } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-
-// --- Layouts & Providers ---
+import SignUp from "./pages/SignUp";
 import MainLayout from "./layouts/MainLayout";
-import AppLayout from "./layouts/AppLayout";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import GlobalLoader from "./components/GlobalLoader";
+import NotFound from "./pages/OtherPages/NotFound";
+import Login from "./pages/Login";
 import { ScrollToTop } from "./components/common/ScrollToTop";
-import { Toaster } from "sonner";
-
-// --- Public Pages ---
+// ... other imports ...
+import UserDashboard from "./pages/Dashboards/UserDashboard";
+import AppLayout from "./layouts/AppLayout";
 import Home from "./pages/Home";
+import EventRegistrationCards from "./components/ui/cards/EventRegistrationCard";
+import CreditsCard from "./components/ui/cards/CreditsCard";
+import UserProfilePage from "./pages/UserProfilePage";
 import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
-import Concerts from "./pages/Performances";
-import ConcertDetails from "./pages/PerformanceDetails";
 import Publication from "./pages/Publications";
 import PublicationDetails from "./pages/PublicationDetails";
 import Team from "./pages/Team";
 import TeamDetails from "./pages/TeamDetails";
+import AdminLogin from "./pages/Admin/AdminLogin";
+import SuccessRegistration from "./pages/SuccessRegistration";
+import { Toaster } from "sonner";
+import GlobalLoader from "./components/GlobalLoader";
+import RegistrationStatus from "./pages/RegistrationStatus";
+import MusicProfile from "./pages/profile/MusicProfile";
+import DetailedTimeline from "./components/DetailedTimeline";
 import AboutUs from "./components/AboutUs";
 import ContactUs from "./components/ContactUs";
 import FAQ from "./pages/FAQ";
 import Gallery from "./components/Gallery";
-import TechTeam from "./components/TechTeam";
-import DeveloperHub from "./components/DeveloperHub";
-import NotFound from "./pages/OtherPages/NotFound";
-
-// --- Auth & Registration Pages ---
-import Login from "./pages/Login";
-import SignUp from "./pages/SignUp";
-import AdminLogin from "./pages/Admin/AdminLogin";
-import SuccessRegistration from "./pages/SuccessRegistration";
-import RegistrationStatus from "./pages/RegistrationStatus";
-
-// --- Dashboard Components ---
-import UserDashboard from "./pages/Dashboards/UserDashboard";
-import EBMDashboard from "./pages/Dashboards/EBMDashboard";
-import EventRegistrationCards from "./components/ui/cards/EventRegistrationCard";
-import CreditsCard from "./components/ui/cards/CreditsCard";
-import UserProfilePage from "./pages/UserProfilePage";
-import MusicProfile from "./pages/profile/MusicProfile";
-
-// --- Icons & Mock Data ---
 import {
   Calendar,
   Mail,
@@ -61,43 +47,21 @@ import {
   Star,
   Users,
 } from "lucide-react";
-import EBMPendingApprovals from "./pages/Dashboards/EBMPendingApprovals";
+import ConcertGallery from "./pages/Performances";
+import ConcertDetails from "./pages/PerformanceDetails";
 
-// --- Helper Components ---
-
-// 1. Private Route Wrapper
+// --- Private Route Component ---
 function PrivateRoute() {
   const { isAuthenticated, loading } = useAuth();
-  if (loading) return <GlobalLoader />;
+  if (loading) return null;
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
-}
-
-// 2. Role-Based Dashboard Router
-// Decides whether to show EBM Dashboard or fallback based on URL param
-function RoleBasedDashboardRouter() {
-  const { role } = useParams();
-
-  // Normalize role string (e.g. handle casing if needed)
-  const normalizedRole = role?.toLowerCase();
-
-  // Check for Executive Body Member or related roles
-  if (
-    ["executive_body_member", "membership_head", "credit_manager"].includes(
-      normalizedRole || ""
-    )
-  ) {
-    return <EBMDashboard />;
-  }
-
-  // Default fallback if role is unrecognized (or can map to others like 'music')
-  return <UserDashboard />;
 }
 
 // --- Main App Component ---
 function App() {
+  // 1. Safe to use here because <BrowserRouter> is in main.tsx
   const location = useLocation();
 
-  // Mock Profile Data (Keep existing)
   const MOCK_PROFILE_DATA = {
     uuid: "550e8400-e29b-41d4-a716-446655440000",
     username: "alex.rhythm",
@@ -108,28 +72,64 @@ function App() {
     promoted_role_label: "Band Captain",
     is_active: true,
     last_login_at: "2023-10-27T10:30:00Z",
+
     personal_details: [
-      { label: "Email Address", value: "alex@lolo.band", icon: Mail },
-      { label: "Phone Number", value: "+91 98765 43210", icon: Phone },
-      { label: "Location", value: "Bhimavaram, IN", icon: MapPin },
-      { label: "Joined On", value: "Dec 02, 2024", icon: Calendar },
+      {
+        label: "Email Address",
+        value: "alex@lolo.band",
+        icon: Mail,
+      },
+      {
+        label: "Phone Number",
+        value: "+91 98765 43210",
+        icon: Phone,
+      },
+      {
+        label: "Location",
+        value: "Bhimavaram, IN",
+        icon: MapPin,
+      },
+      {
+        label: "Joined On",
+        value: "Dec 02, 2024",
+        icon: Calendar,
+      },
     ],
+
     role_specific_details: {
       title: "Musician Profile",
       icon: Music,
       fields: [
         {
           label: "Primary Instrument",
-          value: "Electric Guitar",
+          value: "Electric Guitar (Fender Strat)",
           icon: Music,
           highlight: true,
         },
-        { label: "Secondary Skill", value: "Backing Vocals", icon: Mic2 },
-        { label: "Stage Experience", value: "3 Years", icon: Star },
-        { label: "Jam Group", value: "The Resonators", icon: Users },
+        {
+          label: "Secondary Skill",
+          value: "Backing Vocals",
+          icon: Mic2,
+        },
+        {
+          label: "Stage Experience",
+          value: "3 Years",
+          icon: Star,
+        },
+        {
+          label: "Jam Group",
+          value: "The Resonators",
+          icon: Users,
+        },
       ],
     },
-    abilities: ["view_dashboard", "manage_events"],
+
+    abilities: [
+      "view_dashboard",
+      "manage_events",
+      "access_equipment_room",
+      "publish_content",
+    ],
   };
 
   return (
@@ -139,88 +139,59 @@ function App() {
 
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
-          {/* ================= PUBLIC ROUTES ================= */}
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Home />} />
-            <Route path="home" element={<Home />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/performances" element={<ConcertGallery />} />
 
-            {/* Feature Pages */}
-            <Route path="events" element={<Events />} />
-            <Route path="concerts" element={<Concerts />} />
-            <Route path="publications" element={<Publication />} />
-            <Route path="team" element={<Team />} />
-            <Route path="gallery" element={<Gallery />} />
+            <Route path="/publications" element={<Publication />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/gallery" element={<Gallery />} />
 
-            {/* Info Pages */}
-            <Route path="about" element={<AboutUs />} />
-            <Route path="contact" element={<ContactUs />} />
-            <Route path="faq" element={<FAQ />} />
-
-            {/* Technical Pages */}
-            <Route path="tech-team" element={<TechTeam />} />
-            <Route path="api-docs" element={<DeveloperHub />} />
-            <Route path="timeline-detail" element={<Home />} />
+            <Route path="/timeline-detail" element={<DetailedTimeline />} />
           </Route>
-          {/* ================= INDEPENDENT PUBLIC PAGES ================= */}
-          {/* Details Pages (Full Screen or different layout) */}
+
+          {/* Independent Pages */}
           <Route path="/events/:id" element={<EventDetails />} />
-          <Route path="/concerts/:id" element={<ConcertDetails />} />
+          <Route path="/performances/:id" element={<ConcertDetails />} />
           <Route path="/publications/:id" element={<PublicationDetails />} />
           <Route path="/team/:id" element={<TeamDetails />} />
-          {/* Auth & Status Pages */}
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/success" element={<SuccessRegistration />} />
-          <Route path="/registration-status" element={<RegistrationStatus />} />
-          {/* Test Route */}
-          <Route path="/test/music" element={<MusicProfile />} />
-          {/* ================= PROTECTED DASHBOARD ROUTES ================= */}
-          // Replace your existing routes with these role-specific routes:
+
+          {/* Protected Dashboard Routes */}
           <Route element={<PrivateRoute />}>
-            <Route element={<AppLayout />}>
-              {/* Standard User Dashboard */}
-              <Route path="/:username/dashboard" element={<UserDashboard />} />
-
-              {/* EBM Routes */}
+            <Route path=":id/dashboard" element={<AppLayout />}>
+              <Route index element={<UserDashboard />} />
               <Route
-                path="/:username/executive_body_member/dashboard"
-                element={<EBMDashboard />}
-              />
-              <Route
-                path="/:username/executive_body_member/dashboard/pending-approvals"
-                element={<EBMPendingApprovals />}
-              />
-
-              {/* Management Head (MH) Routes */}
-              {/* <Route path="/:username/mh/dashboard" element={<MHDashboard />} /> */}
-              {/* <Route path="/:username/mh/approvals" element={<MHApprovals />} /> */}
-
-              {/* Credit Manager (CM) Routes */}
-              {/* <Route path="/:username/cm/dashboard" element={<CMDashboard />} /> */}
-              {/* <Route path="/:username/cm/credits" element={<CMCreditsPage />} /> */}
-
-              {/* Shared Pages */}
-              <Route
-                path="/:username/event-registrations"
+                path="event-registrations"
                 element={<EventRegistrationCards />}
               />
+              <Route path="credits" element={<CreditsCard />} />
               <Route
-                path="/:username/profile"
+                path="profile"
                 element={<UserProfilePage data={MOCK_PROFILE_DATA} />}
               />
             </Route>
           </Route>
-          {/* ================= 404 FALLBACK ================= */}
+
+          <Route path="/success" element={<SuccessRegistration />} />
+          <Route path="/registration-status" element={<RegistrationStatus />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+
+          <Route path="/test/music" element={<MusicProfile />} />
+          {/* <Route path="/admin/dashboard" element={<AdminLogin />} /> */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatePresence>
 
-      {/* Toast Notifications */}
       <Toaster
         position="top-right"
         toastOptions={{
-          // ... (Keep existing styling configuration)
           className:
             "bg-[#09090b]/90 backdrop-blur-xl border border-white/10 text-white shadow-2xl shadow-black/50 rounded-2xl",
           classNames: {
@@ -238,6 +209,8 @@ function App() {
               "group-[.toaster]:!border-red-500/20 group-[.toaster]:!bg-red-900/20 group-[.toaster]:text-white",
             success:
               "group-[.toaster]:!border-green-500/20 group-[.toaster]:!bg-green-900/20 group-[.toaster]:text-white",
+            warning:
+              "group-[.toaster]:!border-orange-500/20 group-[.toaster]:!bg-orange-900/20 group-[.toaster]:text-white",
             info: "group-[.toaster]:!border-[#03a1b0]/20 group-[.toaster]:!bg-[#03a1b0]/20 group-[.toaster]:text-white",
           },
           style: {
