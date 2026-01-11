@@ -16,10 +16,17 @@ import {
   Users,
   Trophy,
   CreditCard,
+  ZoomIn, // Added ZoomIn icon
 } from "lucide-react";
 import { Button } from "@heroui/button";
 import { Divider } from "@heroui/react";
 import axios from "axios";
+
+// --- Lightbox Imports ---
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+import { Zoom, Thumbnails } from "yet-another-react-lightbox/plugins";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
 
 // --- Interfaces ---
 interface EventImage {
@@ -69,12 +76,14 @@ const getEventTypeColor = (type: string) => {
 };
 
 const EventDetails: React.FC = () => {
-  // FIX: All Hooks must be declared at the top level, BEFORE any return statements
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [event, setEvent] = useState<EventDetailsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
+
+  // --- Lightbox State ---
+  const [lightboxIndex, setLightboxIndex] = useState(-1);
 
   const APP_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -103,8 +112,6 @@ const EventDetails: React.FC = () => {
       navigate("/events");
     }
   };
-
-  // --- Conditional Renders (Must be AFTER hooks) ---
 
   if (loading)
     return (
@@ -147,6 +154,12 @@ const EventDetails: React.FC = () => {
   const activeCoordinators = event.coordinators.filter(
     (c): c is Coordinator => c !== null
   );
+
+  // Prepare slides for lightbox
+  const lightboxSlides = event.images.map((img) => ({
+    src: img.url,
+    alt: img.alt_txt,
+  }));
 
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-[#03a1b0] selection:text-white pb-20">
@@ -377,6 +390,7 @@ const EventDetails: React.FC = () => {
             </motion.section>
           )}
 
+          {/* --- Updated Gallery Section --- */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -384,17 +398,24 @@ const EventDetails: React.FC = () => {
           >
             <h3 className="text-2xl font-bold mb-6 text-white">Gallery</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {event.images.map((img) => (
+              {event.images.map((img, index) => (
                 <div
                   key={img.uuid}
-                  className="group relative rounded-xl overflow-hidden h-48 border border-white/10"
+                  onClick={() => setLightboxIndex(index)} // Set index on click
+                  className="group relative rounded-xl overflow-hidden h-48 border border-white/10 cursor-zoom-in"
                 >
                   <img
                     src={img.url}
                     alt={img.alt_txt}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
+
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <div className="bg-white/10 backdrop-blur-md p-2 rounded-full text-white">
+                      <ZoomIn size={20} />
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -481,7 +502,7 @@ const EventDetails: React.FC = () => {
       <AnimatePresence>
         {showToast && (
           <motion.div
-            key="toast" // FIX: Added unique key for AnimatePresence
+            key="toast"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
@@ -492,6 +513,20 @@ const EventDetails: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* --- Lightbox Component --- */}
+      <Lightbox
+        index={lightboxIndex}
+        slides={lightboxSlides}
+        open={lightboxIndex >= 0}
+        close={() => setLightboxIndex(-1)}
+        plugins={[Zoom, Thumbnails]}
+        styles={{
+          container: { backgroundColor: "rgba(0, 0, 0, 0.95)" },
+          thumbnail: { border: "1px solid rgba(255,255,255,0.2)" },
+        }}
+        zoom={{ maxZoomPixelRatio: 3 }}
+      />
     </div>
   );
 };
