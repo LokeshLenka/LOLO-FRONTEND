@@ -47,7 +47,7 @@ import {
   Star,
   Users,
 } from "lucide-react";
-import ConcertGallery from "./pages/Performances";
+// import ConcertGallery from "./pages/Performances";
 import ConcertDetails from "./pages/PerformanceDetails";
 import DeveloperHub from "./components/DeveloperHub";
 import TechTeam from "./components/TechTeam";
