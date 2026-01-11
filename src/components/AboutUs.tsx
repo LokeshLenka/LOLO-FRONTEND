@@ -200,7 +200,7 @@ const AboutUs = () => {
                   of passionate musicians and engineers wanting to bridge the
                   gap between rigorous academic life and creative expression.
                 </p>
-                <p className="text-neutral-400 leading-relaxed">
+                {/* <p className="text-neutral-400 leading-relaxed">
                   What started as jam sessions evolved into a movement. On{" "}
                   <span className="text-lolo-cyan font-semibold">
                     Dec 2, 2024
@@ -208,7 +208,7 @@ const AboutUs = () => {
                   , the college administration officially recognized us as a
                   Music Band & Club, granting us the resources to scale our
                   vision.
-                </p>
+                </p> */}
               </div>
 
               {/* Right: What we do + Contribute */}
