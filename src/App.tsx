@@ -143,7 +143,7 @@ function App() {
             <Route index element={<Home />} />
             <Route path="/home" element={<Home />} />
             <Route path="/events" element={<Events />} />
-            <Route path="/performances" element={<ConcertGallery />} />
+            <Route path="/concerts" element={<ConcertGallery />} />
 
             <Route path="/publications" element={<Publication />} />
             <Route path="/team" element={<Team />} />
@@ -157,7 +157,7 @@ function App() {
 
           {/* Independent Pages */}
           <Route path="/events/:id" element={<EventDetails />} />
-          <Route path="/performances/:id" element={<ConcertDetails />} />
+          <Route path="/concerts/:id" element={<ConcertDetails />} />
           <Route path="/publications/:id" element={<PublicationDetails />} />
           <Route path="/team/:id" element={<TeamDetails />} />
           <Route path="/signup" element={<SignUp />} />
