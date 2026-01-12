@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Instagram, Youtube, Heart } from "lucide-react";
-import Lolo_logo_1 from "../assets/logos/Lolo_logo_1.png";
+import Lolo_logo_1 from "@/assets/logos/Lolo_logo_1.png";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();

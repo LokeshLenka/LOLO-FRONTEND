@@ -13,11 +13,11 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { Button } from "@heroui/button";
-import FloatingLines from "../components/FloatingLines"; // Brought back
-import { Timeline } from "../components/Timeline";
-import AnimatedRanks from "../components/AnimatedRanks";
 import EventsSection from "@/components/EventsSection";
 import SectionHeader from "@/components/HomeSectionHeader";
+import FloatingLines from "@/components/FloatingLines";
+import AnimatedRanks from "@/components/AnimatedRanks";
+import { Timeline } from "@/components/Timeline";
 
 // --- COMPONENT: Rhythmic Audio Visualizer (Hero) ---
 // const AudioVisualizer = () => {

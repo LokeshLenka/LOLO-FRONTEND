@@ -25,7 +25,7 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed top-0 left-0 h-screen bg-white dark:bg-[#09090b] border-r border-gray-200 dark:border-white/5 z-50 transition-all duration-300 ease-in-out
+      className={`fixed top-0 left-0 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-white/5 z-50 transition-all duration-300 ease-in-out
         ${sidebarWidth}
         ${
           isMobileOpen
@@ -87,9 +87,7 @@ const AppSidebar: React.FC = () => {
       </div>
 
       {/* --- Widget --- */}
-      <div className="mt-auto">
-        <SidebarWidget />
-      </div>
+      {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
     </aside>
   );
 };

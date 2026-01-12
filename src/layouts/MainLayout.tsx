@@ -1,6 +1,6 @@
 // src/layouts/MainLayout.tsx
 import Header from "@/components/Header";
-import Footer from "@/pages/Footer";
+import Footer from "@/pages/App/Home/Footer";
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 
