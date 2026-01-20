@@ -167,7 +167,7 @@ const EventDetails: React.FC = () => {
       <nav className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10 h-16 flex items-center px-6">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
           <a
-            href="/events"
+            href=""
             onClick={handleBack}
             className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-bold group cursor-pointer"
           >

@@ -101,7 +101,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
             <NavDropdown />
 
             {user ? (
-              <Link to={`/${user}/dashboard`}>
+              <Link to={`/${user.username}/dashboard`}>
                 <button className="border border-lolo-cyan text-lolo-cyan px-6 py-2 hover:bg-lolo-cyan hover:text-black transition-all rounded-full text-md font-medium">
                   Dashboard
                 </button>

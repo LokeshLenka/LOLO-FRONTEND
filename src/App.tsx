@@ -44,7 +44,7 @@ import RegistrationStatus from "./pages/App/Authentication/RegistrationStatus";
 // --- Dashboard Components ---
 import UserDashboard from "./pages/User/UserDashboard";
 import EBMDashboard from "./pages/ExecutiveBodyMember/EBMDashboard";
-import EventRegistrationCards from "./pages/User/EventRegistrationsPage";
+import EventRegistrationCards from "./pages/User/Events/EventRegistrationsPage";
 import UserProfilePage from "./pages/User/UserProfilePage";
 import MusicProfile from "./pages/profile/MusicProfile";
 
@@ -62,6 +62,7 @@ import {
 import EBMPendingApprovals from "./pages/ExecutiveBodyMember/EBMPendingApprovals";
 import CreditsPage from "./pages/User/CreditsPage";
 import Home from "./pages/App/Home/Home";
+import ShowEventRegistrationPage from "./pages/User/Events/ShowEventRegistrationPage";
 
 // --- Helper Components ---
 
@@ -83,7 +84,7 @@ function RoleBasedDashboardRouter() {
   // Check for Executive Body Member or related roles
   if (
     ["executive_body_member", "membership_head", "credit_manager"].includes(
-      normalizedRole || ""
+      normalizedRole || "",
     )
   ) {
     return <EBMDashboard />;
@@ -182,6 +183,22 @@ function App() {
               {/* Standard User Dashboard */}
               <Route path="/:username/dashboard" element={<UserDashboard />} />
 
+              {/* Shared Pages */}
+              <Route
+                path="/:username/event-registrations"
+                element={<EventRegistrationCards />}
+              />
+              <Route
+                path="/:username/event-registrations/:uuid"
+                element={<ShowEventRegistrationPage />}
+              />
+              <Route path="/:username/credits" element={<CreditsPage />} />
+
+              <Route
+                path="/:username/profile"
+                element={<UserProfilePage data={MOCK_PROFILE_DATA} />}
+              />
+
               {/* EBM Routes */}
               <Route
                 path="/:username/executive_body_member/dashboard"
@@ -199,18 +216,6 @@ function App() {
               {/* Credit Manager (CM) Routes */}
               {/* <Route path="/:username/cm/dashboard" element={<CMDashboard />} /> */}
               {/* <Route path="/:username/cm/credits" element={<CMCreditsPage />} /> */}
-
-              {/* Shared Pages */}
-              <Route
-                path="/:username/event-registrations"
-                element={<EventRegistrationCards />}
-              />
-              <Route path="/:username/credits" element={<CreditsPage />} />
-
-              <Route
-                path="/:username/profile"
-                element={<UserProfilePage data={MOCK_PROFILE_DATA} />}
-              />
             </Route>
           </Route>
           {/* ================= 404 FALLBACK ================= */}
