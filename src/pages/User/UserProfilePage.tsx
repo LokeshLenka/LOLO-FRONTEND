@@ -1,256 +1,218 @@
-// src/components/profile/ProfileCard.tsx
-import { Card, CardBody, Avatar, Chip, Divider } from "@heroui/react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   User,
-  Briefcase,
+  Hash,
+  GitBranch,
+  Calendar,
+  Phone,
   Music,
-  Shield,
-  Activity,
-  Lock,
-  Crown,
-  CheckCircle2,
-  type LucideIcon,
+  Briefcase,
+  Mic2,
+  Users,
+  Heart,
+  Star,
+  LayoutGrid,
 } from "lucide-react";
+import type {
+  APIResponse,
+  UserProfileData,
+  ProfileField,
+  MusicProfile,
+  ManagementProfile,
+  SecurityData,
+} from "@/types/types";
+import ProfileCard from "../profile/ProfileCard";
 
-// --- Generic Interfaces for Reusability ---
-export interface ProfileField {
-  label: string;
-  value: string | number;
-  icon: LucideIcon;
-  highlight?: boolean; // For special styling (e.g., Instrument Owned)
-}
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export interface UserProfileData {
-  uuid: string;
-  username: string;
-  email: string;
-  full_name: string;
-  role_label: string;
-  sub_role_label: string;
-  promoted_role_label?: string;
-  is_active: boolean;
-  last_login_at: string;
+// Helper to get token
+const getAuthToken = () => localStorage.getItem("authToken");
 
-  // Sections of data
-  personal_details: ProfileField[];
-  role_specific_details?: {
-    title: string;
-    icon: LucideIcon;
-    fields: ProfileField[];
-  };
-  abilities?: string[];
-}
-
-// --- Helper Components ---
-
-const DetailRow = ({ field }: { field: ProfileField }) => (
-  <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
-    <div
-      className={`p-2 rounded-lg transition-colors ${
-        field.highlight
-          ? "bg-green-500/10 text-green-600 dark:text-green-400"
-          : "bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 group-hover:text-[#03a1b0]"
-      }`}
-    >
-      <field.icon size={18} />
-    </div>
-    <div>
-      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-        {field.label}
-      </p>
-      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-        {field.value}
-      </p>
-    </div>
-  </div>
-);
-
-const ProfileHeader = ({ data }: { data: UserProfileData }) => {
-  return (
-    <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
-      {/* Avatar */}
-      <div className="relative group">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-[#03a1b0] to-purple-600 rounded-full opacity-75 blur group-hover:opacity-100 transition duration-200"></div>
-        <Avatar
-          src={`https://ui-avatars.com/api/?name=${data.full_name}&background=03a1b0&color=fff`}
-          className="w-24 h-24 md:w-32 md:h-32 text-2xl relative border-4 border-white dark:border-black"
-        />
-        <div
-          className={`absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-white dark:border-black ${
-            data.is_active ? "bg-green-500" : "bg-red-500"
-          }`}
-        ></div>
-      </div>
-
-      {/* Info */}
-      <div className="text-center md:text-left flex-1">
-        <h1 className="text-3xl font-black tracking-tight text-black dark:text-white mb-1">
-          {data.full_name}
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400 font-medium text-lg mb-4">
-          @{data.username}
-        </p>
-
-        <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-          {/* Promoted Role Badge */}
-          {data.promoted_role_label && (
-            <Chip
-              startContent={<Crown size={14} />}
-              variant="shadow"
-              className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-none font-bold shadow-orange-500/20 py-1 px-3"
-            >
-              {data.promoted_role_label}
-            </Chip>
-          )}
-
-          {/* Base Role Badge */}
-          <Chip
-            startContent={
-              data.role_label === "Music" ? (
-                <Music size={14} />
-              ) : (
-                <Briefcase size={14} />
-              )
-            }
-            variant="flat"
-            className="bg-[#03a1b0]/10 text-[#03a1b0] dark:text-[#03a1b0] font-bold uppercase py-0.5 px-3"
-          >
-            {data.role_label}
-          </Chip>
-
-          {/* Sub Role Badge */}
-          <Chip
-            variant="flat"
-            className="bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold py-0.5 px-3"
-          >
-            {data.sub_role_label}
-          </Chip>
-        </div>
-      </div>
-    </div>
-  );
+// Helper to get user from storage
+const getUserFromStorage = () => {
+  const raw = localStorage.getItem("user");
+  return raw ? JSON.parse(raw) : null;
 };
 
-export default function ProfileCard({ data }: { data: UserProfileData }) {
-  return (
-    <section className="w-full min-h-screen py-1 md:p-8 flex justify-center items-start">
-      <Card
-        shadow="none"
-        className="w-full max-w-5xl border border-black/10 dark:border-white/10 bg-gradient-to-br from-white/95 to-white/85 backdrop-blur-xl dark:from-white/[0.08] dark:to-white/[0.02] rounded-2xl overflow-hidden"
-      >
-        <CardBody className="p-0">
-          <div className="h-32 bg-gradient-to-r from-[#03a1b0]/20 to-purple-600/20 relative">
-            <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/20 to-transparent"></div>
-          </div>
+export default function UserProfile() {
+  const [profileData, setProfileData] = useState<UserProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-          <div className="px-6 md:px-10 pb-10 -mt-12">
-            <ProfileHeader data={data} />
-            <Divider className="my-8 bg-black/5 dark:bg-white/10" />
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = getAuthToken();
+        if (!token) throw new Error("No authentication token found.");
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column: Details */}
-              <div className="lg:col-span-2 space-y-8">
-                {/* Personal Details Section */}
-                <div>
-                  <h3 className="text-lg font-bold text-black dark:text-white mb-4 flex items-center gap-2">
-                    <User size={18} className="text-[#03a1b0]" /> Personal
-                    Details
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-white/50 dark:bg-black/20 p-2 rounded-2xl border border-black/5 dark:border-white/5">
-                    {data.personal_details.map((field, i) => (
-                      <DetailRow key={i} field={field} />
-                    ))}
-                  </div>
-                </div>
+        const api = axios.create({
+          baseURL: API_BASE_URL,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
 
-                {/* Role Specific Details (Music/Management) */}
-                {data.role_specific_details && (
-                  <div>
-                    <h3 className="text-lg font-bold text-black dark:text-white mb-4 flex items-center gap-2">
-                      <data.role_specific_details.icon
-                        size={18}
-                        className="text-purple-500"
-                      />
-                      {data.role_specific_details.title}
-                    </h3>
-                    <div className="p-1 rounded-2xl bg-purple-500/5 border border-purple-500/10">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {data.role_specific_details.fields.map((field, i) => (
-                          <DetailRow key={i} field={field} />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
+        // 1. Determine Role (Storage Fallback -> API)
+        let role = getUserFromStorage()?.role;
 
-                {/* Abilities / Permissions */}
-                {data.abilities && (
-                  <div>
-                    <h3 className="text-lg font-bold text-black dark:text-white mb-4 flex items-center gap-2">
-                      <Shield size={18} className="text-[#03a1b0]" />{" "}
-                      Permissions
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {data.abilities.map((ability, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500/5 border border-green-500/10"
-                        >
-                          <CheckCircle2
-                            size={14}
-                            className="text-green-600 dark:text-green-400 shrink-0"
-                          />
-                          <span className="text-xs font-bold text-gray-700 dark:text-gray-300 font-mono">
-                            {ability}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+        if (!role) {
+          console.log("Role not in storage, fetching from /my-role...");
+          const roleResponse = await api.get("/my-role");
+          role = roleResponse.data.role; // Ensure /my-role returns { role: '...' }
+        }
 
-              {/* Right Column: Sidebar */}
-              <div className="space-y-6">
-                <div className="p-5 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5">
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2 uppercase tracking-wide">
-                    <Activity size={16} className="text-gray-500" /> Activity
-                    Log
-                  </h3>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-[10px] text-gray-500 font-bold uppercase">
-                        Last Login
-                      </p>
-                      <p className="text-xs font-mono text-gray-800 dark:text-gray-200 mt-1">
-                        {new Date(data.last_login_at).toLocaleString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-gray-500 font-bold uppercase">
-                        Status
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Lock size={12} className="text-green-500" />
-                        <span className="text-xs font-bold text-green-600 dark:text-green-400">
-                          Secure
-                        </span>
-                      </div>
-                    </div>
-                    {/* <Divider className="bg-black/5 dark:bg-white/5" /> */}
-                    {/* <Button
-                      className="w-full bg-black dark:bg-white text-white dark:text-black font-bold shadow-lg"
-                      size="sm"
-                    >
-                      Change Password
-                    </Button> */}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardBody>
-      </Card>
-    </section>
-  );
+        if (!role || (role !== "music" && role !== "management")) {
+          throw new Error("Invalid or undefined user role.");
+        }
+
+        // 2. Fetch Profile from Specific Endpoint
+        const endpoint = `/${role}/my-profile`;
+        const response = await api.get<APIResponse>(endpoint);
+
+        // Destructure data. Note: We expect 'security' to be in this response now.
+        // If your backend specific endpoints don't return security,
+        // you might need to merge it or use defaults.
+        const { user, abilities, security } = response.data.data;
+
+        // 3. Map Data to UI Structure
+        const mappedData = mapApiToProfile(user, abilities, security);
+        setProfileData(mappedData);
+      } catch (err: any) {
+        console.error("Profile Fetch Error:", err);
+        setError(
+          err.response?.data?.message ||
+            err.message ||
+            "Failed to load profile."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-[#03a1b0]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center text-red-500">
+        Error: {error}
+      </div>
+    );
+  }
+
+  return profileData ? <ProfileCard data={profileData} /> : null;
+}
+
+// --- Mapper Function ---
+
+function mapApiToProfile(
+  user: any,
+  abilities: string[],
+  security: SecurityData | undefined
+): UserProfileData {
+  const role = user.role;
+  const specificProfile =
+    role === "music" ? user.music_profile : user.management_profile;
+
+  if (!specificProfile) {
+    throw new Error(`Profile data missing for role: ${role}`);
+  }
+
+  const fullName = `${specificProfile.first_name} ${specificProfile.last_name}`;
+
+  // 1. Common Personal Details
+  const personalDetails: ProfileField[] = [
+    { label: "Reg Num", value: specificProfile.reg_num, icon: Hash },
+    {
+      label: "Branch",
+      value: specificProfile.branch?.toUpperCase(),
+      icon: GitBranch,
+    },
+    {
+      label: "Year",
+      value: specificProfile.year?.toUpperCase(),
+      icon: Calendar,
+    },
+    { label: "Gender", value: specificProfile.gender, icon: User },
+    { label: "Phone", value: specificProfile.phone_no, icon: Phone },
+  ];
+
+  // 2. Role Specific Details
+  let roleSpecificDetails;
+
+  if (role === "music") {
+    const music = specificProfile as MusicProfile;
+    roleSpecificDetails = {
+      title: "Musician Details",
+      icon: Music,
+      fields: [
+        {
+          label: "Main Role",
+          value: music.sub_role,
+          icon: Mic2,
+          highlight: true,
+        },
+        { label: "Experience", value: music.experience, icon: Star },
+        { label: "Passion", value: music.passion, icon: Heart },
+        {
+          label: "Instrument",
+          value: music.instrument_avail ? "Owned" : "Not Owned",
+          icon: Music,
+        },
+      ],
+    };
+  } else {
+    const mgmt = specificProfile as ManagementProfile;
+    roleSpecificDetails = {
+      title: "Management Details",
+      icon: Briefcase,
+      fields: [
+        {
+          label: "Designation",
+          value: mgmt.sub_role,
+          icon: Users,
+          highlight: true,
+        },
+        { label: "Club", value: mgmt.any_club, icon: LayoutGrid },
+        { label: "Interest", value: mgmt.interest_towards_lolo, icon: Heart },
+        { label: "Experience", value: mgmt.experience, icon: Star },
+      ],
+    };
+  }
+
+  // 3. Security Data Handling
+  // If the specific endpoint doesn't return security data, we provide safe defaults
+  // so the ProfileCard doesn't crash.
+  const safeSecurity: SecurityData = security || {
+    last_login: user.last_login_at || null,
+    recent_failed_attempts: 0,
+    account_risk: "LOW",
+  };
+
+  return {
+    uuid: user.uuid,
+    username: user.username,
+    email: user.email,
+    full_name: fullName,
+    role_label: role,
+    sub_role_label: specificProfile.sub_role,
+    promoted_role_label: user.promoted_role,
+    is_active: !!user.is_active,
+
+    security: safeSecurity,
+
+    personal_details: personalDetails,
+    role_specific_details: roleSpecificDetails,
+    abilities: abilities,
+  };
 }

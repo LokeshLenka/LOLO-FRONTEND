@@ -1,38 +1,31 @@
+// src/pages/UserDashboard.tsx
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
-import {
-  Card,
-  CardBody,
-  Button,
-  Chip,
-  Progress,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-  Spinner,
-} from "@heroui/react";
+import { Card, CardBody, Button, Chip, Spinner, Tooltip } from "@heroui/react";
 import {
   TrendingUp,
   Ticket,
   Coins,
-  Calendar,
   ArrowRight,
-  Activity,
-  Trophy,
-  Star,
-  Zap,
-  Music,
   ShieldAlert,
-  Info,
   Clock,
+  Calendar,
+  TrendingDown,
+  Award,
+  Activity,
 } from "lucide-react";
 import { toast } from "sonner";
 
 // --- Types from Backend API ---
+interface CreditGrowthData {
+  month: string;
+  month_label: string;
+  credits_earned: number;
+  cumulative_total: number;
+  assignment_count: number;
+}
+
 interface ProfileDetails {
   name: string;
   email: string;
@@ -57,6 +50,7 @@ interface Analytics {
     balance: number;
     assignments_count: number;
     last_earned: string | null;
+    growth_timeline: CreditGrowthData[];
   };
   events: {
     total_registered: number;
@@ -75,59 +69,13 @@ interface DashboardData {
   analytics: Analytics;
 }
 
-// --- Rank System (Same as before) ---
-const RANKS = [
-  {
-    name: "Bronze",
-    min: 0,
-    max: 49,
-    color: "text-orange-800 dark:text-orange-400",
-    bg: "bg-orange-100 dark:bg-orange-900/40",
-    border: "border-orange-200 dark:border-orange-700/50",
-  },
-  {
-    name: "Silver",
-    min: 50,
-    max: 99,
-    color: "text-slate-700 dark:text-slate-300",
-    bg: "bg-slate-100 dark:bg-slate-800/50",
-    border: "border-slate-200 dark:border-slate-600/50",
-  },
-  {
-    name: "Gold",
-    min: 100,
-    max: 149,
-    color: "text-yellow-800 dark:text-yellow-400",
-    bg: "bg-yellow-100 dark:bg-yellow-900/40",
-    border: "border-yellow-200 dark:border-yellow-700/50",
-  },
-  {
-    name: "Platinum",
-    min: 150,
-    max: 10000,
-    color: "text-cyan-800 dark:text-cyan-300",
-    bg: "bg-cyan-100 dark:bg-cyan-900/40",
-    border: "border-cyan-200 dark:border-cyan-700/50",
-  },
-];
-
-const getRankInfo = (credits: number) => {
-  const rank =
-    RANKS.find((r) => credits >= r.min && credits <= r.max) ||
-    RANKS[RANKS.length - 1];
-  const nextRank = RANKS[RANKS.indexOf(rank) + 1];
-  let progress = 100;
-  let nextGoal = 0;
-
-  if (nextRank) {
-    const range = rank.max - rank.min;
-    const current = credits - rank.min;
-    progress = (current / range) * 100;
-    nextGoal = nextRank.min;
-  }
-
-  return { current: rank, next: nextRank, progress, nextGoal };
-};
+interface User {
+  username: string;
+  name: string;
+  email: string;
+  uuid: string;
+  role: string;
+}
 
 // --- Components ---
 const StatCard = ({
@@ -140,21 +88,22 @@ const StatCard = ({
 }: any) => (
   <Card
     shadow="none"
-    className="border border-black/5 dark:border-white/5 bg-black/1 dark:bg-white/1 backdrop-blur-lg rounded-2xl h-full hover:shadow-lg transition-all duration-300 hover:scale-105"
+    className="border border-black/5 dark:border-white/5 bg-black/1 dark:bg-white/1 backdrop-blur-sm rounded-2xl h-full hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
   >
-    <CardBody className="p-5 flex flex-col justify-between h-full ">
+    <CardBody className="p-5 flex flex-col justify-between h-full">
       <div className="flex justify-between items-start">
         <div
-          className={`p-3 rounded-md ${colorClass} bg-opacity-10 text-opacity-100`}
+          className={`p-3 rounded-xl ${colorClass} bg-opacity-10 text-opacity-100 transition-transform duration-300 hover:scale-110`}
         >
-          <Icon size={24} className={colorClass.replace("bg-", "text-")} />
+          {/* <Icon size={24} className={colorClass.replace("text-", "bg-")} /> */}
+          <Icon size={24} className="text-white" />
         </div>
         {trend && (
           <Chip
             size="sm"
             variant="flat"
             color="success"
-            className="text-xs font-bold rounded-2xl"
+            className="text-xs font-bold rounded-full"
           >
             +{trend}%
           </Chip>
@@ -164,7 +113,7 @@ const StatCard = ({
         <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
           {label}
         </p>
-        <h4 className={`text-3xl font-black text-black dark:text-white mt-1`}>
+        <h4 className="text-3xl font-black text-black dark:text-white mt-1">
           {value}
         </h4>
         {subValue && (
@@ -174,6 +123,232 @@ const StatCard = ({
     </CardBody>
   </Card>
 );
+
+const getUserFromStorage = (): User | null => {
+  const raw = localStorage.getItem("user");
+  return raw ? (JSON.parse(raw) as User) : null;
+};
+
+// Enhanced Credit Growth Chart Component
+const CreditGrowthChart = ({ data }: { data: CreditGrowthData[] }) => {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<"earned" | "cumulative">(
+    "cumulative"
+  );
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-48 text-gray-400">
+        <div className="text-center">
+          <Activity size={32} className="mx-auto mb-2 opacity-50" />
+          <p className="text-sm">No credit history available yet</p>
+        </div>
+      </div>
+    );
+  }
+
+  const maxValue = Math.max(
+    ...data.map((d) =>
+      viewMode === "earned" ? d.credits_earned : d.cumulative_total
+    )
+  );
+
+  // Calculate growth percentage
+  const firstValue = data[0]?.cumulative_total || 0;
+  const lastValue = data[data.length - 1]?.cumulative_total || 0;
+  const growthPercentage =
+    firstValue > 0
+      ? (((lastValue - firstValue) / firstValue) * 100).toFixed(1)
+      : 0;
+
+  return (
+    <div className="space-y-4">
+      {/* Header with Toggle */}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <Chip
+            size="sm"
+            variant="flat"
+            className={`font-bold cursor-pointer transition-all ${
+              viewMode === "cumulative"
+                ? "bg-[#03a1b0]/20 text-[#03a1b0]"
+                : "bg-gray-100 dark:bg-white/5"
+            }`}
+            onClick={() => setViewMode("cumulative")}
+          >
+            Cumulative
+          </Chip>
+          <Chip
+            size="sm"
+            variant="flat"
+            className={`font-bold cursor-pointer transition-all ${
+              viewMode === "earned"
+                ? "bg-purple-500/20 text-purple-600 dark:text-purple-400"
+                : "bg-gray-100 dark:bg-white/5"
+            }`}
+            onClick={() => setViewMode("earned")}
+          >
+            Monthly
+          </Chip>
+        </div>
+
+        {viewMode === "cumulative" && (
+          <Chip
+            size="sm"
+            variant="flat"
+            color={Number(growthPercentage) >= 0 ? "success" : "danger"}
+            startContent={
+              Number(growthPercentage) >= 0 ? (
+                <TrendingUp size={12} />
+              ) : (
+                <TrendingDown size={12} />
+              )
+            }
+            className="font-bold"
+          >
+            {growthPercentage}%
+          </Chip>
+        )}
+      </div>
+
+      {/* Chart */}
+      <div className="relative">
+        <div className="flex items-end gap-1.5 md:gap-2 h-48 w-full">
+          {data.map((item, i) => {
+            const value =
+              viewMode === "earned"
+                ? item.credits_earned
+                : item.cumulative_total;
+            const height = maxValue > 0 ? (value / maxValue) * 100 : 0;
+            const isHovered = hoveredIndex === i;
+
+            return (
+              <Tooltip
+                key={i}
+                content={
+                  <div className="p-2 space-y-1">
+                    <p className="font-bold text-xs">{item.month_label}</p>
+                    <div className="text-[10px] space-y-0.5">
+                      <p>
+                        Earned: <strong>{item.credits_earned} LP</strong>
+                      </p>
+                      <p>
+                        Total: <strong>{item.cumulative_total} LP</strong>
+                      </p>
+                      <p>
+                        Assignments: <strong>{item.assignment_count}</strong>
+                      </p>
+                    </div>
+                  </div>
+                }
+                placement="top"
+                className="backdrop-blur-sm"
+              >
+                <div
+                  className="w-full flex flex-col justify-end group relative h-full cursor-pointer"
+                  onMouseEnter={() => setHoveredIndex(i)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                >
+                  {/* Bar */}
+                  <div
+                    className={`w-full rounded-t-lg transition-all duration-300 relative overflow-hidden ${
+                      viewMode === "earned"
+                        ? "bg-gradient-to-t from-purple-500 to-purple-400"
+                        : "bg-gradient-to-t from-[#03a1b0] to-cyan-400"
+                    } ${
+                      isHovered
+                        ? "opacity-100 shadow-lg"
+                        : "opacity-60 group-hover:opacity-90"
+                    }`}
+                    style={{ height: `${height}%` }}
+                  >
+                    {/* Animated shine effect */}
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-t from-transparent via-white/30 to-transparent transition-opacity duration-300 ${
+                        isHovered ? "opacity-100" : "opacity-0"
+                      }`}
+                    />
+
+                    {/* Value label on hover */}
+                    {isHovered && height > 20 && (
+                      <span className="absolute top-2 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white drop-shadow-md whitespace-nowrap">
+                        {value} LP
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Indicator dot for non-zero values */}
+                  {value > 0 && !isHovered && (
+                    <div
+                      className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-1.5 h-1.5 rounded-full ${
+                        viewMode === "earned" ? "bg-purple-500" : "bg-[#03a1b0]"
+                      } opacity-0 group-hover:opacity-100 transition-opacity`}
+                    />
+                  )}
+                </div>
+              </Tooltip>
+            );
+          })}
+        </div>
+
+        {/* X-axis labels - Show every other month or first/last */}
+        <div className="flex justify-between mt-3 px-1">
+          {data.map((item, i) => {
+            const showLabel =
+              i === 0 ||
+              i === data.length - 1 ||
+              (data.length <= 6 && i % 1 === 0) ||
+              (data.length > 6 && i % 2 === 0);
+
+            return (
+              <div
+                key={i}
+                className="flex-1 text-center"
+                style={{ maxWidth: `${100 / data.length}%` }}
+              >
+                {showLabel && (
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                    {item.month_label}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Stats Summary */}
+      <div className="grid grid-cols-3 gap-3 pt-4 border-t border-black/5 dark:border-white/5">
+        <div className="text-center p-2 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-700/30">
+          <p className="text-[10px] text-gray-600 dark:text-gray-400 font-bold uppercase">
+            This Month
+          </p>
+          <p className="text-lg font-black text-[#03a1b0] mt-0.5">
+            {data[data.length - 1]?.credits_earned || 0}
+          </p>
+        </div>
+        <div className="text-center p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700/30">
+          <p className="text-[10px] text-gray-600 dark:text-gray-400 font-bold uppercase">
+            Avg/Month
+          </p>
+          <p className="text-lg font-black text-purple-600 dark:text-purple-400 mt-0.5">
+            {Math.round(
+              data.reduce((sum, d) => sum + d.credits_earned, 0) / data.length
+            )}
+          </p>
+        </div>
+        <div className="text-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700/30">
+          <p className="text-[10px] text-gray-600 dark:text-gray-400 font-bold uppercase">
+            Total
+          </p>
+          <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
+            {data[data.length - 1]?.cumulative_total || 0}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // --- Main Dashboard ---
 export default function UserDashboard() {
@@ -187,6 +362,7 @@ export default function UserDashboard() {
     "Where words fail, music speaks.",
     "Life is like a beautiful melody, only the lyrics are messed up.",
     "Music is the divine way to tell beautiful, poetic things to the heart.",
+    "Without music, life would be a mistake.",
   ];
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -197,8 +373,21 @@ export default function UserDashboard() {
       if (!username) return;
 
       try {
-        const response = await axios.get(`${API_BASE_URL}/dashboard`);
-        setData(response.data.data);
+        const localStoredRole = getUserFromStorage()?.role;
+        console.log("Local role:", localStoredRole);
+
+        let role = localStoredRole;
+
+        if (!role) {
+          const roleResponse = await axios.get(`${API_BASE_URL}/my-role`);
+          role = roleResponse.data.role;
+        }
+
+        const dashboardResponse = await axios.get(
+          `${API_BASE_URL}/${role}/dashboard`
+        );
+
+        setData(dashboardResponse.data.data);
       } catch (error: any) {
         console.error("Dashboard fetch error:", error);
         toast.error(
@@ -206,11 +395,12 @@ export default function UserDashboard() {
         );
       } finally {
         setLoading(false);
+        toast.dismiss();
       }
     };
 
     fetchDashboardData();
-  }, [username]);
+  }, [username, API_BASE_URL]);
 
   useEffect(() => {
     setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
@@ -255,6 +445,7 @@ export default function UserDashboard() {
           <div className="min-w-0">
             <h1 className="text-xl sm:text-2xl md:text-4xl font-semibold text-black dark:text-white tracking-tight truncate">
               Hi, {profile.name}
+              {/* 👋 */}
             </h1>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
               <span className="text-gray-500 text-xs sm:text-sm font-medium capitalize">
@@ -279,38 +470,41 @@ export default function UserDashboard() {
                 </Chip>
               )}
             </div>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
+              <Calendar size={14} />
               {profile.is_active ? "Active" : "Inactive"} • Joined{" "}
-              {new Date(profile.joined_at).toLocaleDateString()}
+              {new Date(profile.joined_at).toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
             </p>
           </div>
           <Button
             as={Link}
             to="/events"
-            className="bg-black dark:bg-white text-white dark:text-black font-bold px-4 sm:px-6 h-10 sm:h-12 rounded-md shadow-lg hover:scale-105 transition-transform text-sm sm:text-base whitespace-nowrap shrink-0"
+            className="bg-black/90 dark:bg-white text-white dark:text-black font-bold px-4  h-10 sm:h-12 rounded-lg hover:scale-105 transition-all"
           >
-            Find Events <ArrowRight size={16} />
+            Find Events
+            <ArrowRight
+              size={16}
+              className="group-hover:translate-x-1 transition-transform"
+            />
           </Button>
         </div>
 
         {/* Quote Banner */}
-        <div className="p-4 md:p-6 rounded-sm bg-gradient-to-r from-[#03a1b0]/10 to-transparent border-l-4 border-[#03a1b0] flex gap-4 items-center">
-          <Music size={24} className="text-[#03a1b0] shrink-0 opacity-50" />
-          <p className="text-sm md:text-base font-serif italic text-gray-700 dark:text-gray-300">
-            "{quote}"
-          </p>
-        </div>
       </div>
 
       {/* 2. Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <div className="col-span-1">
           <StatCard
             icon={Coins}
             label="Lifetime Credits"
             value={analytics.credits.balance.toLocaleString() + " LP"}
-            subValue={`+${analytics.credits.assignments_count} assignments`}
-            colorClass="bg-[#03a1b0] text-cyan-100 dark:text-cyan-900"
+            subValue={`${analytics.credits.assignments_count} assignments`}
+            colorClass="bg-[#03a1b0]"
           />
         </div>
         <div className="col-span-1">
@@ -319,7 +513,7 @@ export default function UserDashboard() {
             label="Event Registrations"
             value={analytics.events.total_registered}
             subValue={`${analytics.events.confirmed} confirmed`}
-            colorClass="bg-purple-500 text-white dark:text-purple-900"
+            colorClass="bg-purple-500"
           />
         </div>
         <div className="col-span-1">
@@ -327,8 +521,8 @@ export default function UserDashboard() {
             icon={Clock}
             label="Pending Payments"
             value={analytics.events.pending_payment_count}
-            subValue="Complete payment to earn credits"
-            colorClass="bg-amber-500 text-white dark:text-amber-900"
+            subValue="Complete to earn credits"
+            colorClass="bg-amber-500"
           />
         </div>
       </div>
@@ -337,32 +531,30 @@ export default function UserDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* LEFT COLUMN */}
         <div className="lg:col-span-2 space-y-6 md:space-y-8">
-          {/* Credit Growth Chart (Static for now) */}
-          <Card className="border border-black/5 dark:border-white/5 bg-black/1 dark:bg-white/1 backdrop-blur-xl rounded-2xl p-2 hover:scale-105 transition-all duration-300 hover:shadow-lg">
+          {/* Credit Growth Chart */}
+          <Card
+            shadow="none"
+            className="border border-black/5 dark:border-white/5 bg-black/1 dark:bg-white/1 backdrop-blur-sm rounded-2xl overflow-hidden hover:shadow-lg transition-all"
+          >
             <CardBody className="p-6">
-              <div className="flex justify-between items-center mb-6 text-gray-900 dark:text-white">
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <TrendingUp size={20} className="text-[#03a1b0]" />
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-cyan-100 dark:bg-cyan-900/30">
+                    <TrendingUp size={20} className="text-[#03a1b0]" />
+                  </div>
                   Credit Growth
                 </h3>
-                <Chip size="sm" variant="flat" className="font-bold rounded-md">
-                  Lifetime
+                <Chip
+                  size="sm"
+                  variant="flat"
+                  startContent={<Calendar size={12} />}
+                  className="font-bold bg-[#03a1b0]/10 text-[#03a1b0]"
+                >
+                  Last 12 Months
                 </Chip>
               </div>
-              <div className="flex items-end gap-2 md:gap-4 h-32 w-full">
-                {/* Simple static bars - replace with real chart later */}
-                {[0, 10, 25, 40, 30, 50, credits].map((val, i) => (
-                  <div
-                    key={i}
-                    className="w-full flex flex-col justify-end group relative h-full"
-                  >
-                    <div
-                      className="w-full bg-[#03a1b0] rounded-t-md opacity-40 group-hover:opacity-100 transition-all duration-300 relative"
-                      style={{ height: `${Math.min((val / 100) * 100, 100)}%` }}
-                    />
-                  </div>
-                ))}
-              </div>
+
+              <CreditGrowthChart data={analytics.credits.growth_timeline} />
             </CardBody>
           </Card>
         </div>
@@ -370,7 +562,10 @@ export default function UserDashboard() {
         {/* RIGHT COLUMN */}
         <div className="space-y-6 md:space-y-8 text-gray-900 dark:text-white">
           {/* Profile Quick Stats */}
-          <Card className="border border-black/5 dark:border-white/5 bg-black/1 dark:bg-white/1 backdrop-blur-xl rounded-2xl hover:shadow-lg hover:scale-105 transition-all duration-300">
+          <Card
+            shadow="none"
+            className="border border-black/5 dark:border-white/5 bg-black/1 dark:bg-white/1 backdrop-blur-sm rounded-2xl hover:shadow-lg hover:scale-[1.02] transition-all"
+          >
             <CardBody className="p-6">
               <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
                 Profile Status{" "}
@@ -390,7 +585,9 @@ export default function UserDashboard() {
                   <span className="text-gray-600 dark:text-gray-400">
                     Email
                   </span>
-                  <span className="font-medium">{profile.email}</span>
+                  <span className="font-medium truncate ml-2">
+                    {profile.email}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">
@@ -416,36 +613,84 @@ export default function UserDashboard() {
               <Button
                 as={Link}
                 to={`/${username}/profile`}
-                variant="light"
-                className="w-full mt-6 font-bold text-xs uppercase tracking-widest hover:text-[#03a1b0] rounded-md"
+                className="w-full mt-6 bg-[#03a1b0] text-white font-bold h-11 rounded-lg hover:scale-105 transition-all group"
               >
-                View Profile
+                View Full Profile
+                <ArrowRight
+                  size={16}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
               </Button>
             </CardBody>
           </Card>
+
+          {/* Last Activity Card */}
+          {analytics.credits.last_earned && (
+            <Card
+              shadow="none"
+              className="border border-black/5 dark:border-white/5 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/10 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg"
+            >
+              <CardBody className="p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                    <Award
+                      size={20}
+                      className="text-emerald-600 dark:text-emerald-400"
+                    />
+                  </div>
+                  <h4 className="font-bold text-sm text-emerald-900 dark:text-emerald-100">
+                    Last Credit Earned
+                  </h4>
+                </div>
+                <p className="text-xs text-emerald-800 dark:text-emerald-200 font-mono">
+                  {new Date(analytics.credits.last_earned).toLocaleString(
+                    "en-US",
+                    {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    }
+                  )}
+                </p>
+              </CardBody>
+            </Card>
+          )}
         </div>
       </div>
 
       {/* 4. Security Alert */}
       {analytics.security.account_risk === "HIGH" && (
-        <Card className="border-l-4 border-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 sm:w-[50%] w-full rounded-2xl">
+        <Card
+          shadow="none"
+          className="border-l-4 border-red-500 bg-gradient-to-r from-red-50 to-red-50/50 dark:from-red-900/20 dark:to-red-900/10 border border-red-200 dark:border-red-800 backdrop-blur-sm hover:shadow-lg transition-all rounded-2xl sm:w-[50%] w-full"
+        >
           <CardBody className="flex items-start gap-4 p-6">
-            <div>
-              <h3 className="font-bold text-lg text-red-900 dark:text-red-100 mb-1">
-                <ShieldAlert
-                  size={32}
-                  className="text-red-500 mt-0.5 shrink-0"
-                />
-                Security Alert
-              </h3>
-              <p className="text-sm text-red-800 dark:text-red-200">
-                {analytics.security.recent_failed_attempts} failed login
-                attempts in last 7 days.
+            <div className="p-3 rounded-xl bg-red-100 dark:bg-red-900/30 shrink-0">
+              <ShieldAlert size={28} className="text-red-500" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-bold text-lg text-red-900 dark:text-red-100">
+                  Security Alert
+                </h3>
+                <Chip size="sm" color="danger" variant="flat">
+                  Action Required
+                </Chip>
+              </div>
+              <p className="text-sm text-red-800 dark:text-red-200 mb-2">
+                <strong>{analytics.security.recent_failed_attempts}</strong>{" "}
+                failed login attempts detected in the last 7 days.
               </p>
-              <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+              <p className="text-xs text-red-700 dark:text-red-300 flex items-center gap-1">
+                <Clock size={12} />
                 Last login:{" "}
                 {analytics.security.last_login
-                  ? new Date(analytics.security.last_login).toLocaleString()
+                  ? new Date(analytics.security.last_login).toLocaleString(
+                      "en-US",
+                      {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }
+                    )
                   : "Never"}
               </p>
             </div>

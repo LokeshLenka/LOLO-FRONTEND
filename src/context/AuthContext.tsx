@@ -171,8 +171,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (role === "admin") {
         navigate("/admin/dashboard");
       } else {
-        const targetRole = profileData?.primary_role || "public";
-        navigate(`/${targetRole}/dashboard`);
+        navigate(`/${userData.username}/dashboard`);
       }
     } catch (err: any) {
       let message = "Login failed. Please try again.";
@@ -260,6 +259,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     hasPromotedRole,
     getPromotedRoleLabel,
   };
+  
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
