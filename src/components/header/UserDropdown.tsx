@@ -81,111 +81,116 @@ export default function UserDropdown() {
     navigate(path);
     closeDropdown();
   }
-
-  return (
-    <div className="relative">
-      <button
-        onClick={toggleDropdown}
-        className="flex items-center gap-3 text-gray-700 dropdown-toggle dark:text-gray-400 group"
-      >
-        <span className="h-10 w-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-[#03a1b0] group-hover:bg-[#03a1b0]/10 transition-colors shadow-sm">
-          <CircleUserRound size={24} />
-        </span>
-
-        <div className="hidden md:block text-left">
-          <span className="block text-sm font-bold text-gray-900 dark:text-white truncate max-w-[120px]">
-            {user?.name || user?.username}
-          </span>
-          <span className="block text-xs text-gray-500 dark:text-gray-400 capitalize truncate max-w-[120px]">
-            {profile?.primary_role || "Member"}
-          </span>
-        </div>
-
-        <svg
-          className={`hidden md:block stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-          width="18"
-          height="20"
-          viewBox="0 0 18 20"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+  {
+    return (
+      <div className="relative">
+        <button
+          onClick={toggleDropdown}
+          className="flex items-center gap-3 text-gray-700 dropdown-toggle dark:text-gray-400 group"
         >
-          <path
-            d="M4.3125 8.65625L9 13.3437L13.6875 8.65625"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
-
-      <Dropdown
-        isOpen={isOpen}
-        onClose={closeDropdown}
-        className="absolute right-0 mt-3 w-72 flex flex-col rounded-2xl border border-gray-200 bg-white p-2 shadow-2xl dark:border-gray-800 dark:bg-[#18181b] z-50 transform origin-top-right transition-all"
-      >
-        <div className="px-4 py-3 mb-2 border-b border-gray-100 dark:border-white/5">
-          <span className="block text-sm font-bold text-gray-900 dark:text-white truncate">
-            {user?.name || user?.username}
+          <span className="h-10 w-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-[#03a1b0] group-hover:bg-[#03a1b0]/10 transition-colors shadow-sm">
+            <CircleUserRound size={24} />
           </span>
-          <span className="block text-xs text-gray-500 dark:text-gray-400 truncate">
-            {user?.email}
-          </span>
-        </div>
 
-        <ul className="flex flex-col gap-1">
-          <li className="relative">
-            <button
-              type="button"
-              onClick={() => setProfilesOpen((s) => !s)}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+          <div className="hidden md:block text-left">
+            <span className="block text-sm font-bold text-gray-900 dark:text-white truncate max-w-[120px]">
+              {user?.name || user?.username}
+            </span>
+            <span className="block text-xs text-gray-500 dark:text-gray-400 capitalize truncate max-w-[120px]">
+              {profile?.primary_role || "Member"}
+            </span>
+          </div>
+          {profile?.has_promoted_role && (
+            <svg
+              className={`hidden md:block stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
+                isOpen ? "rotate-180" : ""
+              }`}
+              width="18"
+              height="20"
+              viewBox="0 0 18 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M4.3125 8.65625L9 13.3437L13.6875 8.65625"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </button>
+        <Dropdown
+          isOpen={isOpen}
+          onClose={closeDropdown}
+          className="absolute right-0 mt-3 w-72 flex flex-col rounded-2xl border border-gray-200 bg-white p-2 shadow-2xl dark:border-gray-800 dark:bg-[#18181b] z-50 transform origin-top-right transition-all"
+        >
+          <div className="px-4 py-3 mb-2 border-b border-gray-100 dark:border-white/5">
+            <span className="block text-sm font-bold text-gray-900 dark:text-white truncate">
+              {user?.name || user?.username}
+            </span>
+            <span className="block text-xs text-gray-500 dark:text-gray-400 truncate">
+              {user?.email}
+            </span>
+          </div>
+
+          <ul className="flex flex-col gap-1">
+            <li className="relative">
+              {profile?.has_promoted_role && (
+                <button
+                  type="button"
+                  onClick={() => setProfilesOpen((s) => !s)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
                 ${
                   profilesOpen
                     ? "bg-gray-50 text-gray-900 dark:bg-white/5 dark:text-white"
                     : "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
                 }`}
-            >
-              <div className="flex items-center gap-3">
-                <LayoutDashboard size={18} className="text-gray-400" />
-                <span>Switch Dashboard</span>
-              </div>
-              <ChevronRight
-                size={16}
-                className={`text-gray-400 transition-transform duration-200 ${
-                  profilesOpen ? "rotate-90" : ""
-                }`}
-              />
-            </button>
+                >
+                  <div className="flex items-center gap-3">
+                    <LayoutDashboard size={18} className="text-gray-400" />
+                    <span>Switch Dashboard</span>
+                  </div>
+                  <ChevronRight
+                    size={16}
+                    className={`text-gray-400 transition-transform duration-200 ${
+                      profilesOpen ? "rotate-90" : ""
+                    }`}
+                  />
+                </button>
+              )}
 
-            {profilesOpen && (
-              <div className="mt-1 ml-4 pl-3 border-l-2 border-gray-100 dark:border-white/10 space-y-1 animate-in slide-in-from-top-2 duration-200">
-                {availableProfiles.map((p) => {
-                  const isActive = activeProfileId === p.id;
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => handleProfileClick(p.path)}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors text-left
+              {profilesOpen && (
+                <div className="mt-1 ml-4 pl-3 border-l-2 border-gray-100 dark:border-white/10 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                  {availableProfiles.map((p) => {
+                    const isActive = activeProfileId === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => handleProfileClick(p.path)}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors text-left
                         ${
                           isActive
                             ? "bg-[#03a1b0]/10 text-[#03a1b0] font-semibold"
                             : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
                         }`}
-                    >
-                      <span className="truncate">{p.label}</span>
-                      {isActive && (
-                        <Check size={14} className="text-[#03a1b0] shrink-0" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </li>
+                      >
+                        <span className="truncate">{p.label}</span>
+                        {isActive && (
+                          <Check
+                            size={14}
+                            className="text-[#03a1b0] shrink-0"
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </li>
 
-          {/* <li>
+            {/* <li>
             <button
               onClick={() => navigate("/settings")}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5 transition-colors"
@@ -195,7 +200,7 @@ export default function UserDropdown() {
             </button>
           </li> */}
 
-          {/* <li className="mt-1 pt-1 border-t border-gray-100 dark:border-white/5">
+            {/* <li className="mt-1 pt-1 border-t border-gray-100 dark:border-white/5">
             <DropdownItem
               onItemClick={() => {
                 logout();
@@ -208,8 +213,9 @@ export default function UserDropdown() {
               Sign Out
             </DropdownItem>
           </li> */}
-        </ul>
-      </Dropdown>
-    </div>
-  );
+          </ul>
+        </Dropdown>
+      </div>
+    );
+  }
 }

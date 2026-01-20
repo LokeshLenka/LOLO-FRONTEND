@@ -3,6 +3,7 @@ import { ThemeToggleButton } from "../common/ThemeToggleButton";
 import NotificationDropdown from "./NotificationDropdown";
 // import UserDropdown from "./UserDropdown";
 import { Link } from "react-router";
+import UserDropdown from "./UserDropdown";
 
 // Define the interface for the props
 interface HeaderProps {
@@ -154,11 +155,11 @@ const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
             {/* <!-- Dark Mode Toggler --> */}
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}
-            <NotificationDropdown />
+            {/* <NotificationDropdown /> */}
             {/* <!-- Notification Menu Area --> */}
           </div>
           {/* <!-- User Area --> */}
-          {/* <UserDropdown /> */}
+          <UserDropdown />
         </div>
       </div>
     </header>
