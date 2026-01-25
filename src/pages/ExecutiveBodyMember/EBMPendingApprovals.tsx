@@ -11,23 +11,37 @@ import {
   Chip,
   Button,
   Tooltip,
-  Input,
   Card,
   CardBody,
+  Input,
+  Skeleton,
+  Snippet,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  useDisclosure,
 } from "@heroui/react";
+import TablePagination from "@mui/material/TablePagination";
 import {
   CheckCircle2,
   XCircle,
   Search,
-  Loader2,
-  ChevronLeft,
-  ChevronRight,
-  Music,
+  Filter,
+  MoreVertical,
+  Clock,
   Briefcase,
+  Music,
+  ShieldAlert,
+  Download,
+  RefreshCw,
+  User2,
 } from "lucide-react";
 import { toast } from "sonner";
+import ApplicantDetailsModal from "./Users/UserApplicationModal";
+import { useNavigate } from "react-router-dom";
 
-// --- Updated Types to match EXACT API Response ---
+// --- Types ---
 interface ProfileData {
   first_name: string;
   last_name: string;
@@ -57,85 +71,209 @@ interface ApiResponseData {
   current_page: number;
   data: PendingUser[];
   first_page_url: string;
-  from: number;
+  from: number | null;
   next_page_url: string | null;
   path: string;
   per_page: number;
   prev_page_url: string | null;
-  to: number;
+  to: number | null;
+  total: number;
 }
 
+// --- Constants ---
+const STORAGE_KEYS = {
+  PAGE: "ebm_pending_approvals_page",
+  ROWS: "ebm_pending_approvals_rows_per_page",
+} as const;
+
+// --- Sub-Components for Cleanliness ---
+const StatsCard = ({
+  title,
+  value,
+  icon: Icon,
+  color,
+}: {
+  title: string;
+  value: number | string;
+  icon: any;
+  color: string;
+}) => (
+  <Card
+    shadow="none"
+    className="border border-black/5 dark:border-white/5 bg-white dark:bg-white/5"
+  >
+    <CardBody className="flex flex-row items-center gap-4 p-4">
+      <div className={`p-3 rounded-xl ${color} bg-opacity-10 text-opacity-100`}>
+        <Icon size={20} />
+      </div>
+      <div>
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+          {title}
+        </p>
+        <h4 className="text-2xl font-black text-gray-900 dark:text-white">
+          {value}
+        </h4>
+      </div>
+    </CardBody>
+  </Card>
+);
+
+// hooks/useDebounce.ts
+export function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+/** Retrieves User Object safely */
+const getUserFromStorage = (): any => {
+  try {
+    const raw = localStorage.getItem("authToken");
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.error("Error parsing user from storage", e);
+    return null;
+  }
+};
+
+const currentUser = getUserFromStorage();
+
 export default function EBMPendingApprovals() {
+  // --- State ---
   const [users, setUsers] = useState<PendingUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [currentPageData, setCurrentPageData] =
     useState<ApiResponseData | null>(null);
 
+  const navigate = useNavigate();
+
+  // Pagination State (Persisted)
+  const [page, setPage] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.PAGE);
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const [rowsPerPage, setRowsPerPage] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.ROWS);
+      return saved ? parseInt(saved, 10) : 20;
+    } catch {
+      return 20;
+    }
+  });
+
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  const fetchApprovals = useCallback(
-    async (url?: string) => {
-      setLoading(true);
-      try {
-        const endpoint = url || `${API_BASE_URL}/ebm/pending-approvals`;
+  // --- API Handling ---
+  const fetchApprovals = useCallback(async () => {
+    setLoading(true);
+    try {
+      const endpoint = `${API_BASE_URL}/ebm/pending-approvals?page=${
+        page + 1
+      }&per_page=${rowsPerPage}`;
 
-        const response = await axios.get<any>(endpoint);
+      const response = await axios.get<{
+        success: boolean;
+        data: ApiResponseData;
+      }>(endpoint);
 
-        // Extract from response.data.data (Laravel paginator structure)
-        const paginatorData = response.data.data as ApiResponseData;
+      const paginatorData = response.data.data;
 
-        if (paginatorData?.data) {
-          setUsers(paginatorData.data);
-          setCurrentPageData(paginatorData);
-        } else {
-          setUsers([]);
-          setCurrentPageData(null);
-        }
-      } catch (err: any) {
-        console.error("Fetch error:", err);
-        toast.error(
-          err.response?.data?.message || "Failed to load pending approvals"
-        );
+      if (paginatorData?.data) {
+        setUsers(paginatorData.data);
+        setCurrentPageData(paginatorData);
+      } else {
         setUsers([]);
         setCurrentPageData(null);
-      } finally {
-        setLoading(false);
       }
-    },
-    [API_BASE_URL]
-  );
+    } catch (err: any) {
+      console.error("Fetch error:", err);
+      toast.error(
+        err.response?.data?.message || "Failed to load pending approvals",
+      );
+      setUsers([]);
+      setCurrentPageData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [API_BASE_URL, page, rowsPerPage]);
 
   useEffect(() => {
     fetchApprovals();
   }, [fetchApprovals]);
 
-  const handleAction = async (uuid: string, action: "approve" | "reject") => {
-    setProcessingId(uuid);
-    const toastId = toast.loading(
-      `${action === "approve" ? "Approving" : "Rejecting"} user...`
-    );
-
+  // 3. Update handleAction
+  const handleAction = async (
+    uuid: string,
+    action: "approve" | "reject" | "view",
+  ) => {
     try {
-      await axios.post(`${API_BASE_URL}/ebm/${action}-user/${uuid}`);
-      toast.success(`User ${action}d successfully!`, { id: toastId });
-
-      // Refresh current page after action
-      if (currentPageData) {
-        fetchApprovals(
-          currentPageData.path + `?page=${currentPageData.current_page}`
+      if (action === "view") {
+        console.log("Navigating to view application for user:", uuid);
+        navigate(
+          `/${currentUser?.username}/executive_body_member/view-application/user/${uuid}`,
         );
+        return;
       }
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.message || `Failed to ${action} user`, {
-        id: toastId,
-      });
+
+      const remarks = prompt("Enter remarks:");
+      if (!remarks) return;
+      const toastId = toast.loading(
+        `${action === "approve" ? "Approving" : "Rejecting"} user...`,
+      );
+
+      try {
+        await axios.post(`${API_BASE_URL}/ebm/${action}-user/${uuid}`);
+        toast.success(`User ${action}d successfully!`, { id: toastId });
+
+        fetchApprovals();
+      } catch (err: any) {
+        console.error(err);
+        toast.error(err.response?.data?.message || `Failed to ${action} user`, {
+          id: toastId,
+        });
+      } finally {
+        setProcessingId(null);
+      }
+    } catch (err) {
+      toast.error("Failed to fetch user details");
     } finally {
       setProcessingId(null);
     }
+    return; // Stop here, don't proceed to approve/reject logic below
   };
 
+  // --- Pagination Handlers ---
+  const handleChangePage = useCallback((_: unknown, newPage: number) => {
+    setPage(newPage);
+    localStorage.setItem(STORAGE_KEYS.PAGE, newPage.toString());
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const handleChangeRowsPerPage = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const newRows = parseInt(event.target.value, 10);
+      setRowsPerPage(newRows);
+      setPage(0);
+      localStorage.setItem(STORAGE_KEYS.ROWS, newRows.toString());
+      localStorage.setItem(STORAGE_KEYS.PAGE, "0");
+    },
+    [],
+  );
+
+  // --- Helpers ---
   const getUserDisplayData = (user: PendingUser) => {
     const profile =
       user.role === "music" ? user.music_profile : user.management_profile;
@@ -149,62 +287,170 @@ export default function EBMPendingApprovals() {
     const year = profile?.year
       ? profile.year.charAt(0).toUpperCase() + profile.year.slice(1)
       : "N/A";
-    const branchYear = `${branch} • ${year}`;
+    const branchYear = `${branch}`.toLocaleUpperCase() + ` • ${year}`;
     const subRole = profile?.sub_role || user.role;
 
     return { fullName, regNum, branchYear, subRole };
   };
 
-  const pageData = currentPageData;
+  const totalItems = currentPageData?.total ?? 0;
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFilterActive, setIsFilterActive] = useState(false); // Track if filters are applied
+
+  // 2. Use the debounce hook to prevent API spam
+  const debouncedSearch = useDebounce(searchQuery, 400);
+
+  // 3. Effect to trigger fetch when debounced value changes
+  useEffect(() => {
+    // Only trigger if the value actually changed to avoid initial double-fetch
+    // You might need to pass debouncedSearch to your fetchApprovals function
+    fetchApprovals();
+  }, [debouncedSearch]);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white">
-            Pending Approvals ({users.length})
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-            Review new member registration requests assigned to you (Page{" "}
-            {pageData?.current_page || 1})
-          </p>
+    <section className="w-full min-h-screen py-6 px-4 sm:px-8 lg:px-12 mx-auto space-y-6 bg-gray-50/50 dark:bg-black/5">
+      {/* 1. Page Header & Stats */}
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+              Pending Approvals
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 font-medium mt-1">
+              Manage and review member registration requests.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="flat"
+              startContent={
+                <RefreshCw
+                  size={18}
+                  className={loading ? "animate-spin" : ""}
+                />
+              }
+              onPress={() => fetchApprovals()}
+              isDisabled={loading} // Optional: prevents clicking while loading
+              className="font-semibold"
+            >
+              Refresh
+            </Button>
+            <Button
+              className="bg-[#03a1b0] text-white font-bold"
+              startContent={<Download size={18} />}
+            >
+              Download
+            </Button>
+          </div>
+        </div>
+
+        {/* Quick Stats Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatsCard
+            title="Total Pending"
+            value={totalItems}
+            icon={Clock}
+            color="bg-amber-500"
+          />
+          <StatsCard
+            title="Music Members"
+            value={users.filter((u) => u.role === "music").length}
+            icon={Music}
+            color="bg-purple-500"
+          />
+          <StatsCard
+            title="Management Members"
+            value={users.filter((u) => u.role === "management").length}
+            icon={Briefcase}
+            color="bg-blue-500"
+          />
+          <StatsCard
+            title="Urgent Actions"
+            value={0}
+            icon={ShieldAlert}
+            color="bg-red-500"
+          />
         </div>
       </div>
 
-      {/* Table Card */}
-      <Card className="border border-gray-200 dark:border-white/5 shadow-none">
+      {/* 2. Main Data Table */}
+      <Card
+        shadow="sm"
+        className="border border-black/5 dark:border-white/5 bg-white dark:bg-black/20 rounded-2xl overflow-hidden"
+      >
         <CardBody className="p-0">
+          {/* Toolbar */}
+          <div className="p-4 border-b border-gray-100 dark:border-white/5 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-white/5">
+            <Input
+              className="w-full sm:max-w-xs h-full outline-none"
+              placeholder="Search by name or reg no..."
+              startContent={<Search size={18} className="text-gray-400" />}
+              value={searchQuery}
+              onValueChange={setSearchQuery}
+              variant="bordered"
+              size="md"
+              classNames={{
+                inputWrapper: "bg-gray-50 dark:bg-black/20 border-black/10",
+              }}
+            />
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="flat"
+                startContent={<Filter size={16} />}
+                className="text-gray-600 dark:text-gray-300"
+              >
+                Filters
+              </Button>
+            </div>
+          </div>
+
+          {/* Content */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center p-20 gap-4">
-              <Loader2 className="animate-spin text-[#03a1b0]" size={32} />
-              <p className="text-gray-500 text-sm">
-                Loading pending requests...
-              </p>
+            <div className="p-4 space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="w-10 h-10 rounded-full" />
+                  <div className="w-full space-y-2">
+                    <Skeleton className="h-3 w-1/3 rounded-lg" />
+                    <Skeleton className="h-3 w-1/4 rounded-lg" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : users.length === 0 ? (
-            <div className="text-center p-20">
-              <div className="w-16 h-16 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 size={32} className="text-gray-400" />
+            <div className="flex flex-col items-center justify-center p-24 text-center">
+              <div className="w-20 h-20 bg-gray-50 dark:bg-white/5 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle2 size={40} className="text-gray-300" />
               </div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                No Pending Approvals
+                All caught up!
               </h3>
-              <p className="text-gray-500 text-sm mt-1">
-                All requests have been processed.
+              <p className="text-gray-500 max-w-xs mx-auto mt-1">
+                There are no pending approval requests assigned to you at the
+                moment.
               </p>
             </div>
           ) : (
             <Table
-              aria-label="Pending Approvals"
-              classNames={{ wrapper: "min-h-[400px]" }}
+              aria-label="Pending Approvals Table"
+              selectionMode="single"
+              color="primary"
+              classNames={{
+                wrapper: "shadow-none bg-transparent rounded-none p-0",
+                th: "bg-gray-50 dark:bg-white/5 text-gray-500 font-bold uppercase text-[10px] tracking-wider py-4",
+                td: "py-4 border-b border-gray-100 dark:border-white/5 group-data-[last=true]:border-none",
+                tr: "hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors",
+              }}
             >
               <TableHeader>
-                <TableColumn>APPLICANT</TableColumn>
-                <TableColumn>ROLE</TableColumn>
+                <TableColumn>S.No</TableColumn>
+                <TableColumn>APPLICANT DETAILS</TableColumn>
+                <TableColumn>ROLE & STATUS</TableColumn>
                 <TableColumn>ACADEMIC INFO</TableColumn>
-                <TableColumn>ASSIGNED</TableColumn>
-                <TableColumn className="text-center">ACTIONS</TableColumn>
+                <TableColumn>ASSIGNMENT</TableColumn>
+                <TableColumn align="center">ACTIONS</TableColumn>
               </TableHeader>
               <TableBody>
                 {users.map((user) => {
@@ -212,17 +458,15 @@ export default function EBMPendingApprovals() {
                     getUserDisplayData(user);
 
                   return (
-                    <TableRow
-                      key={user.uuid}
-                      className="hover:bg-gray-50 dark:hover:bg-white/5"
-                    >
+                    <TableRow key={user.uuid}>
+                      <TableCell>{users.indexOf(user) + 1}</TableCell>
                       <TableCell>
                         <User
                           name={fullName}
-                          description={regNum}
+                          description={user.username}
                           avatarProps={{
-                            radius: "lg",
-                            src: undefined,
+                            radius: "full",
+                            size: "sm",
                             fallback:
                               user.role === "music" ? (
                                 <Music className="w-4 h-4" />
@@ -231,24 +475,39 @@ export default function EBMPendingApprovals() {
                               ),
                             className:
                               user.role === "music"
-                                ? "bg-purple-100 text-purple-600"
-                                : "bg-blue-100 text-blue-600",
+                                ? "bg-purple-50 text-purple-600 border border-purple-100"
+                                : "bg-blue-50 text-blue-600 border border-blue-100",
+                          }}
+                          classNames={{
+                            name: "text-sm font-bold text-gray-900 dark:text-white",
                           }}
                         />
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-col gap-1 min-w-[120px]">
+                        <div className="flex flex-col gap-1.5 items-start">
                           <Chip
                             size="sm"
-                            color={
-                              user.role === "music" ? "secondary" : "primary"
+                            startContent={
+                              <div
+                                className={`w-1.5 h-1.5 rounded-full ml-1 ${
+                                  user.role === "music"
+                                    ? "bg-purple-500"
+                                    : "bg-blue-500"
+                                }`}
+                              />
                             }
-                            variant="flat"
-                            className="w-fit capitalize font-medium"
+                            variant="solid"
+                            classNames={{
+                              base:
+                                user.role === "music"
+                                  ? "bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300"
+                                  : "bg-blue-50 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300",
+                              content: "font-bold capitalize pl-1",
+                            }}
                           >
                             {user.role}
                           </Chip>
-                          <span className="text-xs text-gray-500 capitalize">
+                          <span className="text-xs text-gray-500 font-medium capitalize pl-1">
                             {subRole
                               .replace(/_/g, " ")
                               .replace(/\b\w/g, (l) => l.toUpperCase())}
@@ -256,56 +515,101 @@ export default function EBMPendingApprovals() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm font-semibold text-gray-900 dark:text-gray-200">
                             {branchYear}
                           </span>
-                          <span className="text-xs text-gray-500">
-                            Reg: {regNum}
+                          <span className="text-xs text-gray-400 font-mono">
+                            {regNum}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm text-gray-600 dark:text-gray-400 block">
-                          {new Date(
-                            user.user_approval.ebm_assigned_at
-                          ).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                            <Clock size={12} />
+                            <span>Assigned</span>
+                          </div>
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {new Date(
+                              user.user_approval.ebm_assigned_at,
+                            ).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-center gap-2">
-                          <Tooltip content="Approve Member" color="success">
+                          <Tooltip
+                            content="Approve User"
+                            className="bg-black dark:bg-white text-white dark:text-black backdrop-blur-lg border"
+                          >
                             <Button
                               isIconOnly
                               size="sm"
-                              color="success"
-                              variant="flat"
+                              className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 dark:bg-green-500/10 dark:text-green-400"
                               isLoading={processingId === user.uuid}
                               onPress={() => handleAction(user.uuid, "approve")}
-                              className="w-9 h-9"
                             >
                               <CheckCircle2 size={18} />
                             </Button>
                           </Tooltip>
-                          <Tooltip content="Reject Application" color="danger">
+                          <Tooltip
+                            content="Reject User"
+                            className="bg-black dark:bg-white text-white dark:text-black backdrop-blur-lg border"
+                          >
                             <Button
                               isIconOnly
                               size="sm"
-                              color="danger"
-                              variant="flat"
+                              className="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 dark:bg-red-500/10 dark:text-red-400"
                               isLoading={processingId === user.uuid}
                               onPress={() => handleAction(user.uuid, "reject")}
-                              className="w-9 h-9"
                             >
                               <XCircle size={18} />
                             </Button>
                           </Tooltip>
+                          <Tooltip
+                            content="View Application"
+                            className="bg-black dark:bg-white text-white dark:text-black backdrop-blur-lg border"
+                          >
+                            <Button
+                              isIconOnly
+                              size="sm"
+                              className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                              isLoading={processingId === user.uuid}
+                              onPress={() => handleAction(user.uuid, "view")}
+                            >
+                              <User2 size={18} />
+                            </Button>
+                          </Tooltip>
+
+                          {/* <Dropdown>
+                            <DropdownTrigger>
+                              <Button
+                                isIconOnly
+                                size="sm"
+                                variant="light"
+                                className="text-gray-400"
+                              >
+                                <MoreVertical size={18} />
+                              </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu aria-label="More actions">
+                              <DropdownItem
+                                key="view"
+                                className="bg-black dark:bg-white text-white dark:text-black backdrop-blur-lg border"
+                              >
+                                View Application
+                              </DropdownItem>
+                              <DropdownItem key="flag" className="text-warning">
+                                Flag for Review
+                              </DropdownItem>
+                            </DropdownMenu>
+                          </Dropdown> */}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -317,42 +621,107 @@ export default function EBMPendingApprovals() {
         </CardBody>
       </Card>
 
-      {/* Fixed Pagination */}
-      {pageData && users.length > 0 && (
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white dark:bg-[#18181b] p-4 rounded-xl border border-gray-200 dark:border-white/5">
-          <span className="text-sm text-gray-500">
-            Showing {pageData.from} to {pageData.to} of{" "}
-            {pageData.per_page * pageData.current_page} records
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="flat"
-              isDisabled={!pageData.prev_page_url}
-              onPress={() =>
-                pageData.prev_page_url && fetchApprovals(pageData.prev_page_url)
-              }
-              startContent={<ChevronLeft size={16} />}
-            >
-              Previous
-            </Button>
-            <span className="text-sm font-medium px-3 py-1 bg-gray-100 dark:bg-white/5 rounded-md">
-              Page {pageData.current_page}
-            </span>
-            <Button
-              size="sm"
-              variant="flat"
-              isDisabled={!pageData.next_page_url}
-              onPress={() =>
-                pageData.next_page_url && fetchApprovals(pageData.next_page_url)
-              }
-              endContent={<ChevronRight size={16} />}
-            >
-              Next
-            </Button>
-          </div>
+      {/* 3. Floating Pagination Control */}
+      {currentPageData && totalItems > 0 && (
+        // <div className="fixed z-[99] bottom-6 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4">
+        //   <div className="bg-white/80 dark:bg-[#18181b]/90 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-2xl rounded-2xl p-1.5 flex justify-center">
+        //     <TablePagination
+        //       component="div"
+        //       count={totalItems}
+        //       page={page}
+        //       onPageChange={handleChangePage}
+        //       rowsPerPageOptions={[12, 20, 50, 100]}
+        //       rowsPerPage={rowsPerPage}
+        //       onRowsPerPageChange={handleChangeRowsPerPage}
+        //       labelRowsPerPage="Rows:"
+        //       className="text-gray-600 dark:text-gray-300"
+        //       sx={{
+        //         ".MuiToolbar-root": {
+        //           paddingLeft: 2,
+        //           paddingRight: 2,
+        //           minHeight: "44px",
+        //         },
+        //         ".MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows":
+        //           {
+        //             fontSize: "0.875rem",
+        //             fontWeight: 500,
+        //           },
+        //         ".MuiTablePagination-actions button": {
+        //           color: "#03a1b0",
+        //           transition: "all 0.2s",
+        //           "&:hover": {
+        //             backgroundColor: "rgba(3, 161, 176, 0.1)",
+        //             transform: "scale(1.1)",
+        //           },
+        //           "&.Mui-disabled": {
+        //             color: "gray",
+        //             opacity: 0.3,
+        //           },
+        //         },
+        //       }}
+        //       slotProps={{
+        //         select: {
+        //           MenuProps: {
+        //             PaperProps: {
+        //               className:
+        //                 "!bg-white dark:!bg-[#18181b] !text-black dark:!text-white !backdrop-blur-xl !rounded-lg !shadow-xl !border !border-black/5 dark:!border-white/5",
+        //               sx: {
+        //                 "& .MuiMenuItem-root.Mui-selected": {
+        //                   bgcolor: "#03a1b0 !important",
+        //                   color: "#fff !important",
+        //                   fontWeight: "bold",
+        //                 },
+        //               },
+        //             },
+        //           },
+        //         },
+        //       }}
+        //     />
+        //   </div>
+
+        <div className="fixed z-[99] bottom-8 w-full sm:w-[28%] flex right-0 sm:right-22 items-center py-3 rounded-xl bg-white/70 dark:bg-black/70 backdrop-blur-sm border border-black/5 dark:border-white/5">
+          <TablePagination
+            component="div"
+            count={totalItems}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPageOptions={[12, 24, 50, 100]}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Per Page"
+            className="mx-auto"
+            sx={{
+              color: "inherit",
+              ".MuiSvgIcon-root": { color: "inherit" },
+              "& .MuiTablePagination-select": { color: "inherit" },
+              "& .MuiTablePagination-actions button": {
+                transition: "all 0.3s",
+                "&:hover": { transform: "scale(1.1)" },
+              },
+            }}
+            slotProps={{
+              select: {
+                MenuProps: {
+                  PaperProps: {
+                    className:
+                      "!bg-black/5 dark:!bg-white/5 !text-black dark:!text-white !backdrop-blur-sm !rounded-lg !shadow-xl",
+                    sx: {
+                      "& .MuiMenuItem-root.Mui-selected": {
+                        bgcolor: "#03a1b0 !important",
+                        fontWeight: "bold",
+                      },
+                      "& .MuiMenuItem-root:hover": {
+                        bgcolor: "rgba(3, 161, 176, 0.08) !important",
+                        transform: "scale(1.02)",
+                      },
+                    },
+                  },
+                },
+              },
+            }}
+          />
         </div>
       )}
-    </div>
+    </section>
   );
 }
