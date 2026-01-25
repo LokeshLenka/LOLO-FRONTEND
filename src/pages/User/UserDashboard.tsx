@@ -133,7 +133,7 @@ const getUserFromStorage = (): User | null => {
 const CreditGrowthChart = ({ data }: { data: CreditGrowthData[] }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<"earned" | "cumulative">(
-    "cumulative"
+    "cumulative",
   );
 
   if (!data || data.length === 0) {
@@ -149,8 +149,8 @@ const CreditGrowthChart = ({ data }: { data: CreditGrowthData[] }) => {
 
   const maxValue = Math.max(
     ...data.map((d) =>
-      viewMode === "earned" ? d.credits_earned : d.cumulative_total
-    )
+      viewMode === "earned" ? d.credits_earned : d.cumulative_total,
+    ),
   );
 
   // Calculate growth percentage
@@ -333,7 +333,7 @@ const CreditGrowthChart = ({ data }: { data: CreditGrowthData[] }) => {
           </p>
           <p className="text-lg font-black text-purple-600 dark:text-purple-400 mt-0.5">
             {Math.round(
-              data.reduce((sum, d) => sum + d.credits_earned, 0) / data.length
+              data.reduce((sum, d) => sum + d.credits_earned, 0) / data.length,
             )}
           </p>
         </div>
@@ -384,14 +384,15 @@ export default function UserDashboard() {
         }
 
         const dashboardResponse = await axios.get(
-          `${API_BASE_URL}/${role}/dashboard`
+          `${API_BASE_URL}/${role}/dashboard`,
         );
 
         setData(dashboardResponse.data.data);
+        console.log("Dashboard data fetched:", dashboardResponse.data.data);
       } catch (error: any) {
         console.error("Dashboard fetch error:", error);
         toast.error(
-          error.response?.data?.message || "Failed to load dashboard"
+          error.response?.data?.message || "Failed to load dashboard",
         );
       } finally {
         setLoading(false);
@@ -409,10 +410,8 @@ export default function UserDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8">
-        <div className="text-center space-y-4">
-          <Spinner size="lg" color="primary" />
-          <p className="text-gray-500">Loading dashboard...</p>
-        </div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-[#03a1b0]"></div>
+        <p className="pl-4 text-[#03a1b0]">Loading dashboard...</p>
       </div>
     );
   }
@@ -502,7 +501,7 @@ export default function UserDashboard() {
           <StatCard
             icon={Coins}
             label="Lifetime Credits"
-            value={analytics.credits.balance.toLocaleString() + " LP"}
+            value={credits.toLocaleString() + " LP"}
             subValue={`${analytics.credits.assignments_count} assignments`}
             colorClass="bg-[#03a1b0]"
           />
@@ -628,7 +627,7 @@ export default function UserDashboard() {
           {analytics.credits.last_earned && (
             <Card
               shadow="none"
-              className="border border-black/5 dark:border-white/5 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/10 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg"
+              className="border border-black/5 dark:border-white/5 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/10 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg "
             >
               <CardBody className="p-5">
                 <div className="flex items-center gap-3 mb-3">
@@ -648,7 +647,7 @@ export default function UserDashboard() {
                     {
                       dateStyle: "medium",
                       timeStyle: "short",
-                    }
+                    },
                   )}
                 </p>
               </CardBody>
@@ -661,7 +660,7 @@ export default function UserDashboard() {
       {analytics.security.account_risk === "HIGH" && (
         <Card
           shadow="none"
-          className="border-l-4 border-red-500 bg-gradient-to-r from-red-50 to-red-50/50 dark:from-red-900/20 dark:to-red-900/10 border border-red-200 dark:border-red-800 backdrop-blur-sm hover:shadow-lg transition-all rounded-2xl sm:w-[50%] w-full"
+          className="border-l-4 border-red-500 bg-gradient-to-r from-red-50 to-red-50/50 dark:from-red-900/20 dark:to-red-900/10 border border-red-200 dark:border-red-800 backdrop-blur-sm hover:shadow-lg transition-all rounded-2xl sm:w-[50%] w-full "
         >
           <CardBody className="flex items-start gap-4 p-6">
             <div className="p-3 rounded-xl bg-red-100 dark:bg-red-900/30 shrink-0">
@@ -689,7 +688,7 @@ export default function UserDashboard() {
                       {
                         dateStyle: "medium",
                         timeStyle: "short",
-                      }
+                      },
                     )
                   : "Never"}
               </p>
