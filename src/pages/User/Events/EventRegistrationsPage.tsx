@@ -921,7 +921,7 @@ export default function EventRegistrationCards() {
           count={totalItems}
           page={page}
           onPageChange={handleChangePage}
-          rowsPerPageOptions={[10, 25, 50, 100]}
+          rowsPerPageOptions={[12, 24, 50, 100]}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
           labelRowsPerPage="Per Page"
