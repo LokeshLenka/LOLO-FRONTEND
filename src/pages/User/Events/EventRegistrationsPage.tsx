@@ -11,9 +11,8 @@ import {
   PopoverTrigger,
   PopoverContent,
   Skeleton,
-  User,
 } from "@heroui/react";
-import Badge from "../../../components/ui/badge/Badge"; // Ensure this path is correct
+import Badge from "../../../components/ui/badge/Badge"; // Ensure path matches your structure
 import {
   Eye,
   Ticket,
@@ -32,32 +31,63 @@ import {
   Calendar,
 } from "lucide-react";
 
-// ==================== CONFIG ====================\
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Replace with actual API URL
+// ==================== CONFIG ====================
+/**
+ * Base URL for API requests.
+ * Uses `import.meta.env` (Vite standard). Ensure your .env file has VITE_API_BASE_URL.
+ */
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+
+/** Keys used for LocalStorage persistence */
+const STORAGE_KEYS = {
+  PAGE: "event_registrations_page",
+  ROWS: "event_registrations_rows_per_page",
+  AUTH: "authToken",
+  USER: "user",
+} as const;
 
 // ==================== TYPES ====================
+
+/**
+ * Represents the Event entity embedded within a registration.
+ */
 interface Event {
   id: number;
+  /** Unique UUID for public URLs and routing */
   uuid: string;
   name: string;
-  image?: string; // Optional if backend doesn't send image yet
+  /** URL for the event cover image. Optional */
+  image?: string;
 }
 
+/**
+ * Represents a user's registration for a specific event.
+ */
 interface EventRegistration {
   id: number;
   uuid: string;
   user_id: number;
   event_id: number;
+  /** Unique ticket string (e.g., "TKT-12345") */
   ticket_code: string;
+  /** ISO 8601 Date string */
   registered_at: string;
+  /** The status of the registration slot itself */
   registration_status: "confirmed" | "pending" | "waitlisted" | "cancelled";
-  is_paid: boolean | string; // Backend might send string 'paid'/'not_paid' or boolean
+  /** Payment flag, sometimes returned as string '1'/'0' or boolean by backend */
+  is_paid: boolean | string;
+  /** The status of the transaction */
   payment_status: "success" | "pending" | "failed";
   payment_reference: string;
+  /** Relationship data */
   event: Event;
 }
 
-interface PaginatedResponse {
+/**
+ * Standard backend pagination structure (Laravel/Generic).
+ */
+interface PaginatedData {
   data: EventRegistration[];
   current_page: number;
   last_page: number;
@@ -65,6 +95,9 @@ interface PaginatedResponse {
   total: number;
 }
 
+/**
+ * Dashboard statistics object.
+ */
 interface EventRegistrationStats {
   total_registrations: number;
   upcoming_events: number;
@@ -72,13 +105,27 @@ interface EventRegistrationStats {
   pending_payments: number;
 }
 
+/**
+ * The top-level API response shape.
+ */
 interface EventRegistrationApiResponse {
   message: string;
-  data: PaginatedResponse | EventRegistration[]; // Handle both paginated and flat eventRegistrationResponses
+  /** Data can be a paginated object OR a flat array depending on backend serialization */
+  data: PaginatedData | EventRegistration[];
   stats: EventRegistrationStats;
 }
 
+/**
+ * Filter state object.
+ */
+interface FilterState {
+  regStatus: string;
+  payStatus: string;
+  timeRange: string;
+}
+
 // ==================== CONSTANTS ====================
+
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
   month: "short",
@@ -86,8 +133,14 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 // ==================== HELPERS ====================
-const getBadgeColor = (s: string) => {
-  switch (s) {
+
+/**
+ * Determines the Badge color based on status string.
+ */
+const getBadgeColor = (
+  status: string,
+): "success" | "warning" | "info" | "error" => {
+  switch (status) {
     case "confirmed":
     case "success":
       return "success";
@@ -100,41 +153,67 @@ const getBadgeColor = (s: string) => {
   }
 };
 
+/**
+ * Returns the Lucide Icon component for a given status.
+ */
 const getStatusIcon = (type: "reg" | "pay", status: string) => {
+  const size = 14;
   if (type === "reg") {
-    if (status === "confirmed") return <UserCheck size={14} />;
-    if (status === "cancelled") return <XCircle size={14} />;
-    return <Clock size={14} />;
+    if (status === "confirmed") return <UserCheck size={size} />;
+    if (status === "cancelled") return <XCircle size={size} />;
+    return <Clock size={size} />;
   } else {
-    if (status === "success") return <CreditCard size={14} />;
-    if (status === "failed") return <XCircle size={14} />;
-    return <Clock size={14} />;
+    if (status === "success") return <CreditCard size={size} />;
+    if (status === "failed") return <XCircle size={size} />;
+    return <Clock size={size} />;
   }
 };
 
-const getAuthToken = () => localStorage.getItem("authToken");
+/** Retrieves Auth Token safely */
+const getAuthToken = (): string | null =>
+  localStorage.getItem(STORAGE_KEYS.AUTH);
 
-const getUserFromStorage = () => {
-  const raw = localStorage.getItem("user");
-  return raw ? JSON.parse(raw) : null;
+/** Retrieves User Object safely */
+const getUserFromStorage = (): any => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.USER);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.error("Error parsing user from storage", e);
+    return null;
+  }
 };
 
-const user = getUserFromStorage();
-const username = user.username;
+const currentUser = getUserFromStorage();
 
 // ==================== CUSTOM HOOKS ====================
-const useDebounce = <T,>(value: T, delay: number): T => {
+
+/**
+ * Debounces a value to reduce API calls or expensive computations.
+ * @param value The value to debounce
+ * @param delay Delay in ms
+ */
+function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = React.useState(value);
 
   React.useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(handler);
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
   }, [value, delay]);
 
   return debouncedValue;
-};
+}
 
-// ==================== SKELETON LOADERS ====================
+// ==================== SUB-COMPONENTS ====================
+
+/**
+ * Skeleton loader for Stat Cards.
+ */
 const StatCardSkeleton = () => (
   <Card
     shadow="none"
@@ -150,6 +229,9 @@ const StatCardSkeleton = () => (
   </Card>
 );
 
+/**
+ * Skeleton loader for Event Cards.
+ */
 const EventCardSkeleton = () => (
   <Card
     shadow="none"
@@ -175,21 +257,19 @@ const EventCardSkeleton = () => (
   </Card>
 );
 
-// ==================== COMPONENTS ====================
+interface StatCardProps {
+  icon: React.ElementType;
+  label: string;
+  value: string | number;
+  color: "cyan" | "purple" | "emerald" | "amber";
+  isLoading?: boolean;
+}
+
+/**
+ * Displays a metric in a styled card.
+ */
 const StatCard = React.memo(
-  ({
-    icon: Icon,
-    label,
-    value,
-    color,
-    isLoading,
-  }: {
-    icon: any;
-    label: string;
-    value: string | number;
-    color: "cyan" | "purple" | "emerald" | "amber";
-    isLoading?: boolean;
-  }) => {
+  ({ icon: Icon, label, value, color, isLoading }: StatCardProps) => {
     if (isLoading) return <StatCardSkeleton />;
 
     const colors = {
@@ -244,6 +324,9 @@ const StatCard = React.memo(
   },
 );
 
+/**
+ * An expandable badge for status details.
+ */
 const StatusBadge = React.memo(
   ({ type, status }: { type: "reg" | "pay"; status: string }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
@@ -289,15 +372,21 @@ const StatusBadge = React.memo(
   },
 );
 
+/**
+ * Event card component to display single registration details.
+ */
 const EventCard = React.memo(({ reg }: { reg: EventRegistration }) => {
   const [imageLoaded, setImageLoaded] = React.useState(false);
 
-  const formattedDate = React.useMemo(
-    () => dateFormatter.format(new Date(reg.registered_at)),
-    [reg.registered_at],
-  );
+  const formattedDate = React.useMemo(() => {
+    try {
+      return dateFormatter.format(new Date(reg.registered_at));
+    } catch (e) {
+      return "Invalid Date";
+    }
+  }, [reg.registered_at]);
 
-  // Use backend image if available, else placeholder
+  // Use backend image or fallback UI Avatar
   const imageUrl =
     reg.event.image ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -352,61 +441,82 @@ const EventCard = React.memo(({ reg }: { reg: EventRegistration }) => {
         <div className="pt-2 grid grid-cols-1 gap-3">
           <Button
             as={Link}
-            // 👇 The leading "/" is crucial here
-            to={`/${user?.username || "user"}/event-registrations/${reg.uuid}`}
+            // Ensure absolute path construction is safe
+            to={`/${currentUser?.username || "user"}/event-registrations/${reg.uuid}`}
             className="w-full h-10 font-semibold rounded-lg flex items-center justify-center gap-2 border border-[#03a1b0] text-[#03a1b0] bg-transparent hover:bg-[#03a1b0]/10 dark:border-cyan-500 dark:text-cyan-400 transition-all hover:scale-105"
           >
             <Eye size={18} /> Details
           </Button>
-
-          {/* <Button
-            as={Link}
-            to={`/event-registrations/${reg.uuid}`}
-            className="w-full h-10 font-semibold rounded-lg text-white flex items-center justify-center gap-2 bg-[#03a1b0] hover:bg-[#008b99] shadow-md hover:shadow-lg shadow-lg transition-all hover:scale-105"
-          >
-            <Ticket size={18} /> Ticket
-          </Button> */}
         </div>
       </CardBody>
     </Card>
   );
 });
 
-// ==================== MAIN COMPONENT ====================
-export default function EventRegistrationCards() {
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(8);
-  const [totalItems, setTotalItems] = React.useState(0);
+// ==================== MAIN PAGE COMPONENT ====================
 
-  // Data States
+/**
+ * EventRegistrationCards Component
+ *
+ * Displays a paginated, filterable grid of event registrations.
+ *
+ * Features:
+ * - Persists pagination state (page/rows) in LocalStorage.
+ * - Client-side filtering (Search, Payment Status, Registration Status).
+ * - Stats overview.
+ */
+export default function EventRegistrationCards() {
+  // ---------------- STATE: Pagination (Persisted) ----------------
+  // We initialize state by reading from localStorage to maintain position on refresh.
+  const [page, setPage] = React.useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.PAGE);
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const [rowsPerPage, setRowsPerPage] = React.useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.ROWS);
+      return saved ? parseInt(saved, 10) : 8;
+    } catch {
+      return 8;
+    }
+  });
+
+  // ---------------- STATE: Data ----------------
+  const [totalItems, setTotalItems] = React.useState(0);
   const [registrations, setRegistrations] = React.useState<EventRegistration[]>(
     [],
   );
-  // const [stats, setStats] = React.useState({
-  //   total_registrations: 0,
-  //   upcoming_events: 0,
-  //   completed_events: 0,
-  //   pending_payments: 0,
-  // });
+  const [stats, setStats] = React.useState<
+    EventRegistrationStats | undefined
+  >();
 
-  const [stats, setStats] = React.useState<EventRegistrationStats>();
-  // setTotalItems(registrations.length);
-
+  // ---------------- STATE: Filters & UI ----------------
   const [searchTerm, setSearchTerm] = React.useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const [filters, setFilters] = React.useState({
+  const [filters, setFilters] = React.useState<FilterState>({
     regStatus: "all",
     payStatus: "all",
     timeRange: "all",
   });
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
 
-  // Loading states
+  // ---------------- STATE: Loading & Error ----------------
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  // Fetch Data Function
-  // Replace your existing fetchData with this:
+  // ---------------- EFFECT: Persistence ----------------
+  // Save pagination state whenever it changes
+  React.useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.PAGE, page.toString());
+    localStorage.setItem(STORAGE_KEYS.ROWS, rowsPerPage.toString());
+  }, [page, rowsPerPage]);
+
+  // ---------------- DATA FETCHING ----------------
   const fetchData = React.useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -415,96 +525,85 @@ export default function EventRegistrationCards() {
       const user = getUserFromStorage();
       const role = user?.role;
 
-      if (!token || !role) throw new Error("Authentication failed");
-
-      const endpoint = `/${role}/event/registrations?page=${page + 1}`;
-
-      const eventRegistrationResponse =
-        await axios.get<EventRegistrationApiResponse>(
-          `${API_BASE_URL}${endpoint}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-
-      // Update Stats if available
-      if (eventRegistrationResponse.data.stats) {
-        setStats(eventRegistrationResponse.data.stats);
+      if (!token || !role) {
+        throw new Error("Authentication credentials missing");
       }
 
-      console.log("Stats Data:", eventRegistrationResponse.data);
+      const endpoint = `/${role}/event/registrations?page=${page + 1}&per_page=${rowsPerPage}`;
 
-      const eventRegistrationResponseData = eventRegistrationResponse.data.data;
+      const response = await axios.get<EventRegistrationApiResponse>(
+        `${API_BASE_URL}${endpoint}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
-      if (Array.isArray(eventRegistrationResponseData)) {
-        // Case 1: Flat array (e.g., empty result or non-paginated)
-        setRegistrations(eventRegistrationResponseData);
-        setTotalItems(eventRegistrationResponseData.length);
-      } else if (
-        eventRegistrationResponseData &&
-        Array.isArray(eventRegistrationResponseData.data)
-      ) {
-        // Case 2: Paginated Object (Standard Laravel Paginator)
-        setRegistrations(eventRegistrationResponseData.data);
-        setTotalItems(eventRegistrationResponseData.total || 0);
-        setRowsPerPage(eventRegistrationResponseData.per_page || 10);
+      // Handle Stats
+      if (response.data.stats) {
+        setStats(response.data.stats);
+      }
+
+      const rawData = response.data.data;
+
+      // Handle different response structures (Pagination Object vs Flat Array)
+      if (Array.isArray(rawData)) {
+        setRegistrations(rawData);
+        setTotalItems(rawData.length);
+      } else if (rawData && typeof rawData === "object" && "data" in rawData) {
+        // It is a PaginatedData object
+        setRegistrations(rawData.data);
+        setTotalItems(rawData.total || 0);
       } else {
-        // Case 3: Fallback if structure is unexpected
-        console.warn(
-          "Unexpected data structure:",
-          eventRegistrationResponseData,
-        );
         setRegistrations([]);
         setTotalItems(0);
       }
     } catch (err: any) {
-      if (
-        err.eventRegistrationResponse &&
-        err.eventRegistrationResponse.status === 404
-      ) {
+      // 404 usually means no registrations found for this page
+      if (err.response && err.response.status === 404) {
         setRegistrations([]);
         setTotalItems(0);
       } else {
         console.error("Fetch error:", err);
         setError("Failed to load registrations");
-        // Ensure we don't leave it undefined on error
-        setRegistrations((prev) => prev || []);
       }
     } finally {
       setIsLoading(false);
     }
-  }, [page, rowsPerPage]); // Re-fetch when page changes
+  }, [page, rowsPerPage]);
 
+  // Fetch on mount and when pagination changes
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // Client-side filtering for Search/Status (since backend pagination is active,
-  // ideally search/filter should be server-side params. For hybrid approach:)
-  // Replace your existing processedEventRegistrations with this:
+  // ---------------- FILTERING LOGIC ----------------
+  // Filters apply to the currently loaded page of data (client-side).
   const processedEventRegistrations = React.useMemo(() => {
-    // Add (registrations || []) to guard against undefined state
-    return (registrations || []).filter((item) => {
-      const searchLower = debouncedSearchTerm.toLowerCase();
+    if (!registrations) return [];
 
-      // Check if item.event exists before accessing name (extra safety)
+    return registrations.filter((item) => {
+      // Guard clause if event object is missing
       if (!item.event) return false;
 
+      const searchLower = debouncedSearchTerm.toLowerCase();
       const matchesSearch =
         item.event.name.toLowerCase().includes(searchLower) ||
         item.ticket_code.toLowerCase().includes(searchLower);
+
       if (!matchesSearch) return false;
 
       if (
         filters.regStatus !== "all" &&
         item.registration_status !== filters.regStatus
-      )
+      ) {
         return false;
+      }
       if (
         filters.payStatus !== "all" &&
         item.payment_status !== filters.payStatus
-      )
+      ) {
         return false;
+      }
 
       if (filters.timeRange !== "all") {
         const date = new Date(item.registered_at);
@@ -520,21 +619,23 @@ export default function EventRegistrationCards() {
     });
   }, [registrations, debouncedSearchTerm, filters]);
 
-  // Handle Page Change (Triggers API fetch via useEffect)
-  const handleChangePage = React.useCallback((_: any, newPage: number) => {
+  // ---------------- HANDLERS ----------------
+
+  const handleChangePage = React.useCallback((_: unknown, newPage: number) => {
     setPage(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   const handleChangeRowsPerPage = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
-      setPage(0);
+      const newRows = parseInt(event.target.value, 10);
+      setRowsPerPage(newRows);
+      setPage(0); // Reset to first page to avoid out-of-bounds
     },
     [],
   );
 
-  const handleFilterChange = (key: string, value: string) => {
+  const handleFilterChange = (key: keyof FilterState, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -547,15 +648,16 @@ export default function EventRegistrationCards() {
     (v) => v !== "all",
   ).length;
 
+  // ---------------- RENDER ----------------
   return (
     <section className="relative w-full min-h-screen mx-auto px-0 sm:px-16 space-y-8 py-4 sm:py-8">
-      {/* Background */}
+      {/* Background Gradients */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-br from-cyan-500/5 via-blue-500/5 to-purple-500/5 rounded-full blur-3xl animate-pulse" />
         <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-emerald-500/5 via-teal-500/5 to-cyan-500/5 rounded-full blur-3xl animate-pulse" />
       </div>
 
-      {/* 1. Stats Section (Static for now, ideally fetch from backend) */}
+      {/* 1. Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <StatCard
           icon={LayoutGrid}
@@ -564,7 +666,6 @@ export default function EventRegistrationCards() {
           color="cyan"
           isLoading={isLoading}
         />
-        {/* You can add more logic to calculate these stats if backend provides them */}
         <StatCard
           icon={CheckCircle2}
           label="Completed Events"
@@ -626,7 +727,6 @@ export default function EventRegistrationCards() {
           </div>
 
           {/* Filter Popover */}
-          {/* Filter Popover */}
           <Popover
             placement="bottom-end"
             isOpen={isFilterOpen}
@@ -677,37 +777,36 @@ export default function EventRegistrationCards() {
                       }
                     >
                       <option
+                        className="bg-white dark:bg-[#18181b]"
                         value="all"
-                        className="bg-white dark:bg-[#18181b] text-gray-900 dark:text-gray-100"
                       >
                         All
                       </option>
                       <option
+                        className="bg-white dark:bg-[#18181b]"
                         value="confirmed"
-                        className="bg-white dark:bg-[#18181b] text-gray-900 dark:text-gray-100"
                       >
                         Confirmed
                       </option>
                       <option
+                        className="bg-white dark:bg-[#18181b]"
                         value="pending"
-                        className="bg-white dark:bg-[#18181b] text-gray-900 dark:text-gray-100"
                       >
                         Pending
                       </option>
                       <option
+                        className="bg-white dark:bg-[#18181b]"
                         value="waitlisted"
-                        className="bg-white dark:bg-[#18181b] text-gray-900 dark:text-gray-100"
                       >
                         Waitlisted
                       </option>
                       <option
+                        className="bg-white dark:bg-[#18181b]"
                         value="cancelled"
-                        className="bg-white dark:bg-[#18181b] text-gray-900 dark:text-gray-100"
                       >
                         Cancelled
                       </option>
                     </select>
-                    {/* Custom Arrow */}
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-[#03a1b0] transition-colors">
                       <ChevronRight
                         size={16}
@@ -732,31 +831,30 @@ export default function EventRegistrationCards() {
                       }
                     >
                       <option
+                        className="bg-white dark:bg-[#18181b]"
                         value="all"
-                        className="bg-white dark:bg-[#18181b] text-gray-900 dark:text-gray-100"
                       >
                         All
                       </option>
                       <option
+                        className="bg-white dark:bg-[#18181b]"
                         value="success"
-                        className="bg-white dark:bg-[#18181b] text-gray-900 dark:text-gray-100"
                       >
                         Success
                       </option>
                       <option
+                        className="bg-white dark:bg-[#18181b]"
                         value="pending"
-                        className="bg-white dark:bg-[#18181b] text-gray-900 dark:text-gray-100"
                       >
                         Pending
                       </option>
                       <option
+                        className="bg-white dark:bg-[#18181b]"
                         value="failed"
-                        className="bg-white dark:bg-[#18181b] text-gray-900 dark:text-gray-100"
                       >
                         Failed
                       </option>
                     </select>
-                    {/* Custom Arrow */}
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-[#03a1b0] transition-colors">
                       <ChevronRight
                         size={16}
@@ -805,6 +903,7 @@ export default function EventRegistrationCards() {
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
               No registrations found
             </h3>
+            {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
             <Button
               onClick={clearFilters}
               className="mt-4 bg-[#03a1b0] text-white"
@@ -815,16 +914,18 @@ export default function EventRegistrationCards() {
         )}
       </div>
 
-      {/* 5. Enhanced Pagination */}
-      <div className="flex relative sm:fixed bottom-10 right-10 justify-center sm:justify-end items-center py-3 rounded-xl bg-white/70 dark:bg-black/70 backdrop-blur-sm border border-black/5 dark:border-white/5">
+      {/* 4. Enhanced Pagination */}
+      <div className="fixed z-[99] bottom-8 w-full sm:w-[28%] flex right-0 sm:right-22 items-center py-3 rounded-xl bg-white/70 dark:bg-black/70 backdrop-blur-sm border border-black/5 dark:border-white/5">
         <TablePagination
           component="div"
-          count={processedEventRegistrations.length}
+          count={totalItems}
           page={page}
           onPageChange={handleChangePage}
+          rowsPerPageOptions={[10, 25, 50, 100]}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
           labelRowsPerPage="Per Page"
+          className="mx-auto"
           sx={{
             color: "inherit",
             ".MuiSvgIcon-root": { color: "inherit" },
@@ -843,7 +944,6 @@ export default function EventRegistrationCards() {
                   sx: {
                     "& .MuiMenuItem-root.Mui-selected": {
                       bgcolor: "#03a1b0 !important",
-                      // color: "#03a1b0",
                       fontWeight: "bold",
                     },
                     "& .MuiMenuItem-root:hover": {
