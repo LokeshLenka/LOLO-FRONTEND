@@ -64,6 +64,13 @@ import CreditsPage from "./pages/User/Credits/CreditsPage";
 import Home from "./pages/App/Home/Home";
 import ShowEventRegistrationPage from "./pages/User/Events/ShowEventRegistrationPage";
 import ShowCreditPage from "./pages/User/Credits/ShowCreditsPage";
+import CreateEvent from "./pages/ExecutiveBodyMember/Events/CreateEvent";
+import MyEvents from "./pages/ExecutiveBodyMember/Events/MyEvents";
+import EventRegistrations from "./pages/ExecutiveBodyMember/Events/EventRegistrations";
+import RegisterMember from "./pages/ExecutiveBodyMember/Users/RegisterMember";
+import MyRegistrations from "./pages/ExecutiveBodyMember/Users/MyRegistrations";
+import ApprovalsHistory from "./pages/ExecutiveBodyMember/Users/ApprovalHistory";
+import ApplicantDetailsPage from "./pages/ExecutiveBodyMember/Users/ApplicationDetails";
 
 // --- Helper Components ---
 
@@ -183,7 +190,6 @@ function App() {
             <Route element={<AppLayout />}>
               {/* Standard User Dashboard */}
               <Route path="/:username/dashboard" element={<UserDashboard />} />
-
               {/* Shared Pages */}
               <Route
                 path="/:username/event-registrations"
@@ -194,31 +200,54 @@ function App() {
                 element={<ShowEventRegistrationPage />}
               />
               <Route path="/:username/credits" element={<CreditsPage />} />
-              
               <Route
                 path="/:username/credits/:uuid"
-                element={<ShowCreditPage   />}
+                element={<ShowCreditPage />}
               />
-
               <Route
                 path="/:username/profile"
                 element={<UserProfilePage data={MOCK_PROFILE_DATA} />}
               />
-
               {/* EBM Routes */}
               <Route
                 path="/:username/executive_body_member/dashboard"
                 element={<EBMDashboard />}
               />
               <Route
+                path="/:username/executive_body_member/create-event"
+                element={<CreateEvent />}
+              />
+              <Route
+                path="/:username/executive_body_member/my-events"
+                element={<MyEvents />}
+              />
+              <Route
+                path="/:username/executive_body_member/event-registrations"
+                element={<EventRegistrations />}
+              />
+              <Route
+                path="/:username/executive_body_member/register-member"
+                element={<RegisterMember />}
+              />
+              <Route
+                path="/:username/executive_body_member/my-registrations"
+                element={<MyRegistrations />}
+              />{" "}
+              <Route
+                path="/:username/executive_body_member/view-application/user/:uuid"
+                element={<ApplicantDetailsPage />}
+              />
+              <Route
                 path="/:username/executive_body_member/dashboard/pending-approvals"
                 element={<EBMPendingApprovals />}
               />
-
+              <Route
+                path="/:username/executive_body_member/approvals-history/"
+                element={<ApprovalsHistory />}
+              />
               {/* Management Head (MH) Routes */}
               {/* <Route path="/:username/mh/dashboard" element={<MHDashboard />} /> */}
               {/* <Route path="/:username/mh/approvals" element={<MHApprovals />} /> */}
-
               {/* Credit Manager (CM) Routes */}
               {/* <Route path="/:username/cm/dashboard" element={<CMDashboard />} /> */}
               {/* <Route path="/:username/cm/credits" element={<CMCreditsPage />} /> */}
