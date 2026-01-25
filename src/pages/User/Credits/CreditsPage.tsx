@@ -41,8 +41,16 @@ import {
   Lock,
 } from "lucide-react";
 
-// ==================== CONFIG ====================\
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Replace with actual URL
+// ==================== CONFIG ====================
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+/** Keys used for LocalStorage persistence */
+const STORAGE_KEYS = {
+  PAGE: "credit_page",
+  ROWS: "credit_rows_per_page",
+  AUTH: "authToken",
+  USER: "user",
+} as const;
 
 // ==================== TYPES ====================
 interface Event {
@@ -154,17 +162,29 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 const getAuthToken = () => localStorage.getItem("authToken");
 
 const getUserFromStorage = () => {
-  const raw = localStorage.getItem("user");
-  return raw ? JSON.parse(raw) : null;
+  try {
+    const raw = localStorage.getItem("user");
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.error("Error parsing user from storage", e);
+    return null;
+  }
 };
+
+const user = getUserFromStorage();
 
 // ==================== CUSTOM HOOKS ====================
 const useDebounce = <T,>(value: T, delay: number): T => {
   const [debouncedValue, setDebouncedValue] = React.useState(value);
 
   React.useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(handler);
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
   }, [value, delay]);
 
   return debouncedValue;
@@ -174,21 +194,24 @@ const useCreditsFilter = (
   credits: Credit[],
   searchTerm: string,
   filters: any,
-  sortBy: string
+  sortBy: string,
 ) => {
   return React.useMemo(() => {
     let filtered = credits.filter((item) => {
       const searchLower = searchTerm.toLowerCase();
-      const matchesSearch = item.event?.name
+      // Safely access name, defaulting to empty string if missing or if event is just an ID
+      const eventName = typeof item.event === "object" ? item.event?.name : "";
+      const matchesSearch = (eventName || "")
         .toLowerCase()
         .includes(searchLower);
+
       if (!matchesSearch) return false;
 
       if (filters.timeRange !== "all") {
         const date = new Date(item.created_at);
         const now = new Date();
         const diffDays = Math.ceil(
-          Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+          Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
         );
 
         if (filters.timeRange === "7days" && diffDays > 7) return false;
@@ -314,7 +337,7 @@ const StatCard = React.memo(
         </CardBody>
       </Card>
     );
-  }
+  },
 );
 
 const RankProgressCard = React.memo(
@@ -456,7 +479,7 @@ const RankProgressCard = React.memo(
         </CardBody>
       </Card>
     );
-  }
+  },
 );
 
 const CreditCardItem = React.memo(({ credit }: { credit: Credit }) => {
@@ -464,7 +487,7 @@ const CreditCardItem = React.memo(({ credit }: { credit: Credit }) => {
 
   const formattedDate = React.useMemo(
     () => dateFormatter.format(new Date(credit.created_at)),
-    [credit.created_at]
+    [credit.created_at],
   );
 
   return (
@@ -519,7 +542,7 @@ const CreditCardItem = React.memo(({ credit }: { credit: Credit }) => {
 
         <Button
           as={Link}
-          to={`/tickets/${credit.uuid}`}
+          to={`/${user?.username || "user"}/credits/${credit.uuid}`}
           draggable={false}
           className="w-full h-11 font-semibold rounded-lg flex items-center justify-center gap-2
           text-white bg-[#03a1b0] hover:bg-[#008b99]
@@ -537,8 +560,25 @@ const CreditCardItem = React.memo(({ credit }: { credit: Credit }) => {
 // ==================== MAIN COMPONENT ====================
 export default function CreditsPage() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(12);
+
+  const [page, setPage] = React.useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.PAGE);
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const [rowsPerPage, setRowsPerPage] = React.useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.ROWS);
+      return saved ? parseInt(saved, 10) : 8;
+    } catch {
+      return 8;
+    }
+  });
+
   const [expandedRank, setExpandedRank] = React.useState<string | null>(null);
 
   // Data States
@@ -562,46 +602,44 @@ export default function CreditsPage() {
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const [isSortOpen, setIsSortOpen] = React.useState(false);
 
-  // Fetch Data
+  // Fetch Data - Updated to match EventRegistrationPage logic
   React.useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      setError(null);
       try {
         const token = getAuthToken();
         const user = getUserFromStorage();
         const role = user?.role;
 
-        if (!token || !role) {
-          throw new Error("User not authenticated or role missing");
-        }
+        if (!token || !role) throw new Error("Invalid session");
 
-        const endpoint = `/${role}/credits`;
-        const response = await axios.get<ApiResponse>(
-          `${API_BASE_URL}${endpoint}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const endpoint = `/${role}/my/credits?page=${page + 1}&per_page=${rowsPerPage}`;
+
+        const response = await axios.get(`${API_BASE_URL}${endpoint}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         if (response.data.success) {
-          const { credits, total_credits, credits_count } = response.data.data;
+          const {
+            credits = [],
+            total_credits = 0,
+            credits_count = 0,
+          } = response.data.data || {};
 
           setCredits(credits);
 
-          // Calculate derived stats
+          // Calculate Stats
           const now = new Date();
           const currentMonth = now.getMonth();
           const currentYear = now.getFullYear();
 
-          const thisMonthCredits = credits
-            .filter((c) => {
-              const d = new Date(c.created_at);
-              return (
-                d.getMonth() === currentMonth && d.getFullYear() === currentYear
-              );
-            })
-            .reduce((sum, c) => sum + c.amount, 0);
+          const thisMonthCredits = credits.reduce((sum: number, c: any) => {
+            const d = new Date(c.created_at);
+            const isSameMonth =
+              d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+
+            return isSameMonth ? sum + Number(c.amount) : sum;
+          }, 0);
 
           const avg =
             credits_count > 0 ? Math.round(total_credits / credits_count) : 0;
@@ -614,21 +652,27 @@ export default function CreditsPage() {
           });
         }
       } catch (err: any) {
-        console.error("Failed to fetch credits:", err);
-        setError(err.response?.data?.message || "Failed to load credits");
+        console.error(err);
+        if (err.response?.status === 404) {
+          setError("Credits not found.");
+        } else if (err.response?.status === 403) {
+          setError("Access denied.");
+        } else {
+          setError("Failed to load credits.");
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [page, rowsPerPage]);
 
   const processedCredits = useCreditsFilter(
     credits,
     debouncedSearchTerm,
     filters,
-    sortBy
+    sortBy,
   );
 
   const pageItems = React.useMemo(() => {
@@ -636,22 +680,29 @@ export default function CreditsPage() {
     return processedCredits.slice(start, start + rowsPerPage);
   }, [page, rowsPerPage, processedCredits]);
 
+  // UPDATED: Now saves 'page' to local storage
   const handleChangePage = React.useCallback((_: unknown, newPage: number) => {
     setPage(newPage);
+    localStorage.setItem(STORAGE_KEYS.PAGE, newPage.toString());
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
+  // UPDATED: Now saves 'rowsPerPage' and resets 'page' in local storage
   const handleChangeRowsPerPage = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
+      const newRows = parseInt(event.target.value, 10);
+      setRowsPerPage(newRows);
       setPage(0);
+      localStorage.setItem(STORAGE_KEYS.ROWS, newRows.toString());
+      localStorage.setItem(STORAGE_KEYS.PAGE, "0");
     },
-    []
+    [],
   );
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setPage(0);
+    localStorage.setItem(STORAGE_KEYS.PAGE, "0");
   };
 
   const clearFilters = () => {
@@ -659,10 +710,11 @@ export default function CreditsPage() {
     setSearchTerm("");
     setSortBy("newest");
     setPage(0);
+    localStorage.setItem(STORAGE_KEYS.PAGE, "0");
   };
 
   const activeFiltersCount = Object.values(filters).filter(
-    (v) => v !== "all"
+    (v) => v !== "all",
   ).length;
 
   const getSortLabel = (value: string) => {
@@ -766,6 +818,7 @@ export default function CreditsPage() {
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setPage(0);
+                localStorage.setItem(STORAGE_KEYS.PAGE, "0");
               }}
               className="w-full h-10 pl-10 pr-10 rounded-lg bg-gray-50 dark:bg-white/5 border border-black/10 dark:border-white/10 focus:border-[#03a1b0] focus:ring-2 focus:ring-[#03a1b0]/20 outline-none transition-all text-sm text-black dark:text-white placeholder-gray-500"
             />
@@ -921,7 +974,7 @@ export default function CreditsPage() {
       </div>
 
       {/* 3. Cards Grid */}
-      <div className="relative z-10">
+      <div className="relative z-10 py-20">
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
             {[...Array(8)].map((_, i) => (
@@ -957,15 +1010,23 @@ export default function CreditsPage() {
       </div>
 
       {/* 5. Enhanced Pagination */}
-      <div className="flex fixed bottom-10 right-10 justify-center sm:justify-end items-center py-3 rounded-xl bg-white/70 dark:bg-black/70 backdrop-blur-sm border border-black/5 dark:border-white/5">
+      <div
+        className="
+            fixed z-[99] bottom-8
+            w-full sm:w-[28%]
+            flex right-0 sm:right-22 items-center
+            py-3 rounded-xl bg-white/70 dark:bg-black/70 backdrop-blur-sm border border-black/5 dark:border-white/5"
+      >
         <TablePagination
           component="div"
           count={processedCredits.length}
           page={page}
           onPageChange={handleChangePage}
+          rowsPerPageOptions={[12, 24, 50, 100]}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
           labelRowsPerPage="Per Page"
+          className="mx-auto"
           sx={{
             color: "inherit",
             ".MuiSvgIcon-root": { color: "inherit" },
