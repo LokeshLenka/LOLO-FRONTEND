@@ -60,9 +60,10 @@ import {
   Users,
 } from "lucide-react";
 import EBMPendingApprovals from "./pages/ExecutiveBodyMember/EBMPendingApprovals";
-import CreditsPage from "./pages/User/CreditsPage";
+import CreditsPage from "./pages/User/Credits/CreditsPage";
 import Home from "./pages/App/Home/Home";
 import ShowEventRegistrationPage from "./pages/User/Events/ShowEventRegistrationPage";
+import ShowCreditPage from "./pages/User/Credits/ShowCreditsPage";
 
 // --- Helper Components ---
 
@@ -193,6 +194,11 @@ function App() {
                 element={<ShowEventRegistrationPage />}
               />
               <Route path="/:username/credits" element={<CreditsPage />} />
+              
+              <Route
+                path="/:username/credits/:uuid"
+                element={<ShowCreditPage   />}
+              />
 
               <Route
                 path="/:username/profile"
