@@ -37,7 +37,7 @@ interface AuthContextType {
   login: (
     username: string,
     password: string,
-    role?: "admin" | "user"
+    role?: "admin" | "user",
   ) => Promise<void>;
   logout: () => void;
   hasPromotedRole: () => boolean;
@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           logout();
         }
         return Promise.reject(err);
-      }
+      },
     );
 
     return () => {
@@ -121,7 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (
     username: string,
     password: string,
-    role: "admin" | "user" = "user"
+    role: "admin" | "user" = "user",
   ) => {
     setLoading(true);
     setError(null);
@@ -196,30 +196,58 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   /* =======================
-     4. Logout
-  ======================= */
+   4. Logout
+======================= */
 
   const logout = useCallback(async () => {
+    // Capture token BEFORE clearing state so we can send it to server
+    toast.dismiss();
+    toast.warning("Logging Out");
+    const currentToken = token || localStorage.getItem("authToken");
+
+    // 1. Clear State
     setToken(null);
     setUser(null);
     setProfile(null);
     setError(null);
 
+    // 2. Clear Storage
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
     localStorage.removeItem("userProfile");
+    localStorage.removeItem("ebm_pending_approvals_page");
 
+    // 3. Remove default header for FUTURE requests
     delete axios.defaults.headers.common["Authorization"];
 
-    navigate("/login");
+    // 4. Redirect & Toast
+    navigate("/");
     toast.dismiss();
 
-    try {
-      await axios.post(`${API_BASE_URL}/logout`);
-    } catch {
-      // ignore
+    // 5. Call API to invalidate token (Send token manually in this request)
+    if (currentToken) {
+      try {
+        const baseUrl = API_BASE_URL.endsWith("/")
+          ? API_BASE_URL
+          : `${API_BASE_URL}/`;
+
+        await axios.post(
+          `${baseUrl}auth/logout`,
+          {}, // Empty body
+          {
+            headers: {
+              Authorization: `Bearer ${currentToken}`, // Explicitly attach token
+            },
+          },
+        );
+        toast.dismiss();
+        toast.success("Logged Out Successfully");
+      } catch (err) {
+        // Suppress 401s since we are logging out anyway
+        console.warn("Logout API warning:", err);
+      }
     }
-  }, [navigate, API_BASE_URL]);
+  }, [navigate, API_BASE_URL, token]);
 
   /* =======================
      5. Helpers
@@ -259,7 +287,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     hasPromotedRole,
     getPromotedRoleLabel,
   };
-  
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
