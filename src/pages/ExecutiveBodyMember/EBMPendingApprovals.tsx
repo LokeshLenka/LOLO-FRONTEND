@@ -21,6 +21,7 @@ import {
   DropdownMenu,
   DropdownItem,
   useDisclosure,
+  Divider,
 } from "@heroui/react";
 import TablePagination from "@mui/material/TablePagination";
 import {
@@ -38,38 +39,59 @@ import {
   User2,
 } from "lucide-react";
 import { toast } from "sonner";
-import ApplicantDetailsModal from "./Users/UserApplicationModal";
 import { useNavigate } from "react-router-dom";
+import { DecisionPanel } from "@/components/core/DecisionPanel";
 
 // --- Types ---
-interface ProfileData {
+
+interface ProfileBase {
+  uuid: string;
   first_name: string;
   last_name: string;
   reg_num: string;
   branch: string;
   year: string;
+  phone_no: string;
   gender: string;
   sub_role: string;
+  experience?: string;
+  lateral_status: number;
+  hostel_status: number;
+  college_hostel_status: number;
 }
 
-interface PendingUser {
+interface MusicProfile extends ProfileBase {
+  instrument_avail: number;
+  other_fields_of_interest: string;
+  passion: string;
+}
+
+interface ManagementProfile extends ProfileBase {
+  interest_towards_lolo: string;
+  any_club: string;
+}
+
+interface UserApproval {
+  status: string;
+  remarks: string | null;
+  ebm_assigned_at: string;
+}
+
+interface UserDetails {
   uuid: string;
   username: string | null;
+  email: string;
   role: "music" | "management";
   is_approved: boolean;
-  is_active: number;
-  music_profile: ProfileData | null;
-  management_profile: ProfileData | null;
-  user_approval: {
-    ebm_assigned_at: string;
-    status: string;
-  };
   created_at: string;
+  music_profile: MusicProfile | null;
+  management_profile: ManagementProfile | null;
+  user_approval: UserApproval;
 }
 
 interface ApiResponseData {
   current_page: number;
-  data: PendingUser[];
+  data: UserDetails[];
   first_page_url: string;
   from: number | null;
   next_page_url: string | null;
@@ -133,10 +155,24 @@ export function useDebounce<T>(value: T, delay: number): T {
 }
 
 /** Retrieves User Object safely */
+/** Retrieves User Object safely */
 const getUserFromStorage = (): any => {
   try {
-    const raw = localStorage.getItem("authToken");
-    return raw ? JSON.parse(raw) : null;
+    // FIX: Changed from 'authToken' to 'userProfile'
+    // 'authToken' usually contains the raw JWT string, which causes JSON.parse to fail
+    const raw = localStorage.getItem("userProfile");
+
+    if (!raw) return null;
+
+    // Check if the value looks like a JSON object (starts with {) or array ([)
+    // This prevents crashing if a raw string is accidentally stored in this key
+    if (raw.trim().startsWith("{") || raw.trim().startsWith("[")) {
+      return JSON.parse(raw);
+    }
+
+    // Fallback: If it's not JSON, return null or handle appropriately
+    console.warn("Stored userProfile is not a valid JSON object");
+    return null;
   } catch (e) {
     console.error("Error parsing user from storage", e);
     return null;
@@ -147,11 +183,21 @@ const currentUser = getUserFromStorage();
 
 export default function EBMPendingApprovals() {
   // --- State ---
-  const [users, setUsers] = useState<PendingUser[]>([]);
+  const [users, setUsers] = useState<UserDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [currentPageData, setCurrentPageData] =
     useState<ApiResponseData | null>(null);
+
+  const [decisionOpen, setDecisionOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null);
+
+  // Added remarks state to control the DecisionPanel
+  const [remarks, setRemarks] = useState("");
+
+  const [pendingAction, setPendingAction] = useState<
+    "approve" | "reject" | "view" | null
+  >(null);
 
   const navigate = useNavigate();
 
@@ -214,45 +260,57 @@ export default function EBMPendingApprovals() {
     fetchApprovals();
   }, [fetchApprovals]);
 
-  // 3. Update handleAction
-  const handleAction = async (
-    uuid: string,
+  const handleActionIntent = (
+    user: UserDetails,
     action: "approve" | "reject" | "view",
   ) => {
-    try {
-      if (action === "view") {
-        console.log("Navigating to view application for user:", uuid);
-        navigate(
-          `/${currentUser?.username}/executive_body_member/view-application/user/${uuid}`,
-        );
-        return;
-      }
+    if (action === "view") {
+      navigate(
+        `/${currentUser?.username}/executive_body_member/pending-approvals/view-application/user/${user.uuid}`,
+      );
+      return;
+    }
 
-      const remarks = prompt("Enter remarks:");
-      if (!remarks) return;
-      const toastId = toast.loading(
-        `${action === "approve" ? "Approving" : "Rejecting"} user...`,
+    // approve / reject → open modal
+    setSelectedUser(user);
+    setPendingAction(action);
+    setRemarks(""); // Reset remarks when opening
+    setDecisionOpen(true);
+  };
+
+  const handleDecisionSubmit = async (
+    action: "approve" | "reject",
+    submittedRemarks: string,
+  ) => {
+    if (!selectedUser) return;
+
+    setProcessingId(selectedUser.uuid); // Set processing ID
+
+    const toastId = toast.loading(
+      `${action === "approve" ? "Approving" : "Rejecting"} user...`,
+    );
+
+    try {
+      await axios.post(
+        `${API_BASE_URL}/ebm/${action}-user/${selectedUser.uuid}`,
+        { remarks: submittedRemarks },
       );
 
-      try {
-        await axios.post(`${API_BASE_URL}/ebm/${action}-user/${uuid}`);
-        toast.success(`User ${action}d successfully!`, { id: toastId });
+      toast.success(`User ${action}d successfully`, { id: toastId });
 
-        fetchApprovals();
-      } catch (err: any) {
-        console.error(err);
-        toast.error(err.response?.data?.message || `Failed to ${action} user`, {
-          id: toastId,
-        });
-      } finally {
-        setProcessingId(null);
-      }
-    } catch (err) {
-      toast.error("Failed to fetch user details");
+      setDecisionOpen(false);
+      setSelectedUser(null);
+      setPendingAction(null);
+      setRemarks("");
+
+      fetchApprovals(); // refresh table
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || `Failed to ${action} user`, {
+        id: toastId,
+      });
     } finally {
       setProcessingId(null);
     }
-    return; // Stop here, don't proceed to approve/reject logic below
   };
 
   // --- Pagination Handlers ---
@@ -274,7 +332,7 @@ export default function EBMPendingApprovals() {
   );
 
   // --- Helpers ---
-  const getUserDisplayData = (user: PendingUser) => {
+  const getUserDisplayData = (user: UserDetails) => {
     const profile =
       user.role === "music" ? user.music_profile : user.management_profile;
 
@@ -296,20 +354,18 @@ export default function EBMPendingApprovals() {
   const totalItems = currentPageData?.total ?? 0;
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [isFilterActive, setIsFilterActive] = useState(false); // Track if filters are applied
+  // const [isFilterActive, setIsFilterActive] = useState(false); // Unused
 
-  // 2. Use the debounce hook to prevent API spam
   const debouncedSearch = useDebounce(searchQuery, 400);
 
-  // 3. Effect to trigger fetch when debounced value changes
   useEffect(() => {
-    // Only trigger if the value actually changed to avoid initial double-fetch
-    // You might need to pass debouncedSearch to your fetchApprovals function
+    // Note: If your API supports search, you should append `&search=${debouncedSearch}`
+    // to the endpoint in fetchApprovals. Currently it just re-fetches the page.
     fetchApprovals();
-  }, [debouncedSearch]);
+  }, [debouncedSearch, fetchApprovals]);
 
   return (
-    <section className="w-full min-h-screen py-6 px-4 sm:px-8 lg:px-12 mx-auto space-y-6 bg-gray-50/50 dark:bg-black/5">
+    <section className="w-full min-h-screen py-6 px-0 sm:px-8 lg:px-12 mx-auto space-y-6 bg-gray-50/50 dark:bg-black/5">
       {/* 1. Page Header & Stats */}
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -331,17 +387,17 @@ export default function EBMPendingApprovals() {
                 />
               }
               onPress={() => fetchApprovals()}
-              isDisabled={loading} // Optional: prevents clicking while loading
+              isDisabled={loading}
               className="font-semibold"
             >
               Refresh
             </Button>
-            <Button
+            {/* <Button
               className="bg-[#03a1b0] text-white font-bold"
               startContent={<Download size={18} />}
             >
               Download
-            </Button>
+            </Button> */}
           </div>
         </div>
 
@@ -381,7 +437,7 @@ export default function EBMPendingApprovals() {
       >
         <CardBody className="p-0">
           {/* Toolbar */}
-          <div className="p-4 border-b border-gray-100 dark:border-white/5 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-white/5">
+          {/* <div className="p-4 border-b border-gray-100 dark:border-white/5 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-white/5">
             <Input
               className="w-full sm:max-w-xs h-full outline-none"
               placeholder="Search by name or reg no..."
@@ -404,7 +460,7 @@ export default function EBMPendingApprovals() {
                 Filters
               </Button>
             </div>
-          </div>
+          </div> */}
 
           {/* Content */}
           {loading ? (
@@ -453,13 +509,19 @@ export default function EBMPendingApprovals() {
                 <TableColumn align="center">ACTIONS</TableColumn>
               </TableHeader>
               <TableBody>
-                {users.map((user) => {
+                {users.map((user, index) => {
                   const { fullName, regNum, branchYear, subRole } =
                     getUserDisplayData(user);
 
                   return (
                     <TableRow key={user.uuid}>
-                      <TableCell>{users.indexOf(user) + 1}</TableCell>
+                      <TableCell className="font-mono text-gray-500">
+                        #
+                        {String(index + 1 + page * rowsPerPage).padStart(
+                          3,
+                          "0",
+                        )}
+                      </TableCell>
                       <TableCell>
                         <User
                           name={fullName}
@@ -475,8 +537,8 @@ export default function EBMPendingApprovals() {
                               ),
                             className:
                               user.role === "music"
-                                ? "bg-purple-50 text-purple-600 border border-purple-100"
-                                : "bg-blue-50 text-blue-600 border border-blue-100",
+                                ? "bg-purple-50 text-purple-600 border border-purple-100 w-9 sm:w-8 h-6 sm:h-8 "
+                                : "bg-blue-50 text-blue-600 border border-blue-100 w-6 sm:w-8 h-6 sm:h-8",
                           }}
                           classNames={{
                             name: "text-sm font-bold text-gray-900 dark:text-white",
@@ -531,14 +593,16 @@ export default function EBMPendingApprovals() {
                             <span>Assigned</span>
                           </div>
                           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {new Date(
-                              user.user_approval.ebm_assigned_at,
-                            ).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {user.user_approval.ebm_assigned_at
+                              ? new Date(
+                                  user.user_approval.ebm_assigned_at,
+                                ).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : "N/A"}
                           </span>
                         </div>
                       </TableCell>
@@ -553,7 +617,9 @@ export default function EBMPendingApprovals() {
                               size="sm"
                               className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 dark:bg-green-500/10 dark:text-green-400"
                               isLoading={processingId === user.uuid}
-                              onPress={() => handleAction(user.uuid, "approve")}
+                              onPress={() =>
+                                handleActionIntent(user, "approve")
+                              }
                             >
                               <CheckCircle2 size={18} />
                             </Button>
@@ -567,7 +633,7 @@ export default function EBMPendingApprovals() {
                               size="sm"
                               className="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 dark:bg-red-500/10 dark:text-red-400"
                               isLoading={processingId === user.uuid}
-                              onPress={() => handleAction(user.uuid, "reject")}
+                              onPress={() => handleActionIntent(user, "reject")}
                             >
                               <XCircle size={18} />
                             </Button>
@@ -581,35 +647,11 @@ export default function EBMPendingApprovals() {
                               size="sm"
                               className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
                               isLoading={processingId === user.uuid}
-                              onPress={() => handleAction(user.uuid, "view")}
+                              onPress={() => handleActionIntent(user, "view")}
                             >
                               <User2 size={18} />
                             </Button>
                           </Tooltip>
-
-                          {/* <Dropdown>
-                            <DropdownTrigger>
-                              <Button
-                                isIconOnly
-                                size="sm"
-                                variant="light"
-                                className="text-gray-400"
-                              >
-                                <MoreVertical size={18} />
-                              </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu aria-label="More actions">
-                              <DropdownItem
-                                key="view"
-                                className="bg-black dark:bg-white text-white dark:text-black backdrop-blur-lg border"
-                              >
-                                View Application
-                              </DropdownItem>
-                              <DropdownItem key="flag" className="text-warning">
-                                Flag for Review
-                              </DropdownItem>
-                            </DropdownMenu>
-                          </Dropdown> */}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -620,65 +662,10 @@ export default function EBMPendingApprovals() {
           )}
         </CardBody>
       </Card>
+      <Divider className="pb-20"></Divider>
 
       {/* 3. Floating Pagination Control */}
       {currentPageData && totalItems > 0 && (
-        // <div className="fixed z-[99] bottom-6 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4">
-        //   <div className="bg-white/80 dark:bg-[#18181b]/90 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-2xl rounded-2xl p-1.5 flex justify-center">
-        //     <TablePagination
-        //       component="div"
-        //       count={totalItems}
-        //       page={page}
-        //       onPageChange={handleChangePage}
-        //       rowsPerPageOptions={[12, 20, 50, 100]}
-        //       rowsPerPage={rowsPerPage}
-        //       onRowsPerPageChange={handleChangeRowsPerPage}
-        //       labelRowsPerPage="Rows:"
-        //       className="text-gray-600 dark:text-gray-300"
-        //       sx={{
-        //         ".MuiToolbar-root": {
-        //           paddingLeft: 2,
-        //           paddingRight: 2,
-        //           minHeight: "44px",
-        //         },
-        //         ".MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows":
-        //           {
-        //             fontSize: "0.875rem",
-        //             fontWeight: 500,
-        //           },
-        //         ".MuiTablePagination-actions button": {
-        //           color: "#03a1b0",
-        //           transition: "all 0.2s",
-        //           "&:hover": {
-        //             backgroundColor: "rgba(3, 161, 176, 0.1)",
-        //             transform: "scale(1.1)",
-        //           },
-        //           "&.Mui-disabled": {
-        //             color: "gray",
-        //             opacity: 0.3,
-        //           },
-        //         },
-        //       }}
-        //       slotProps={{
-        //         select: {
-        //           MenuProps: {
-        //             PaperProps: {
-        //               className:
-        //                 "!bg-white dark:!bg-[#18181b] !text-black dark:!text-white !backdrop-blur-xl !rounded-lg !shadow-xl !border !border-black/5 dark:!border-white/5",
-        //               sx: {
-        //                 "& .MuiMenuItem-root.Mui-selected": {
-        //                   bgcolor: "#03a1b0 !important",
-        //                   color: "#fff !important",
-        //                   fontWeight: "bold",
-        //                 },
-        //               },
-        //             },
-        //           },
-        //         },
-        //       }}
-        //     />
-        //   </div>
-
         <div className="fixed z-[99] bottom-8 w-full sm:w-[28%] flex right-0 sm:right-22 items-center py-3 rounded-xl bg-white/70 dark:bg-black/70 backdrop-blur-sm border border-black/5 dark:border-white/5">
           <TablePagination
             component="div"
@@ -721,6 +708,30 @@ export default function EBMPendingApprovals() {
             }}
           />
         </div>
+      )}
+
+      {selectedUser && pendingAction && (
+        <DecisionPanel
+          asModal
+          isOpen={decisionOpen}
+          onClose={() => {
+            setDecisionOpen(false);
+            setSelectedUser(null);
+            setPendingAction(null);
+          }}
+          user={selectedUser}
+          // The component is controlled from outside
+          remarks={remarks}
+          setRemarks={setRemarks}
+          // processingAction logic: pass the action if we are processing this user
+          processingAction={
+            processingId === selectedUser.uuid
+              ? (pendingAction as "approve" | "reject")
+              : null
+          }
+          // Map the component's internal submit to our handler
+          handleAction={(action) => handleDecisionSubmit(action, remarks)}
+        />
       )}
     </section>
   );

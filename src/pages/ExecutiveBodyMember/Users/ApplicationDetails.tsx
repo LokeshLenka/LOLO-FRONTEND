@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   Card,
   CardBody,
+  CardHeader,
   Button,
   User as UserAvatar,
   Chip,
   Divider,
   Textarea,
-  Skeleton,
   Tooltip,
   Breadcrumbs,
   BreadcrumbItem,
@@ -20,82 +20,112 @@ import {
   CheckCircle2,
   XCircle,
   Calendar,
-  MapPin,
   User,
-  Hash,
-  Clock,
   ShieldCheck,
   ChevronLeft,
   Phone,
   Mail,
-  AlertCircle,
   Building,
   GraduationCap,
-  FileText,
+  Mic2,
+  Heart,
+  Users,
+  Trophy,
+  History,
+  Check,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
-// --- Types ---
-interface ProfileData {
+// --- Types based on your JSON ---
+
+interface ProfileBase {
+  uuid: string;
   first_name: string;
   last_name: string;
   reg_num: string;
   branch: string;
   year: string;
+  phone_no: string;
   gender: string;
   sub_role: string;
-  phone?: string;
-  email?: string;
+  experience?: string;
+  lateral_status: number;
+  hostel_status: number;
+  college_hostel_status: number;
+}
+
+interface MusicProfile extends ProfileBase {
+  instrument_avail: number;
+  other_fields_of_interest: string;
+  passion: string;
+}
+
+interface ManagementProfile extends ProfileBase {
+  interest_towards_lolo: string;
+  any_club: string;
+}
+
+interface UserApproval {
+  status: string;
+  remarks: string | null;
 }
 
 interface UserDetails {
   uuid: string;
   username: string | null;
+  email: string;
   role: "music" | "management";
   is_approved: boolean;
-  music_profile: ProfileData | null;
-  management_profile: ProfileData | null;
-  user_approval: {
-    ebm_assigned_at: string;
-    status: string;
-  };
-  created_by?: {
-    username: string;
-  };
   created_at: string;
+  music_profile: MusicProfile | null;
+  management_profile: ManagementProfile | null;
+  user_approval: UserApproval;
 }
 
 // --- Helper Components ---
-const SectionHeader = ({ icon: Icon, title }: { icon: any; title: string }) => (
-  <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100 dark:border-white/5">
-    <Icon className="text-[#03a1b0]" size={20} />
-    <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wide">
-      {title}
-    </h3>
-  </div>
-);
 
-const DetailItem = ({ label, value, icon: Icon, isCopyable = false }: any) => (
-  <div className="group flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-all">
-    <div className="mt-1 text-gray-400 group-hover:text-[#03a1b0] transition-colors">
-      <Icon size={18} />
-    </div>
-    <div className="flex-1">
-      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">
-        {label}
-      </p>
-      <div className="flex items-center gap-2">
-        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 break-all">
-          {value || <span className="text-gray-400 italic">Not provided</span>}
-        </p>
-        {isCopyable && value && (
+const DetailRow = ({
+  label,
+  value,
+  icon: Icon,
+  copyable = false,
+  fullWidth = false,
+}: {
+  label: string;
+  value?: string | number | null;
+  icon?: any;
+  copyable?: boolean;
+  fullWidth?: boolean;
+}) => {
+  return (
+    <div
+      className={`group flex flex-col gap-1.5 py-2 ${
+        fullWidth ? "col-span-1 md:col-span-2" : "col-span-1"
+      }`}
+    >
+      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+        {Icon && <Icon size={14} className="opacity-70" />}
+        <span className="text-[11px] font-bold uppercase tracking-wider opacity-80">
+          {label}
+        </span>
+      </div>
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words leading-relaxed">
+          {value || (
+            <span className="text-gray-400 dark:text-gray-600 italic text-xs">
+              Not provided
+            </span>
+          )}
+        </span>
+        {copyable && value && (
           <Tooltip content="Copy">
             <button
               onClick={() => {
-                navigator.clipboard.writeText(value);
-                toast.success("Copied to clipboard");
+                navigator.clipboard.writeText(String(value));
+                toast.success("Copied!");
               }}
-              className="opacity-0 group-hover:opacity-100 text-xs text-[#03a1b0] font-medium hover:underline"
+              className="opacity-0 group-hover:opacity-100 text-xs text-[#03a1b0] font-medium transition-opacity px-1"
             >
               Copy
             </button>
@@ -103,8 +133,58 @@ const DetailItem = ({ label, value, icon: Icon, isCopyable = false }: any) => (
         )}
       </div>
     </div>
+  );
+};
+
+const BooleanChip = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: number | boolean;
+}) => (
+  <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-white/5 border border-black/5 dark:border-white/5">
+    <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+      {label}
+    </span>
+    {value ? (
+      <Chip
+        size="sm"
+        startContent={<Check size={12} />}
+        classNames={{
+          base: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-none",
+        }}
+      >
+        Yes
+      </Chip>
+    ) : (
+      <Chip
+        size="sm"
+        startContent={<X size={12} />}
+        classNames={{
+          base: "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-none",
+        }}
+      >
+        No
+      </Chip>
+    )}
   </div>
 );
+
+/** Retrieves User Object safely */
+const getUserFromStorage = (): any => {
+  try {
+    const raw = localStorage.getItem("userProfile");
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.error("Error parsing user from storage", e);
+    return null;
+  }
+};
+
+const currentUser = getUserFromStorage();
+
+const promotedRole = currentUser?.promoted_role;
 
 export default function ApplicantDetailsPage() {
   const { uuid } = useParams<{ uuid: string }>();
@@ -118,7 +198,6 @@ export default function ApplicantDetailsPage() {
     "approve" | "reject" | null
   >(null);
 
-  // --- Fetch Data ---
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -126,6 +205,9 @@ export default function ApplicantDetailsPage() {
           `${API_BASE_URL}/ebm/view/application/user/${uuid}`,
         );
         setUser(response.data.data);
+        if (response.data.data.user_approval?.remarks) {
+          setRemarks(response.data.data.user_approval.remarks);
+        }
       } catch (err: any) {
         toast.error("Failed to load applicant details");
         navigate(-1);
@@ -136,10 +218,14 @@ export default function ApplicantDetailsPage() {
     if (uuid) fetchDetails();
   }, [uuid, API_BASE_URL, navigate]);
 
-  // --- Handle Actions ---
   const handleAction = async (action: "approve" | "reject") => {
     if (!remarks.trim()) {
       toast.error("Please enter remarks before proceeding.");
+      return;
+    }
+
+    if (remarks.trim().length < 10) {
+      toast.error("Remarks must be at least 10 characters long.");
       return;
     }
 
@@ -156,7 +242,6 @@ export default function ApplicantDetailsPage() {
       toast.success(`User ${action}d successfully!`, { id: toastId });
       navigate(-1);
     } catch (err: any) {
-      console.error(err);
       const msg =
         err.response?.data?.errors?.remarks?.[0] ||
         err.response?.data?.message ||
@@ -167,131 +252,187 @@ export default function ApplicantDetailsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto p-6 md:p-8 space-y-8">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-48 rounded-lg" />
-          <Skeleton className="h-10 w-32 rounded-lg" />
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-8 space-y-6">
-            <Skeleton className="h-40 w-full rounded-2xl" />
-            <Skeleton className="h-64 w-full rounded-2xl" />
-          </div>
-          <div className="lg:col-span-4 space-y-6">
-            <Skeleton className="h-96 w-full rounded-2xl" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  if (loading) return <DetailsSkeleton />;
   if (!user) return null;
 
-  const profile =
-    user.role === "music" ? user.music_profile : user.management_profile;
+  const isMusic = user.role === "music";
+  const profile = isMusic ? user.music_profile : user.management_profile;
   const fullName = profile
     ? `${profile.first_name} ${profile.last_name}`
-    : user.username;
-  const isMusic = user.role === "music";
+    : user.username || "Unknown User";
+
+  const renderRoleSpecifics = () => {
+    if (isMusic && user.music_profile) {
+      const p = user.music_profile;
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <DetailRow
+              icon={Mic2}
+              label="Instrument / Skill"
+              value={p.sub_role?.replace(/_/g, " ")}
+            />
+            <DetailRow icon={History} label="Experience" value={p.experience} />
+            <DetailRow
+              fullWidth
+              icon={Heart}
+              label="Passion / Why Music?"
+              value={p.passion}
+            />
+            <DetailRow
+              fullWidth
+              icon={Trophy}
+              label="Other Interests"
+              value={p.other_fields_of_interest}
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <BooleanChip label="Owns Instrument?" value={p.instrument_avail} />
+            <BooleanChip label="Lateral Entry?" value={p.lateral_status} />
+          </div>
+        </div>
+      );
+    } else if (!isMusic && user.management_profile) {
+      const p = user.management_profile;
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <DetailRow
+              icon={Briefcase}
+              label="Management Role"
+              value={p.sub_role?.replace(/_/g, " ")}
+            />
+            <DetailRow icon={History} label="Experience" value={p.experience} />
+            <DetailRow
+              fullWidth
+              icon={Users}
+              label="Club History"
+              value={p.any_club}
+            />
+            <DetailRow
+              fullWidth
+              icon={Heart}
+              label="Interest Description"
+              value={p.interest_towards_lolo}
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <BooleanChip label="Lateral Entry?" value={p.lateral_status} />
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="text-gray-400 italic py-4">
+        No specific profile data available.
+      </div>
+    );
+  };
 
   return (
-    <section className="min-h-screen bg-gray-50/50 dark:bg-black/5 pb-12">
-      {" "}
-      {/* Reduced bottom padding */}
-      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-5">
-        {" "}
-        {/* Reduced p-8 to p-6, space-y-6 to space-y-5 */}
-        {/* 1. Header Section - Tighter vertical rhythm */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-0.5">
-            {" "}
-            {/* Tighter text spacing */}
-            <Breadcrumbs size="sm" variant="solid" radius="lg">
-              {/* ... breadcrumbs */}
+    <section className="min-h-screen bg-gray-50/50 dark:bg-black/10 pb-12 font-sans">
+      <div className="max-w-7xl mx-auto py-4 md:p-8 space-y-6">
+        {/* Navigation & Title */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <Breadcrumbs
+              size="sm"
+              variant="light"
+              className="pl-0 text-xs sm:text-md"
+            >
+              <BreadcrumbItem>{promotedRole}</BreadcrumbItem>
+              <BreadcrumbItem>pending_approvals</BreadcrumbItem>
+              <BreadcrumbItem>user</BreadcrumbItem>
+              <BreadcrumbItem>{user.uuid}</BreadcrumbItem>
             </Breadcrumbs>
-            <h1 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white tracking-tight">
-              Review Application
-            </h1>
           </div>
           <Button
-            size="sm" // Smaller button for enterprise density
-            variant="bordered"
+            size="sm"
+            variant="flat"
             startContent={<ChevronLeft size={16} />}
             onPress={() => navigate(-1)}
-            className="font-semibold border-black/10 dark:border-white/10 bg-white dark:bg-black/20 h-9"
+            className="font-medium hover:border-b hover:border-b-gray-900 hover:dark:border-b-gray-100 transition-border duration-300"
           >
             Back to List
           </Button>
         </div>
-        {/* Main Grid - Reduced gap from 6 to 5 */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          {/* LEFT COLUMN (Span 8) */}
-          <div className="lg:col-span-8 space-y-5">
-            {/* Identity Card - Reduced padding & height */}
-            <Card
-              shadow="sm"
-              className="border border-black/5 dark:border-white/5 bg-white dark:bg-[#18181b]"
-            >
-              <CardBody className="p-0">
-                {/* Banner - Reduced height */}
-                <div
-                  className={`h-20 w-full ${isMusic ? "bg-gradient-to-r from-purple-600/20 to-indigo-600/20" : "bg-gradient-to-r from-blue-600/20 to-cyan-600/20"}`}
-                />
 
-                {/* Profile Section - Tighter layout */}
-                <div className="px-5 pb-5 -mt-8 flex flex-col sm:flex-row items-start sm:items-end gap-4">
-                  <div className="p-1 bg-white dark:bg-[#18181b] rounded-xl shadow-sm">
-                    <UserAvatar
-                      name={fullName}
-                      className="transition-transform"
-                      // The 'fallback' goes INSIDE avatarProps, not on the User component itself
-                      avatarProps={{
-                        src: undefined, // ensure no image source conflicts
-                        className: `w-20 h-20 text-2xl font-bold rounded-lg ${
-                          isMusic
-                            ? "bg-purple-100 text-purple-600"
-                            : "bg-blue-100 text-blue-600"
-                        }`,
-                        fallback: isMusic ? (
-                          <Music size={32} />
-                        ) : (
-                          <Briefcase size={32} />
-                        ),
-                        radius: "md",
-                      }}
-                      classNames={{
-                        name: "hidden", // We are rendering name manually outside, so hide default
-                        description: "hidden",
-                      }}
-                    />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* LEFT COLUMN: Data View (Span 8) */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* 1. Identity Card */}
+            <Card className="border border-black/5 dark:border-white/5 shadow-sm bg-white dark:bg-white/1 overflow-visible">
+              <div
+                className={`h-28 w-full rounded-t-xl ${
+                  isMusic
+                    ? "bg-gradient-to-r from-violet-600/10 to-fuchsia-600/10"
+                    : "bg-gradient-to-r from-sky-600/10 to-blue-600/10"
+                } relative overflow-hidden`}
+              >
+                <div
+                  className="absolute inset-0 opacity-30"
+                  style={{
+                    backgroundImage:
+                      "radial-gradient(currentColor 1px, transparent 1px)",
+                    backgroundSize: "20px 20px",
+                  }}
+                ></div>
+              </div>
+
+              <CardBody className="px-6 pb-6 pt-0 relative overflow-visible">
+                <div className="flex flex-col sm:flex-row gap-5 -mt-12 items-start sm:items-end">
+                  <div className="relative shrink-0 z-10">
+                    <div className="p-1.5 bg-white dark:bg-[#18181b] rounded-2xl shadow-sm ring-1 ring-black/5 dark:ring-white/10">
+                      <UserAvatar
+                        name={fullName}
+                        className="w-24 h-24 text-3xl text-white rounded-xl shadow-md"
+                        classNames={{
+                          base: isMusic ? "bg-violet-600" : "bg-sky-600",
+                          name: "hidden",
+                        }}
+                        avatarProps={{
+                          fallback: isMusic ? (
+                            <Music size={40} />
+                          ) : (
+                            <Briefcase size={40} />
+                          ),
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div className="flex-1 space-y-0.5 mb-0.5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+
+                  <div className="flex-1 space-y-1.5 mb-1 min-w-0 w-full">
+                    <div className="flex flex-col gap-1">
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white break-all leading-tight">
                         {fullName}
                       </h2>
-                      <Chip
-                        size="sm"
-                        variant="dot"
-                        color={isMusic ? "secondary" : "primary"}
-                        className="border-none pl-1 h-6"
-                      >
-                        {user.role === "music" ? "Musician" : "Manager"}
-                      </Chip>
+
+                      <div className="flex items-center gap-2 mt-1">
+                        <Chip
+                          size="sm"
+                          variant="flat"
+                          className={`${
+                            isMusic
+                              ? "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
+                              : "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300"
+                          } font-bold border-none h-6`}
+                        >
+                          {isMusic ? "Musician" : "Management"}
+                        </Chip>
+                        <span className="text-xs text-gray-400 font-mono">
+                          ID: {user.uuid.substring(0, 8)}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-500 font-medium">
-                      @{user.username}
-                    </p>
-                    <div className="flex items-center gap-3 text-xs font-medium text-gray-400 pt-1">
-                      <span className="flex items-center gap-1">
-                        <Clock size={12} />{" "}
-                        {new Date(user.created_at).toLocaleDateString()}
+
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500 pt-1">
+                      <span className="flex items-center gap-1.5 truncate max-w-full">
+                        <Mail size={14} className="shrink-0" />
+                        <span className="truncate">{user.email}</span>
                       </span>
-                      <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                      <span className="flex items-center gap-1">
-                        <ShieldCheck size={12} /> {uuid?.substring(0, 8)}
+                      <span className="flex items-center gap-1.5">
+                        <Phone size={14} className="shrink-0" />
+                        {profile?.phone_no || "N/A"}
                       </span>
                     </div>
                   </div>
@@ -299,170 +440,189 @@ export default function ApplicantDetailsPage() {
               </CardBody>
             </Card>
 
-            {/* Info Grid - Same gap 5 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Cards - Reduced internal padding to p-4 */}
-              <Card
-                shadow="sm"
-                className="h-full border border-black/5 dark:border-white/5 bg-white dark:bg-[#18181b]"
-              >
-                <CardBody className="p-4">
-                  <SectionHeader
-                    icon={GraduationCap}
-                    title="Academic Profile"
+            {/* 2. Academic & Personal Info */}
+            <Card className="border border-black/5 dark:border-white/5 shadow-sm">
+              <CardHeader className="px-6 py-4 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5">
+                <div className="flex items-center gap-2 font-bold text-gray-700 dark:text-gray-200">
+                  <GraduationCap size={18} className="text-[#03a1b0]" />
+                  <h3>Academic Profile</h3>
+                </div>
+              </CardHeader>
+              <CardBody className="p-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <DetailRow
+                    icon={ShieldCheck}
+                    label="Reg Number"
+                    value={profile?.reg_num}
+                    copyable
                   />
-                  <div className="space-y-0.5">
-                    {" "}
-                    {/* Tighter list items */}
-                    <DetailItem
-                      icon={Building}
-                      label="Branch"
-                      value={profile?.branch}
-                    />
-                    <DetailItem
-                      icon={ShieldCheck}
-                      label="Reg No."
-                      value={profile?.reg_num}
-                      isCopyable
-                    />
-                    <DetailItem
-                      icon={Calendar}
-                      label="Batch"
-                      value={profile?.year}
-                    />
-                    <DetailItem
-                      icon={Hash}
-                      label="Gender"
-                      value={profile?.gender}
-                    />
-                  </div>
-                </CardBody>
-              </Card>
+                  <DetailRow
+                    icon={Building}
+                    label="Branch"
+                    value={profile?.branch?.toUpperCase()}
+                  />
+                  <DetailRow
+                    icon={Calendar}
+                    label="Year/Batch"
+                    value={profile?.year}
+                  />
+                  <DetailRow
+                    icon={User}
+                    label="Gender"
+                    value={profile?.gender}
+                  />
+                </div>
+                <Divider className="my-6 bg-gray-100 dark:bg-white/5" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <BooleanChip
+                    label="Hostel Resident?"
+                    value={profile?.hostel_status || 0}
+                  />
+                  <BooleanChip
+                    label="College Hostel?"
+                    value={profile?.college_hostel_status || 0}
+                  />
+                </div>
+              </CardBody>
+            </Card>
 
-              <Card
-                shadow="sm"
-                className="h-full border border-black/5 dark:border-white/5 bg-white dark:bg-[#18181b]"
-              >
-                <CardBody className="p-4">
-                  <SectionHeader icon={User} title="Contact & Role" />
-                  <div className="space-y-0.5">
-                    <DetailItem
-                      icon={Mail}
-                      label="Email"
-                      value={profile?.email}
-                      isCopyable
-                    />
-                    <DetailItem
-                      icon={Phone}
-                      label="Phone"
-                      value={profile?.phone}
-                      isCopyable
-                    />
-                    <Divider className="my-2 bg-gray-100 dark:bg-white/5" />
-                    <DetailItem
-                      icon={Briefcase}
-                      label="Sub-Role"
-                      value={profile?.sub_role?.replace(/_/g, " ")}
-                    />
-                  </div>
-                </CardBody>
-              </Card>
-            </div>
+            {/* 3. Role Specific Details */}
+            <Card className="border border-black/5 dark:border-white/5 shadow-sm">
+              <CardHeader className="px-6 py-4 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5">
+                <div className="flex items-center gap-2 font-bold text-gray-700 dark:text-gray-200">
+                  {isMusic ? (
+                    <Music size={18} className="text-violet-500" />
+                  ) : (
+                    <Briefcase size={18} className="text-sky-500" />
+                  )}
+                  <h3>{isMusic ? "Musical Profile" : "Management Profile"}</h3>
+                </div>
+              </CardHeader>
+              <CardBody className="p-6">{renderRoleSpecifics()}</CardBody>
+            </Card>
           </div>
 
-          {/* RIGHT COLUMN (Span 4) - Sticky */}
-          <div className="lg:col-span-4 space-y-5 lg:sticky lg:top-6">
-            {/* Status - Compact */}
-            <Card
-              shadow="none"
-              className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-700/30"
-            >
-              <CardBody className="p-3 flex items-center gap-3">
-                <div className="p-1.5 bg-amber-100 dark:bg-amber-900/30 rounded-full text-amber-600 dark:text-amber-500">
-                  <AlertCircle size={20} />
+          {/* RIGHT COLUMN: Action & Meta (Span 4) */}
+          <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-6">
+            {/* Meta Card */}
+            <Card className="bg-gray-50 dark:bg-white/5 border border-black/5 dark:border-white/5 shadow-none">
+              <CardBody className="p-4 space-y-3">
+                <div className="flex justify-between items-center text-xs text-gray-500">
+                  <span>Application ID</span>
+                  <span className="font-mono text-gray-700 dark:text-gray-300">
+                    {user.uuid.substring(0, 12)}...
+                  </span>
                 </div>
-                <div>
-                  <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase leading-tight">
-                    Status
-                  </p>
-                  <p className="text-sm font-bold text-amber-900 dark:text-amber-200 leading-tight">
-                    Pending Review
-                  </p>
+                <Divider className="bg-gray-200 dark:bg-white/10" />
+                <div className="flex justify-between items-center text-xs text-gray-500">
+                  <span>Submitted On</span>
+                  <span className="text-gray-700 dark:text-gray-300">
+                    {new Date(user.created_at).toLocaleDateString(undefined, {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
                 </div>
               </CardBody>
             </Card>
 
-            {/* Action Panel - Compact */}
-            <Card
-              shadow="sm"
-              className="border border-black/5 dark:border-white/5 bg-white dark:bg-[#18181b]"
-            >
-              <CardBody className="p-5">
-                <SectionHeader icon={FileText} title="Decision" />
+            {/* Decision Panel - FIXED OVERFLOW ISSUE */}
+            <Card className="border border-black/5 dark:border-white/5 shadow-md bg-white dark:bg-transparent overflow-visible">
+              <CardHeader className="pb-0 pt-5 px-5 flex flex-col items-start gap-1">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                  Admin Decision
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Review the application carefully before taking action.
+                </p>
+              </CardHeader>
+              <CardBody className="p-5 flex flex-col gap-6">
+                {/* Remarks Section */}
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <label className="text-xs font-bold uppercase text-gray-600 dark:text-gray-400">
+                      Remarks / Reason
+                    </label>
+                    <span className="text-xs text-red-500 font-medium">
+                      * Required
+                    </span>
+                  </div>
+                  <Textarea
+                    placeholder="Enter feedback for the applicant..."
+                    minRows={5}
+                    variant="bordered"
+                    radius="sm"
+                    value={remarks}
+                    onValueChange={setRemarks}
+                    required
+                    classNames={{
+                      input: "outline-none focus:outline-none",
+                      inputWrapper: `
+                              border-none
+                              shadow-none
+                              focus-within:border-none
+                              focus-within:shadow-none
+                              hover:border-none
+                            `,
+                    }}
+                  />
+                </div>
 
-                <div className="space-y-4">
-                  {" "}
-                  {/* Reduced vertical space */}
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center">
-                      <label className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase">
-                        Remarks <span className="text-red-500">*</span>
-                      </label>
+                {/* Previous Remark (if any) */}
+                {user.user_approval.remarks &&
+                  user.user_approval.status !== "pending" && (
+                    <div className="p-3 rounded bg-gray-100 dark:bg-white/10 text-xs text-gray-600 dark:text-gray-400 italic">
+                      <strong>Previous Remark:</strong> "
+                      {user.user_approval.remarks}"
                     </div>
-                    <Textarea
-                      placeholder="Reason for decision..."
-                      minRows={4} // Reduced height
-                      variant="faded"
-                      radius="md"
-                      size="sm" // Smaller text input
-                      value={remarks}
-                      onValueChange={setRemarks}
-                      classNames={{
-                        inputWrapper:
-                          "bg-gray-50 dark:bg-black/20 focus-within:bg-white border-black/10",
-                      }}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {" "}
-                    {/* Tighter button gap */}
-                    <Button
-                      size="sm" // Smaller buttons
-                      color="danger"
-                      variant="ghost"
-                      className="font-bold border-small"
-                      startContent={<XCircle size={16} />}
-                      onPress={() => handleAction("reject")}
-                      isLoading={processingAction === "reject"}
-                      isDisabled={!!processingAction}
-                    >
-                      Reject
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="bg-[#03a1b0] text-white font-bold shadow-md"
-                      startContent={<CheckCircle2 size={16} />}
-                      onPress={() => handleAction("approve")}
-                      isLoading={processingAction === "approve"}
-                      isDisabled={!!processingAction}
-                    >
-                      Approve
-                    </Button>
-                  </div>
+                  )}
+
+                {/* Actions Section - Now cleanly separated below textarea */}
+                <div className="grid grid-cols-2 gap-3 mt-auto pt-20">
+                  <Button
+                    size="md"
+                    color="danger"
+                    variant="flat"
+                    className="bg-red-700 text-white font-semibold h-10"
+                    startContent={<XCircle size={18} />}
+                    onPress={() => handleAction("reject")}
+                    isLoading={processingAction === "reject"}
+                    isDisabled={!!processingAction}
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    size="md"
+                    className="bg-[#03a1b0] text-white font-semibold shadow-lg shadow-[#03a1b0]/20 h-10"
+                    startContent={<CheckCircle2 size={18} />}
+                    onPress={() => handleAction("approve")}
+                    isLoading={processingAction === "approve"}
+                    isDisabled={!!processingAction}
+                  >
+                    Approve
+                  </Button>
                 </div>
               </CardBody>
             </Card>
-
-            <div className="text-center">
-              <p className="text-[10px] text-gray-400">
-                {" "}
-                {/* Smaller meta text */}
-                ID: <span className="font-mono">{uuid}</span>
-              </p>
-            </div>
           </div>
         </div>
       </div>
     </section>
   );
 }
+
+const DetailsSkeleton = () => (
+  <div className="max-w-7xl mx-auto p-6 space-y-8 animate-pulse">
+    <div className="h-8 w-1/3 bg-gray-200 dark:bg-gray-800 rounded"></div>
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="lg:col-span-8 space-y-6">
+        <div className="h-48 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+        <div className="h-64 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+      </div>
+      <div className="lg:col-span-4">
+        <div className="h-96 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+      </div>
+    </div>
+  </div>
+);
