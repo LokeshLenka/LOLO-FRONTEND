@@ -82,7 +82,7 @@ const Footer = () => {
               <h4 className="font-bold text-white mb-6">Community</h4>
               <ul className="space-y-4 text-sm text-gray-400">
                 {[
-                  { id: 2, label: "Team", link: "/team" },
+                  { id: 1, label: "Team", link: "/team" },
                   {
                     id: 2,
                     label: "Registration Status",
