@@ -69,8 +69,8 @@ import MyEvents from "./pages/ExecutiveBodyMember/Events/MyEvents";
 import EventRegistrations from "./pages/ExecutiveBodyMember/Events/EventRegistrations";
 import RegisterMember from "./pages/ExecutiveBodyMember/Users/RegisterMember";
 import MyRegistrations from "./pages/ExecutiveBodyMember/Users/MyRegistrations";
-import ApprovalsHistory from "./pages/ExecutiveBodyMember/Users/ApprovalHistory";
 import ApplicantDetailsPage from "./pages/ExecutiveBodyMember/Users/ApplicationDetails";
+import ApprovalHistoryDetailsPage from "./pages/ExecutiveBodyMember/Users/ApprovalHistoryDetailsPage";
 
 // --- Helper Components ---
 
@@ -204,10 +204,7 @@ function App() {
                 path="/:username/credits/:uuid"
                 element={<ShowCreditPage />}
               />
-              <Route
-                path="/:username/profile"
-                element={<UserProfilePage data={MOCK_PROFILE_DATA} />}
-              />
+              <Route path="/:username/profile" element={<UserProfilePage />} />
               {/* EBM Routes */}
               <Route
                 path="/:username/executive_body_member/dashboard"
@@ -234,7 +231,7 @@ function App() {
                 element={<MyRegistrations />}
               />{" "}
               <Route
-                path="/:username/executive_body_member/view-application/user/:uuid"
+                path="/:username/executive_body_member/pending-approvals/view-application/user/:uuid"
                 element={<ApplicantDetailsPage />}
               />
               <Route
@@ -243,7 +240,7 @@ function App() {
               />
               <Route
                 path="/:username/executive_body_member/approvals-history/"
-                element={<ApprovalsHistory />}
+                element={<ApprovalHistoryDetailsPage />}
               />
               {/* Management Head (MH) Routes */}
               {/* <Route path="/:username/mh/dashboard" element={<MHDashboard />} /> */}
