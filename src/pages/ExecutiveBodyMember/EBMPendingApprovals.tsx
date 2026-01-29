@@ -37,6 +37,7 @@ import {
   Download,
   RefreshCw,
   User2,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -649,7 +650,7 @@ export default function EBMPendingApprovals() {
                               isLoading={processingId === user.uuid}
                               onPress={() => handleActionIntent(user, "view")}
                             >
-                              <User2 size={18} />
+                              <Eye size={18} />
                             </Button>
                           </Tooltip>
                         </div>
