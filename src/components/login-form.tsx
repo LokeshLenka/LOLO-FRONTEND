@@ -54,7 +54,7 @@ export default function LoginForm({
     <div
       className={cn(
         "grid md:grid-cols-2 overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-[#03a1b0]/10 bg-[#09090b]/60 backdrop-blur-xl",
-        className
+        className,
       )}
       {...props}
     >
@@ -94,7 +94,7 @@ export default function LoginForm({
               className={cn(
                 "bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#03a1b0]/50 focus-visible:border-[#03a1b0] h-12 rounded-xl transition-all",
                 fieldErrors.username &&
-                  "border-red-500/50 focus-visible:ring-red-500/50"
+                  "border-red-500/50 focus-visible:ring-red-500/50",
               )}
             />
             {fieldErrors.username && (
@@ -141,7 +141,7 @@ export default function LoginForm({
                 className={cn(
                   "bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#03a1b0]/50 focus-visible:border-[#03a1b0] h-12 rounded-xl transition-all pr-10",
                   fieldErrors.password &&
-                    "border-red-500/50 focus-visible:ring-red-500/50"
+                    "border-red-500/50 focus-visible:ring-red-500/50",
                 )}
               />
               <Button
