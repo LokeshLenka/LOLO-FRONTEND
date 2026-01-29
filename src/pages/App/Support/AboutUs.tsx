@@ -197,7 +197,7 @@ const AboutUs = () => {
               <div>
                 <p className="text-neutral-300 leading-relaxed mb-6 text-lg">
                   SRKR LOLO began as a simple idea in a dorm room: a collective
-                  of passionate musicians and engineers wanting to bridge the
+                  of passionate musicians to bridge the
                   gap between rigorous academic life and creative expression.
                 </p>
                 {/* <p className="text-neutral-400 leading-relaxed">
