@@ -274,7 +274,7 @@ export default function MyEvents() {
                   </div>
 
                   {/* 3. Action Button (Pill shaped, white) */}
-                  <button className="w-full mt-4 bg-white text-slate-900 hover:bg-slate-200 font-bold py-3.5 rounded-full transition-colors shadow-lg shadow-black/20 flex items-center justify-center gap-2">
+                  <button className="w-full mt-4 bg-transparent text-slate-900 hover:bg-slate-200 font-bold py-3.5 rounded-full transition-colors shadow-lg shadow-black/20 flex items-center justify-center gap-2">
                     View Details
                   </button>
                 </div>
