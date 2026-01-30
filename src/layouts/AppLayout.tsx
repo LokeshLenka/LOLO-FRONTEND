@@ -51,7 +51,7 @@ const LayoutContent: React.FC = () => {
       >
         <AppHeader />
         <div
-          className="p-4 min-h-screen mx-auto md:p-6 sm:overflow-hidden overflow-visible
+          className="py-4 px-2 min-h-screen mx-auto md:p-6 sm:overflow-hidden overflow-visible
              bg-white 
              dark:bg-gray-900"
         >
