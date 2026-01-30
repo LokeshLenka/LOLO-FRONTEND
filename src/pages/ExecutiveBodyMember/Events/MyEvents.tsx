@@ -2,20 +2,31 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import {
-  Calendar as CalendarIcon,
+  CalendarClock,
   MapPin,
   Users,
-  Loader2,
-  CalendarClock,
-  ImageIcon,
   RefreshCw,
+  Eye,
+  Ticket,
+  Clock,
 } from "lucide-react";
-import clsx from "clsx";
 import { format } from "date-fns";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@heroui/button";
+import {
+  Button,
+  Divider,
+  Table,
+  TableHeader,
+  TableBody,
+  TableColumn,
+  TableRow,
+  TableCell,
+  Skeleton,
+  Chip,
+  Card,
+  CardBody,
+  Tooltip,
+} from "@heroui/react";
 import TablePagination from "@mui/material/TablePagination";
-import { Divider } from "@heroui/react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -64,10 +75,22 @@ interface ApiResponse {
   };
 }
 
+// Removed 'hidden' classes to make all columns visible on all screens
+const columns = [
+  { key: "name", label: "EVENT NAME", className: "" },
+  { key: "type", label: "TYPE", className: "" },
+  { key: "status", label: "STATUS", className: "" },
+  { key: "start_date", label: "TIMING", className: "" },
+  { key: "venue", label: "VENUE", className: "" },
+  { key: "registrations", label: "STATS", className: "" },
+  { key: "actions", label: "ACTIONS", className: "" },
+];
+
 export default function MyEvents() {
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
+  const [currentPageData, setCurrentPageData] = useState<any>(null);
 
   const [page, setPage] = useState<number>(() => {
     try {
@@ -90,11 +113,14 @@ export default function MyEvents() {
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);
     try {
-      const endpoint = `${API_BASE_URL}/ebm/my-events?page=${page + 1}&per_page=${rowsPerPage}`;
+      const endpoint = `${API_BASE_URL}/ebm/my-events?page=${
+        page + 1
+      }&per_page=${rowsPerPage}`;
       const response = await axios.get<ApiResponse>(endpoint);
 
       if (response.data?.data) {
         const paginator = response.data.data;
+        setCurrentPageData(paginator);
         if (Array.isArray(paginator.data)) {
           setEvents(paginator.data);
           setTotalItems(paginator.total || 0);
@@ -105,12 +131,14 @@ export default function MyEvents() {
       } else {
         setEvents([]);
         setTotalItems(0);
+        setCurrentPageData(null);
       }
     } catch (error: any) {
       if (error.response?.status === 404) {
         toast.info("No events found");
         setEvents([]);
         setTotalItems(0);
+        setCurrentPageData(null);
       } else {
         console.error("Fetch error:", error);
         toast.error("Failed to load events");
@@ -145,7 +173,6 @@ export default function MyEvents() {
     window.location.href = `/events/${uuid}`;
   };
 
-  // Helper to format date nicely
   const formatDate = (dateString: string) => {
     if (!dateString) return "TBD";
     try {
@@ -155,37 +182,152 @@ export default function MyEvents() {
     }
   };
 
-  return (
-    <div className="w-full min-h-screen bg-transparent pb-32 text-zinc-100 selection:bg-cyan-500/30 font-sans">
-      {/* --- HEADER --- */}
-      <div className="w-full bg-transparent py-6">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-              <div className="p-3 rounded-2xl bg-slate-800/50 border border-slate-700/50 text-cyan-400 flex-shrink-0 backdrop-blur-sm">
-                <CalendarClock className="h-6 w-6" />
+  const renderCell = useCallback(
+    (event: Event, columnKey: React.Key) => {
+      switch (columnKey) {
+        case "name":
+          return (
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-bold text-gray-900 dark:text-slate-200 truncate max-w-[150px] sm:max-w-xs">
+                {event.name}
+              </span>
+              <span className="block text-xs text-gray-500 dark:text-slate-400 truncate max-w-[150px] sm:max-w-xs">
+                {event.description}
+              </span>
+            </div>
+          );
+        case "type":
+          return (
+            <Chip
+              size="sm"
+              startContent={
+                <div className="w-1.5 h-1.5 rounded-full ml-1 bg-cyan-600 dark:bg-cyan-500" />
+              }
+              variant="flat"
+              classNames={{
+                base: "bg-cyan-50 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/20",
+                content: "font-bold capitalize pl-1",
+              }}
+            >
+              {event.type}
+            </Chip>
+          );
+        case "status":
+          return (
+            <Chip
+              size="sm"
+              variant="dot"
+              classNames={{
+                base: "border-none bg-transparent gap-1 px-0",
+                dot:
+                  event.status === "published"
+                    ? "bg-green-500"
+                    : "bg-gray-400 dark:bg-slate-500",
+                content:
+                  "font-medium capitalize text-gray-600 dark:text-slate-300",
+              }}
+            >
+              {event.status}
+            </Chip>
+          );
+        case "start_date":
+          return (
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-semibold text-gray-900 dark:text-slate-200 whitespace-nowrap">
+                {formatDate(event.start_date)}
+              </span>
+              <span className="text-xs text-gray-500 dark:text-slate-500 font-mono flex items-center gap-1">
+                <Clock size={10} />
+                {event.start_date
+                  ? format(new Date(event.start_date), "h:mm a")
+                  : "--:--"}
+              </span>
+            </div>
+          );
+        case "venue":
+          return (
+            <div className="flex items-center gap-2 text-gray-600 dark:text-slate-300">
+              <MapPin className="h-4 w-4 text-gray-400 dark:text-slate-500 flex-shrink-0" />
+              <span className="truncate max-w-[120px] text-sm font-medium">
+                {event.venue || "TBD"}
+              </span>
+            </div>
+          );
+        case "registrations":
+          return (
+            <div className="flex flex-col gap-1 min-w-[80px]">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-500">
+                <Ticket size={12} />
+                <span>Fee: {event.fee > 0 ? `$${event.fee}` : "Free"}</span>
               </div>
-              <div className="">
-                <h1 className="font-bold text-2xl sm:text-3xl truncate leading-tight mb-1 text-white tracking-tight">
-                  My Events
-                </h1>
-                <p className="text-slate-400 font-medium">
-                  Manage your created events
-                </p>
+              <div className="flex items-center gap-1.5">
+                <Users
+                  size={14}
+                  className="text-gray-400 dark:text-slate-400"
+                />
+                <span className="text-sm font-medium text-gray-700 dark:text-slate-200">
+                  {event.registrations_count || 0} Regs
+                </span>
               </div>
             </div>
+          );
+        case "actions":
+          return (
+            <div className="flex items-center justify-start gap-2">
+              <Tooltip
+                content="View Event Details"
+                placement="bottom"
+                className="bg-black dark:bg-white text-white dark:text-black backdrop-blur-lg border"
+              >
+                <Button
+                  isIconOnly
+                  size="sm"
+                  variant="flat"
+                  className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                  onPress={() => {
+                    handleEventClick(event.uuid);
+                  }}
+                >
+                  <Eye size={18} className="text-blue-600" />
+                </Button>
+              </Tooltip>
+            </div>
+          );
+        default:
+          return null;
+      }
+    },
+    [handleEventClick],
+  );
 
+  return (
+    <section className="w-full min-h-screen py-6 px-0 sm:px-8 mx-auto space-y-6 bg-transparent text-gray-900 dark:text-zinc-100">
+      {/* 1. Page Header */}
+      <div className="space-y-6 px-0 sm:px-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+                My Events
+              </h1>
+              <p className="text-gray-500 dark:text-slate-400 font-medium mt-1">
+                Manage and track your created events
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
             <Button
               variant="flat"
-              onPress={() => fetchEvents()}
-              disabled={isLoading}
               startContent={
                 <RefreshCw
                   size={18}
                   className={isLoading ? "animate-spin" : ""}
                 />
               }
-              className="bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white rounded-full px-6 font-medium border border-slate-700/50"
+              onPress={() => fetchEvents()}
+              isDisabled={isLoading}
+              className="font-semibold"
             >
               Refresh
             </Button>
@@ -193,138 +335,109 @@ export default function MyEvents() {
         </div>
       </div>
 
-      {/* --- EVENTS GRID --- */}
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-24">
-        {isLoading && events.length === 0 ? (
-          <div className="flex items-center justify-center py-32">
-            <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
-          </div>
-        ) : !events || events.length === 0 ? (
-          <Card className="bg-slate-900/50 border-slate-800 shadow-sm rounded-3xl">
-            <CardContent className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="p-5 bg-slate-800 rounded-full mb-6">
-                <CalendarClock className="h-10 w-10 text-slate-500" />
+      {/* 2. Main Data Table */}
+      <Card
+        shadow="none"
+        className="border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 rounded-xl overflow-hidden mx-0 shadow-sm dark:shadow-none"
+      >
+        <CardBody className="p-0">
+          {isLoading ? (
+            <div className="p-6 space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-slate-800" />
+                  <div className="w-full space-y-2">
+                    <Skeleton className="h-3 w-1/3 rounded-lg bg-gray-200 dark:bg-slate-800" />
+                    <Skeleton className="h-3 w-1/4 rounded-lg bg-gray-200 dark:bg-slate-800" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : events.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-24 text-center">
+              <div className="w-20 h-20 bg-gray-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-6">
+                <CalendarClock
+                  size={40}
+                  className="text-gray-400 dark:text-slate-500"
+                />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-slate-200">
                 No events yet
               </h3>
-              <p className="text-sm text-slate-400 max-w-md leading-relaxed">
+              <p className="text-gray-500 dark:text-slate-500 max-w-xs mx-auto mt-2 leading-relaxed">
                 You haven't created any events yet. Start by creating your first
-                event.
+                event to see it here.
               </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {events.map((event) => (
-              <div
-                key={event.id}
-                className="group relative flex flex-col h-[500px] rounded-[2rem] overflow-hidden bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/30 hover:border-slate-600/50 transition-all duration-500 shadow-xl hover:shadow-2xl hover:shadow-cyan-900/10 cursor-pointer"
-                onClick={() => handleEventClick(event.uuid)}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table
+                aria-label="My Events Table"
+                selectionMode="none"
+                classNames={{
+                  // Ensure table has a minimum width to force horizontal scroll on small screens
+                  wrapper:
+                    "shadow-none bg-transparent rounded-none p-0 min-w-[800px] md:min-w-full",
+                  th: "bg-gray-50 dark:bg-slate-900/80 text-gray-500 dark:text-slate-500 font-bold uppercase text-[10px] tracking-wider py-4 border-b border-gray-200 dark:border-slate-800",
+                  td: "py-4 border-b border-gray-100 dark:border-slate-800/50 group-data-[last=true]:border-none",
+                  tr: "hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer",
+                }}
+                onRowAction={(key) => handleEventClick(String(key))}
               >
-                {/* 1. Image Section (Top Half) */}
-                <div className="relative h-[55%] w-full">
-                  {event.cover_image ? (
-                    <img
-                      src={event.cover_image}
-                      alt={event.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-                      <ImageIcon className="h-12 w-12 text-slate-600" />
-                    </div>
+                <TableHeader columns={columns}>
+                  {(column) => (
+                    <TableColumn
+                      key={column.key}
+                      className={column.className}
+                      align={column.key === "actions" ? "start" : "start"}
+                    >
+                      {column.label}
+                    </TableColumn>
                   )}
+                </TableHeader>
+                <TableBody items={events}>
+                  {(item) => (
+                    <TableRow key={item.uuid}>
+                      {(columnKey) => (
+                        <TableCell
+                          className={
+                            columns.find((c) => c.key === columnKey)?.className
+                          }
+                        >
+                          {renderCell(item, columnKey)}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardBody>
+      </Card>
 
-                  {/* Gradient Fade - Critical for the 'blend' effect */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/20 to-slate-900" />
-                </div>
+      <Divider className="opacity-0 pb-20" />
 
-                {/* 2. Content Section (Bottom Half) */}
-                <div className="relative flex flex-col flex-1 px-6 pb-6 -mt-12 z-10">
-                  {/* Title & Price/Count Row */}
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <h3 className="text-2xl font-bold text-white leading-tight drop-shadow-md line-clamp-2">
-                      {event.name}
-                    </h3>
-
-                    {/* Badge resembling the price tag in reference */}
-                    <div className="flex-shrink-0 bg-black/40 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">
-                      {event.fee > 0 ? `$${event.fee}` : "Free"}
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-slate-400 text-sm leading-relaxed line-clamp-2 mb-4">
-                    {event.description}
-                  </p>
-
-                  {/* Pills Row (Like 'Luxury Stay' / '2 Day stay') */}
-                  <div className="flex flex-wrap gap-2 mb-auto">
-                    <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-xs font-medium text-slate-300 backdrop-blur-sm">
-                      {event.status}
-                    </span>
-                    <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-xs font-medium text-slate-300 backdrop-blur-sm">
-                      {event.type}
-                    </span>
-                    <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-xs font-medium text-slate-300 backdrop-blur-sm flex items-center gap-1.5">
-                      <CalendarIcon className="w-3 h-3" />
-                      {formatDate(event.start_date)}
-                    </span>
-                  </div>
-
-                  {/* 3. Action Button (Pill shaped, white) */}
-                  <button className="w-full mt-4 bg-transparent text-slate-900 hover:bg-slate-200 font-bold py-3.5 rounded-full transition-colors shadow-lg shadow-black/20 flex items-center justify-center gap-2">
-                    View Details
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <Divider className="opacity-0" />
-
-      {/* --- Floating Pagination --- */}
-      {totalItems > 0 && (
-        <div className="fixed z-[99] bottom-8 w-full sm:w-[28%] flex right-0 sm:right-22 items-center py-2 rounded-2xl bg-slate-900/90 backdrop-blur-xl border border-slate-800 shadow-2xl">
+      {/* 3. Floating Pagination Control */}
+      {currentPageData && totalItems > 0 && (
+        <div className="fixed z-[99] bottom-8 w-full sm:w-[28%] flex right-0 sm:right-22 items-center py-3 rounded-xl bg-white/80 dark:bg-black/70 backdrop-blur-md border border-gray-200 dark:border-white/5 shadow-xl dark:shadow-2xl">
           <TablePagination
             component="div"
             count={totalItems}
             page={page}
             onPageChange={handleChangePage}
-            rowsPerPageOptions={[10, 20, 50]}
+            rowsPerPageOptions={[12, 24, 50, 100]}
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             labelRowsPerPage="Per Page"
-            className="mx-auto text-slate-200"
+            className="mx-auto"
             sx={{
               color: "inherit",
-              border: "none",
               ".MuiSvgIcon-root": { color: "inherit" },
-              "& .MuiTablePagination-selectLabel": {
-                fontSize: "0.75rem",
-                fontWeight: 600,
-                opacity: 0.7,
-              },
-              "& .MuiTablePagination-displayedRows": {
-                fontSize: "0.75rem",
-                fontWeight: 500,
-              },
-              "& .MuiTablePagination-select": {
-                color: "inherit",
-                fontSize: "0.8rem",
-                fontWeight: 600,
-                backgroundColor: "transparent",
-              },
+              "& .MuiTablePagination-select": { color: "inherit" },
               "& .MuiTablePagination-actions button": {
-                transition: "all 0.2s",
-                "&:hover": {
-                  backgroundColor: "rgba(255,255,255,0.05)",
-                  transform: "scale(1.1)",
-                },
-                "&:disabled": { opacity: 0.3 },
+                transition: "all 0.3s",
+                "&:hover": { transform: "scale(1.1)" },
               },
             }}
             slotProps={{
@@ -332,19 +445,19 @@ export default function MyEvents() {
                 MenuProps: {
                   PaperProps: {
                     className:
-                      "!bg-slate-900 !text-slate-100 !backdrop-blur-sm !rounded-xl !shadow-xl !border !border-slate-800",
+                      "!bg-white dark:!bg-black/90 !text-gray-900 dark:!text-white !backdrop-blur-sm !rounded-lg !shadow-xl !border !border-gray-200 dark:!border-white/10",
                     sx: {
                       "& .MuiMenuItem-root": {
-                        fontSize: "0.8rem",
-                        fontWeight: 500,
+                        fontSize: "0.875rem",
                       },
                       "& .MuiMenuItem-root.Mui-selected": {
                         bgcolor: "#03a1b0 !important",
+                        color: "white !important",
                         fontWeight: "bold",
-                        color: "white",
                       },
                       "& .MuiMenuItem-root:hover": {
-                        bgcolor: "rgba(3, 161, 176, 0.15) !important",
+                        bgcolor: "rgba(3, 161, 176, 0.08) !important",
+                        transform: "scale(1.02)",
                       },
                     },
                   },
@@ -354,6 +467,6 @@ export default function MyEvents() {
           />
         </div>
       )}
-    </div>
+    </section>
   );
 }
