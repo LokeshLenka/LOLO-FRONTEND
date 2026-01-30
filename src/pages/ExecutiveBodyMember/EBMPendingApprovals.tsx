@@ -612,6 +612,7 @@ export default function EBMPendingApprovals() {
                           <Tooltip
                             content="Approve User"
                             className="bg-black dark:bg-white text-white dark:text-black backdrop-blur-lg border"
+                            placement="bottom"
                           >
                             <Button
                               isIconOnly
@@ -628,6 +629,7 @@ export default function EBMPendingApprovals() {
                           <Tooltip
                             content="Reject User"
                             className="bg-black dark:bg-white text-white dark:text-black backdrop-blur-lg border"
+                            placement="bottom"
                           >
                             <Button
                               isIconOnly
@@ -642,6 +644,7 @@ export default function EBMPendingApprovals() {
                           <Tooltip
                             content="View Application"
                             className="bg-black dark:bg-white text-white dark:text-black backdrop-blur-lg border"
+                            placement="bottom"
                           >
                             <Button
                               isIconOnly
