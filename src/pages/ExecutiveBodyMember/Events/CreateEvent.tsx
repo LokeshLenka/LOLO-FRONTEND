@@ -3,7 +3,7 @@ import { useForm, type SubmitHandler, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import axios from "axios";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   CalendarPlus,
@@ -56,7 +56,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// --- RESPONSIVE & DARK MODE OPTIMIZED PICKER ---
+// --- TYPES ---
 interface DateTimePickerProps {
   date?: Date;
   setDate: (date: Date) => void;
@@ -66,7 +66,29 @@ interface DateTimePickerProps {
   maxDate?: Date;
 }
 
+interface EbmMember {
+  id: number;
+  username: string;
+  first_name: string | null;
+  last_name: string | null;
+  full_name: string;
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+// --- UTILS & HELPERS ---
+const fetchCoordinators = async (): Promise<EbmMember[] | undefined> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/ebm/getebmlist`);
+    if (response.data.status === "success") {
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error("Error fetching executive body members:", error);
+    toast.error("Failed to load coordinator list");
+    return [];
+  }
+};
 
 function DateTimePicker({
   date,
@@ -172,7 +194,6 @@ function DateTimePicker({
           )}
         </Button>
       </PopoverTrigger>
-
       <PopoverContent
         className="w-[300px] sm:w-auto p-0 bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-2xl rounded-xl overflow-hidden ring-1 ring-white/10 z-[60]"
         align="start"
@@ -203,7 +224,6 @@ function DateTimePicker({
                 row: "flex w-full mt-2",
                 cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-transparent focus-within:relative focus-within:z-20",
                 day: "h-9 w-9 p-0 font-normal text-zinc-900 dark:text-zinc-100 aria-selected:opacity-100 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors",
-                // FIXED: Force cyan background and white text with !important
                 day_selected:
                   "!bg-cyan-600 !text-white hover:!bg-cyan-700 hover:!text-white focus:!bg-cyan-700 focus:!text-white shadow-md shadow-cyan-500/20",
                 day_today:
@@ -217,7 +237,6 @@ function DateTimePicker({
           </div>
 
           <div className="flex flex-col p-4 w-full sm:w-[220px] bg-zinc-50/50 dark:bg-zinc-900/30">
-            {/* ... (Time picker section remains same) ... */}
             <div className="flex items-center justify-between mb-3 px-1">
               <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                 Time
@@ -303,7 +322,6 @@ function DateTimePicker({
           </div>
         </div>
 
-        {/* ... (Footer remains same) ... */}
         <div className="p-3 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80 flex justify-end gap-2 backdrop-blur-sm">
           <Button
             variant="ghost"
@@ -326,7 +344,7 @@ function DateTimePicker({
   );
 }
 
-// Constants & Types...
+// --- CONSTANTS ---
 const EVENT_TYPES = [
   { key: "music", label: "Music" },
   { key: "club", label: "Management" },
@@ -337,6 +355,11 @@ const REGISTRATION_MODES = [
   { key: "offline", label: "Offline" },
   // { key: "hybrid", label: "Hybrid" },
 ];
+const COORDINATOR_FIELDS = [
+  "coordinator1",
+  "coordinator2",
+  "coordinator3",
+] as const;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = [
   "image/jpeg",
@@ -348,6 +371,7 @@ const ACCEPTED_IMAGE_TYPES = [
   "image/svg+xml",
 ];
 
+// --- ZOD SCHEMA ---
 const eventSchema = z
   .object({
     name: z.string().min(1, "Event name is required").max(255),
@@ -387,26 +411,52 @@ const eventSchema = z
       path: ["registration_deadline"],
     },
   )
-  .refine(
-    (data) => {
-      const c1 = data.coordinator1;
-      const c2 = data.coordinator2;
-      const c3 = data.coordinator3;
-      if (c1 && c2 && c1 === c2) return false;
-      if (c1 && c3 && c1 === c3) return false;
-      if (c2 && c3 && c2 === c3) return false;
-      return true;
-    },
-    { message: "Coordinators must be distinct", path: ["coordinator2"] },
-  );
+  .superRefine((data, ctx) => {
+    // Check for duplicate coordinators
+    if (
+      data.coordinator1 &&
+      data.coordinator2 &&
+      data.coordinator1 === data.coordinator2
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Duplicate coordinator",
+        path: ["coordinator2"],
+      });
+    }
+    if (
+      data.coordinator1 &&
+      data.coordinator3 &&
+      data.coordinator1 === data.coordinator3
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Duplicate coordinator",
+        path: ["coordinator3"],
+      });
+    }
+    if (
+      data.coordinator2 &&
+      data.coordinator3 &&
+      data.coordinator2 === data.coordinator3
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Duplicate coordinator",
+        path: ["coordinator3"],
+      });
+    }
+  });
 
 type EventFormSchema = z.infer<typeof eventSchema>;
 
+// --- MAIN COMPONENT ---
 export default function CreateEvent() {
   const [images, setImages] = useState<
     { file: File; preview: string; id: string }[]
   >([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [ebmMembers, setEbmMembers] = useState<EbmMember[]>([]);
 
   const form = useForm<EventFormSchema>({
     resolver: zodResolver(eventSchema),
@@ -432,10 +482,22 @@ export default function CreateEvent() {
   const showRegistrationPlace =
     registrationMode === "offline" || registrationMode === "hybrid";
 
+  // Effect: Cleanup Image Previews
   useEffect(
     () => () => images.forEach((img) => URL.revokeObjectURL(img.preview)),
     [images],
   );
+
+  // Effect: Fetch Coordinators on mount
+  useEffect(() => {
+    const loadCoordinators = async () => {
+      const members = await fetchCoordinators();
+      if (members) setEbmMembers(members);
+    };
+    loadCoordinators();
+  }, []);
+
+  // Effect: Clear registration place if online
   useEffect(() => {
     if (registrationMode === "online") setValue("registration_place", "");
   }, [registrationMode, setValue]);
@@ -465,10 +527,12 @@ export default function CreateEvent() {
 
   const removeImage = (index: number) =>
     setImages((prev) => prev.filter((_, i) => i !== index));
+
   const handleDragStart = (e: React.DragEvent, i: number) => {
     setDraggedIndex(i);
     e.dataTransfer.effectAllowed = "move";
   };
+
   const handleDragOver = (e: React.DragEvent, i: number) => {
     e.preventDefault();
     if (draggedIndex === null || draggedIndex === i) return;
@@ -479,6 +543,7 @@ export default function CreateEvent() {
     setImages(newImages);
     setDraggedIndex(i);
   };
+
   const handleDragEnd = () => setDraggedIndex(null);
 
   const onSubmit: SubmitHandler<EventFormSchema> = async (data) => {
@@ -514,9 +579,9 @@ export default function CreateEvent() {
 
   return (
     <div className="w-full min-h-screen bg-transparent pb-20 relative text-zinc-900 dark:text-zinc-100 selection:bg-cyan-500/30">
-      {/* --- NORMAL STATIC HEADER --- */}
+      {/* --- HEADER --- */}
       <div className="w-full bg-white dark:bg-transparent py-5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-row justify-between items-center">
+        <div className="mx-auto px-0 sm:px-6 lg:px-8 flex flex-row justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-cyan-600/90 shadow-none">
               <CalendarPlus className="text-white h-5 w-5 sm:h-6 sm:w-6" />
@@ -558,10 +623,10 @@ export default function CreateEvent() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="max-w-7xl mx-auto px-3 sm:px-6 pt-8 pb-10"
+          className="mx-auto px-0 sm:px-6 pt-8 pb-10"
         >
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            {/* --- COLUMN 1 --- */}
+            {/* --- COLUMN 1 (MAIN INFO) --- */}
             <div className="col-span-1 md:col-span-8 flex flex-col gap-6">
               <Card className="bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 shadow-sm">
                 <CardHeader>
@@ -570,7 +635,7 @@ export default function CreateEvent() {
                     Essential Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-6">
+                <CardContent className="grid gap-6 !px-2 sm:!px-6 ">
                   <FormField
                     control={form.control}
                     name="name"
@@ -580,7 +645,7 @@ export default function CreateEvent() {
                         <FormControl>
                           <Input
                             placeholder="e.g. Q4 Engineering Summit"
-                            className="h-11 bg-zinc-50 dark:bg-white/1 border-zinc-200 dark:border-zinc-800 focus:ring-cyan-500/20"
+                            className="h-11 bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 focus:ring-cyan-500/20"
                             {...field}
                           />
                         </FormControl>
@@ -598,7 +663,7 @@ export default function CreateEvent() {
                         <FormControl>
                           <Textarea
                             placeholder="Event description..."
-                            className="min-h-[140px] bg-zinc-50 dark:bg-white/1 border-zinc-200 dark:border-zinc-800 focus:ring-cyan-500/20 resize-y"
+                            className="min-h-[140px] bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 focus:ring-cyan-500/20 resize-y"
                             {...field}
                           />
                         </FormControl>
@@ -618,13 +683,17 @@ export default function CreateEvent() {
                             defaultValue={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger className="h-11 bg-zinc-50 dark:bg-white/1 border-zinc-200 dark:border-zinc-800">
+                              <SelectTrigger className="h-10 bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 transition-colors">
                                 <SelectValue placeholder="Select type" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
+                            <SelectContent className="bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-xl rounded-lg overflow-hidden">
                               {EVENT_TYPES.map((type) => (
-                                <SelectItem key={type.key} value={type.key}>
+                                <SelectItem
+                                  key={type.key}
+                                  value={type.key}
+                                  className="cursor-pointer hover:bg-cyan-600 dark:hover:bg-cyan-950/30 focus:bg-cyan-100 dark:focus:bg-cyan-900/40 data-[state=checked]:bg-cyan-600 data-[state=checked]:text-white dark:data-[state=checked]:bg-cyan-600 transition-colors py-2.5 px-3 text-sm font-medium"
+                                >
                                   {type.label}
                                 </SelectItem>
                               ))}
@@ -634,6 +703,7 @@ export default function CreateEvent() {
                         </FormItem>
                       )}
                     />
+
                     <FormField
                       control={form.control}
                       name="registration_mode"
@@ -645,13 +715,17 @@ export default function CreateEvent() {
                             defaultValue={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger className="h-11 bg-zinc-50 dark:bg-white/1 border-zinc-200 dark:border-zinc-800">
+                              <SelectTrigger className="h-10 bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 transition-colors">
                                 <SelectValue placeholder="Select mode" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
+                            <SelectContent className="bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-xl rounded-lg overflow-hidden">
                               {REGISTRATION_MODES.map((mode) => (
-                                <SelectItem key={mode.key} value={mode.key}>
+                                <SelectItem
+                                  key={mode.key}
+                                  value={mode.key}
+                                  className="cursor-pointer hover:bg-cyan-50 dark:hover:bg-cyan-950/30 focus:bg-cyan-100 dark:focus:bg-cyan-900/40 data-[state=checked]:bg-cyan-600 data-[state=checked]:text-white dark:data-[state=checked]:bg-cyan-600 transition-colors py-2.5 px-3 text-sm font-medium"
+                                >
                                   {mode.label}
                                 </SelectItem>
                               ))}
@@ -673,7 +747,7 @@ export default function CreateEvent() {
                           <FormControl>
                             <Input
                               placeholder="Lobby"
-                              className="bg-zinc-50 dark:bg-white/1 border-zinc-200 dark:border-zinc-800"
+                              className="h-10 bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800"
                               {...field}
                               value={field.value || ""}
                             />
@@ -686,8 +760,9 @@ export default function CreateEvent() {
                 </CardContent>
               </Card>
 
+              {/* --- VISUAL ASSETS --- */}
               <Card className="bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <CardHeader>
+                <CardHeader className="!px-2 sm:!px-6">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <ImageIcon className="w-5 h-5 text-cyan-500" /> Visual
                     Assets
@@ -696,7 +771,7 @@ export default function CreateEvent() {
                     Drag to reorder. First image is cover.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 !px-2 sm:!px-6">
                   <FormField
                     control={form.control}
                     name="alt_txt"
@@ -705,7 +780,7 @@ export default function CreateEvent() {
                         <FormControl>
                           <Input
                             placeholder="Alt Text (Optional)"
-                            className="bg-zinc-50 dark:bg-white/1 border-zinc-200 dark:border-zinc-800"
+                            className="h-10 bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800"
                             {...field}
                           />
                         </FormControl>
@@ -789,15 +864,15 @@ export default function CreateEvent() {
               </Card>
             </div>
 
-            {/* --- COLUMN 2 --- */}
+            {/* --- COLUMN 2 (SCHEDULE & DETAILS) --- */}
             <div className="col-span-1 md:col-span-4 flex flex-col gap-6">
-              <Card className="bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <CardHeader>
+              <Card className="bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 shadow-sm ">
+                <CardHeader className="!px-2 sm:!px-6">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Clock className="w-4 h-4 text-cyan-500" /> Schedule
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 !px-2 sm:!px-6">
                   <FormField
                     control={form.control}
                     name="start_date"
@@ -879,12 +954,12 @@ export default function CreateEvent() {
               </Card>
 
               <Card className="bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <CardHeader>
+                <CardHeader className="!px-2 sm:!px-6">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <MapPin className="w-4 h-4 text-cyan-500" /> Venue
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 !px-2 sm:!px-6">
                   <FormField
                     control={form.control}
                     name="venue"
@@ -894,7 +969,7 @@ export default function CreateEvent() {
                         <FormControl>
                           <Input
                             placeholder="Room 204"
-                            className="bg-zinc-50 dark:bg-white/1 border-zinc-200 dark:border-zinc-800"
+                            className="h-10 bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800"
                             {...field}
                           />
                         </FormControl>
@@ -906,12 +981,12 @@ export default function CreateEvent() {
               </Card>
 
               <Card className="bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <CardHeader>
+                <CardHeader className="!px-2 sm:!px-6">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Banknote className="w-4 h-4 text-cyan-500" /> Details
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 !px-2 sm:!px-6">
                   <div className="grid grid-cols-2 gap-3">
                     <FormField
                       control={form.control}
@@ -922,7 +997,7 @@ export default function CreateEvent() {
                           <FormControl>
                             <Input
                               type="number"
-                              className="bg-zinc-50 dark:bg-white/1 border-zinc-200 dark:border-zinc-800"
+                              className="h-10 bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800"
                               {...field}
                             />
                           </FormControl>
@@ -940,7 +1015,7 @@ export default function CreateEvent() {
                             <Input
                               type="number"
                               step="0.1"
-                              className="bg-zinc-50 dark:bg-white/1 border-zinc-200 dark:border-zinc-800"
+                              className="h-10 bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800"
                               {...field}
                             />
                           </FormControl>
@@ -959,7 +1034,7 @@ export default function CreateEvent() {
                           <Input
                             type="number"
                             placeholder="Unlimited"
-                            className="bg-zinc-50 dark:bg-white/1 border-zinc-200 dark:border-zinc-800"
+                            className="h-10 bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800"
                             {...field}
                             value={field.value ?? ""}
                             onChange={(e) =>
@@ -974,45 +1049,64 @@ export default function CreateEvent() {
                 </CardContent>
               </Card>
 
+              {/* --- COORDINATORS SECTION (UPDATED) --- */}
               <Card className="bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <CardHeader>
+                <CardHeader className="!px-2 sm:!px-6">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Users className="w-4 h-4 text-cyan-500" /> Coordinators
                   </CardTitle>
+                  <CardDescription>
+                    Select EBM members from the list
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  {["coordinator1", "coordinator2", "coordinator3"].map(
-                    (name, i) => (
-                      <FormField
-                        key={name}
-                        control={form.control}
-                        name={name as any}
-                        render={({ field }) => (
-                          <FormItem>
+                <CardContent className="space-y-3 !px-2 sm:!px-6">
+                  {COORDINATOR_FIELDS.map((fieldName, i) => (
+                    <FormField
+                      key={fieldName}
+                      control={form.control}
+                      name={fieldName}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs text-muted-foreground">
+                            Coordinator {i + 1}
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value || ""}
+                          >
                             <FormControl>
-                              <div className="relative group">
-                                <Input
-                                  placeholder={`Coordinator ID ${i + 1}`}
-                                  className="pl-10 h-10 text-sm bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 focus:pl-11 transition-all"
-                                  {...field}
-                                  value={field.value || ""}
+                              <SelectTrigger className="h-10 bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 transition-colors">
+                                <SelectValue
+                                  placeholder={`Select Coordinator ${i + 1}`}
                                 />
-                                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                  {/* <Badge
-                                    variant="secondary"
-                                    className="h-5 w-5 flex items-center justify-center p-0 text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700"
-                                  > */}
-                                    {i + 1}
-                                  {/* </Badge> */}
-                                </div>
-                              </div>
+                              </SelectTrigger>
                             </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    ),
-                  )}
+                            {/* UPDATED: Added rich styling from Registration Mode */}
+                            <SelectContent className="bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-xl rounded-lg overflow-hidden max-h-60">
+                              <SelectItem
+                                value=" "
+                                className="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors py-2.5 px-3 text-sm font-medium"
+                              >
+                                <span className="text-muted-foreground italic">
+                                  None
+                                </span>
+                              </SelectItem>
+                              {ebmMembers.map((member) => (
+                                <SelectItem
+                                  key={member.id}
+                                  value={String(member.id)}
+                                  className="cursor-pointer hover:bg-cyan-50 dark:hover:bg-cyan-950/30 focus:bg-cyan-100 dark:focus:bg-cyan-900/40 data-[state=checked]:bg-cyan-600 data-[state=checked]:text-white dark:data-[state=checked]:bg-cyan-600 transition-colors py-2.5 px-3 text-sm font-medium"
+                                >
+                                  {member.full_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ))}
                 </CardContent>
               </Card>
             </div>
