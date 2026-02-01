@@ -289,7 +289,7 @@ const Event: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="relative text-4xl md:text-7xl font-black mb-6 tracking-tight text-white">
+            <h1 className="relative text-4xl md:text-7xl font-black mb-6 text-white">
               <span className="relative inline-block">
                 <span
                   className="absolute inset-0 bg-gradient-to-r from-[#03a1b0] via-purple-500 to-[#03a1b0] bg-clip-text text-transparent blur-lg animate-text-shimmer opacity-50 select-none"
@@ -363,7 +363,7 @@ const Event: React.FC = () => {
                   onClick={() => handleCategoryChange(category)}
                   className={`px-5 py-2 rounded-full text-sm font-bold transition-all border ${
                     statusParam === category
-                      ? "bg-[#03a1b0] border-[#03a1b0] text-white shadow-lg shadow-[#03a1b0]/20"
+                      ? "bg-[#03a1b0] border-[#03a1b0] text-white"
                       : "bg-transparent border-white/10 text-gray-400 hover:border-white/30 hover:text-white"
                   }`}
                 >
