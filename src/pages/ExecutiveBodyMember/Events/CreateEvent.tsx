@@ -145,20 +145,21 @@ const eventSchema = z
   )
   .refine(
     (data) => {
-      const coordinators = [
+      const values = [
         data.coordinator1,
         data.coordinator2,
         data.coordinator3,
-      ].filter(Boolean); // removes null / undefined
+      ].filter((v) => v && v !== "None");
 
-      // Rule 1: at least one coordinator must exist
-      if (coordinators.length === 0) return false;
+      // Rule 1: at least one coordinator
+      if (values.length === 0) return false;
 
-      // Rule 2: all selected coordinators must be unique
-      return new Set(coordinators).size === coordinators.length;
+      // Rule 2: no duplicates among selected values
+      return new Set(values).size === values.length;
     },
     {
-      message: "Select at least one coordinator and ensure all are distinct",
+      message:
+        "Select at least one coordinator and ensure all selected coordinators are distinct",
       path: ["coordinator1"],
     },
   );
