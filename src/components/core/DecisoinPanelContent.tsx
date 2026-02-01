@@ -1,6 +1,5 @@
 import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader, Textarea } from "@heroui/react";
-import { Modal, ModalContent } from "@heroui/react";
+import { CardBody, CardHeader, Textarea } from "@heroui/react";
 
 interface ProfileBase {
   uuid: string;

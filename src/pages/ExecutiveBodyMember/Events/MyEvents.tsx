@@ -6,9 +6,10 @@ import {
   MapPin,
   Users,
   RefreshCw,
-  Eye,
   Ticket,
   Clock,
+  Calendar,
+  Users2,
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -288,7 +289,24 @@ export default function MyEvents() {
                     handleEventClick(event.uuid);
                   }}
                 >
-                  <Eye size={18} className="text-blue-600" />
+                  <Calendar size={18} />
+                </Button>
+              </Tooltip>
+              <Tooltip
+                content="View Event Registrations"
+                placement="bottom"
+                className="bg-black dark:bg-white text-white dark:text-black backdrop-blur-lg border"
+              >
+                <Button
+                  isIconOnly
+                  size="sm"
+                  variant="flat"
+                  className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                  onPress={() => {
+                    handleEventClick(event.uuid);
+                  }}
+                >
+                  <Users2 size={18} />
                 </Button>
               </Tooltip>
             </div>
