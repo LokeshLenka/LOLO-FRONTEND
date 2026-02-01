@@ -1,12 +1,5 @@
 import "./App.css";
-import {
-  Route,
-  Routes,
-  useLocation,
-  Navigate,
-  Outlet,
-  useParams,
-} from "react-router-dom";
+import { Route, Routes, useLocation, Navigate, Outlet } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
 // --- Layouts & Providers ---
@@ -44,21 +37,8 @@ import RegistrationStatus from "./pages/App/Authentication/RegistrationStatus";
 // --- Dashboard Components ---
 import UserDashboard from "./pages/User/UserDashboard";
 import EBMDashboard from "./pages/ExecutiveBodyMember/EBMDashboard";
-import EventRegistrationCards from "./pages/User/Events/EventRegistrationsPage";
 import UserProfilePage from "./pages/User/UserProfilePage";
-import MusicProfile from "./pages/profile/MusicProfile";
 
-// --- Icons & Mock Data ---
-import {
-  Calendar,
-  Mail,
-  MapPin,
-  Mic2,
-  Music,
-  Phone,
-  Star,
-  Users,
-} from "lucide-react";
 import EBMPendingApprovals from "./pages/ExecutiveBodyMember/EBMPendingApprovals";
 import CreditsPage from "./pages/User/Credits/CreditsPage";
 import Home from "./pages/App/Home/Home";
@@ -66,12 +46,12 @@ import ShowEventRegistrationPage from "./pages/User/Events/ShowEventRegistration
 import ShowCreditPage from "./pages/User/Credits/ShowCreditsPage";
 import CreateEvent from "./pages/ExecutiveBodyMember/Events/CreateEvent";
 import MyEvents from "./pages/ExecutiveBodyMember/Events/MyEvents";
-import EventRegistrations from "./pages/ExecutiveBodyMember/Events/EventRegistrations";
 import RegisterMember from "./pages/ExecutiveBodyMember/Users/RegisterMember";
 import MyRegistrations from "./pages/ExecutiveBodyMember/Users/MyRegistrations";
 import ApplicantDetailsPage from "./pages/ExecutiveBodyMember/Users/ApplicationDetails";
 import ApprovalHistoryDetailsPage from "./pages/ExecutiveBodyMember/Users/ApprovalHistoryDetailsPage";
 import EventRegistrationsPage from "./pages/ExecutiveBodyMember/EventRegistrations/EventRegistrationsPage";
+import UserEventRegistrationCards from "./pages/User/Events/UserEventRegistrationsPage";
 
 // --- Helper Components ---
 
@@ -82,65 +62,9 @@ function PrivateRoute() {
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
-// 2. Role-Based Dashboard Router
-// Decides whether to show EBM Dashboard or fallback based on URL param
-function RoleBasedDashboardRouter() {
-  const { role } = useParams();
-
-  // Normalize role string (e.g. handle casing if needed)
-  const normalizedRole = role?.toLowerCase();
-
-  // Check for Executive Body Member or related roles
-  if (
-    ["executive_body_member", "membership_head", "credit_manager"].includes(
-      normalizedRole || "",
-    )
-  ) {
-    return <EBMDashboard />;
-  }
-
-  // Default fallback if role is unrecognized (or can map to others like 'music')
-  return <UserDashboard />;
-}
-
 // --- Main App Component ---
 function App() {
   const location = useLocation();
-
-  // Mock Profile Data (Keep existing)
-  const MOCK_PROFILE_DATA = {
-    uuid: "550e8400-e29b-41d4-a716-446655440000",
-    username: "alex.rhythm",
-    email: "alex@lolo.band",
-    full_name: "Alex Rhythm",
-    role_label: "Music",
-    sub_role_label: "Lead Guitarist",
-    promoted_role_label: "Band Captain",
-    is_active: true,
-    last_login_at: "2023-10-27T10:30:00Z",
-    personal_details: [
-      { label: "Email Address", value: "alex@lolo.band", icon: Mail },
-      { label: "Phone Number", value: "+91 98765 43210", icon: Phone },
-      { label: "Location", value: "Bhimavaram, IN", icon: MapPin },
-      { label: "Joined On", value: "Dec 02, 2024", icon: Calendar },
-    ],
-    role_specific_details: {
-      title: "Musician Profile",
-      icon: Music,
-      fields: [
-        {
-          label: "Primary Instrument",
-          value: "Electric Guitar",
-          icon: Music,
-          highlight: true,
-        },
-        { label: "Secondary Skill", value: "Backing Vocals", icon: Mic2 },
-        { label: "Stage Experience", value: "3 Years", icon: Star },
-        { label: "Jam Group", value: "The Resonators", icon: Users },
-      ],
-    },
-    abilities: ["view_dashboard", "manage_events"],
-  };
 
   return (
     <AuthProvider>
@@ -184,7 +108,7 @@ function App() {
           <Route path="/success" element={<SuccessRegistration />} />
           <Route path="/registration-status" element={<RegistrationStatus />} />
           {/* Test Route */}
-          <Route path="/test/music" element={<MusicProfile />} />
+          {/* <Route path="/test/music" element={<MusicProfile />} /> */}
           {/* ================= PROTECTED DASHBOARD ROUTES ================= */}
           // Replace your existing routes with these role-specific routes:
           <Route element={<PrivateRoute />}>
@@ -194,7 +118,7 @@ function App() {
               {/* Shared Pages */}
               <Route
                 path="/:username/event-registrations"
-                element={<EventRegistrationCards />}
+                element={<UserEventRegistrationCards />}
               />
               <Route
                 path="/:username/event-registrations/:uuid"
