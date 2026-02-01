@@ -46,8 +46,6 @@ import ShowEventRegistrationPage from "./pages/User/Events/ShowEventRegistration
 import ShowCreditPage from "./pages/User/Credits/ShowCreditsPage";
 import CreateEvent from "./pages/ExecutiveBodyMember/Events/CreateEvent";
 import MyEvents from "./pages/ExecutiveBodyMember/Events/MyEvents";
-import RegisterMember from "./pages/ExecutiveBodyMember/Users/RegisterMember";
-import MyRegistrations from "./pages/ExecutiveBodyMember/Users/MyRegistrations";
 import ApplicantDetailsPage from "./pages/ExecutiveBodyMember/Users/ApplicationDetails";
 import ApprovalHistoryDetailsPage from "./pages/ExecutiveBodyMember/Users/ApprovalHistoryDetailsPage";
 import EventRegistrationsPage from "./pages/ExecutiveBodyMember/EventRegistrations/EventRegistrationsPage";
@@ -149,11 +147,11 @@ function App() {
               />
               <Route
                 path="/:username/executive_body_member/register-member"
-                element={<RegisterMember />}
+                // element={}
               />
               <Route
                 path="/:username/executive_body_member/my-registrations"
-                element={<MyRegistrations />}
+                // element={<MyRegistrations />}
               />{" "}
               <Route
                 path="/:username/executive_body_member/pending-approvals/view-application/user/:uuid"
