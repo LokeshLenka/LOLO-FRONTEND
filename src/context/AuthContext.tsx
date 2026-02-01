@@ -42,6 +42,7 @@ interface AuthContextType {
   logout: () => void;
   hasPromotedRole: () => boolean;
   getPromotedRoleLabel: () => string;
+  getUserFromStorage: () => User;
 }
 
 /* =======================
@@ -262,13 +263,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const labels: Record<string, string> = {
       credit_manager: "Credit Manager",
-      executive_body_member: "Executive Member",
+      executive_body_member: "Executive Body Member",
       membership_head: "Membership Head",
     };
 
     return (
       labels[profile.promoted_role] || profile.promoted_role.replace(/_/g, " ")
     );
+  };
+
+  const getUserFromStorage = (): any => {
+    try {
+      const raw = localStorage.getItem("userProfile");
+      if (!raw) return null;
+      return raw.startsWith("{") ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
   };
 
   /* =======================
@@ -286,6 +297,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     logout,
     hasPromotedRole,
     getPromotedRoleLabel,
+    getUserFromStorage,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
