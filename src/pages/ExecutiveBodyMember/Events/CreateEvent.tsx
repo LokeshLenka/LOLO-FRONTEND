@@ -145,15 +145,26 @@ const eventSchema = z
   )
   .refine(
     (data) => {
-      const c1 = data.coordinator1;
-      const c2 = data.coordinator2;
-      const c3 = data.coordinator3;
-      if (c1 && c2 && c1 === c2) return false;
-      if (c1 && c3 && c1 === c3) return false;
-      if (c2 && c3 && c2 === c3) return false;
-      return true;
+      const coords = [data.coordinator1, data.coordinator2, data.coordinator3];
+      return coords.some((c) => c != null);
     },
-    { message: "Coordinators must be distinct", path: ["coordinator2"] },
+    {
+      message: "At least one coordinator is required",
+      path: ["coordinator1"],
+    },
+  )
+  // 2) Any coordinators that ARE provided must be distinct
+  .refine(
+    (data) => {
+      const coords = [data.coordinator1, data.coordinator2, data.coordinator3];
+      const nonNull = coords.filter((c): c is string => c != null);
+      const unique = new Set(nonNull);
+      return unique.size === nonNull.length;
+    },
+    {
+      message: "Coordinators must be distinct values",
+      path: ["coordinator2"],
+    },
   );
 
 type EventFormSchema = z.infer<typeof eventSchema>;
