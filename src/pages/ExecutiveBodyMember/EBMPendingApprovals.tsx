@@ -15,12 +15,12 @@ import {
   CardBody,
   Input,
   Skeleton,
-  Snippet,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  useDisclosure,
+  // Snippet,
+  // Dropdown,
+  // DropdownTrigger,
+  // DropdownMenu,
+  // DropdownItem,
+  // useDisclosure,
   Divider,
 } from "@heroui/react";
 import TablePagination from "@mui/material/TablePagination";
@@ -29,14 +29,14 @@ import {
   XCircle,
   Search,
   Filter,
-  MoreVertical,
+  // MoreVertical,
   Clock,
   Briefcase,
   Music,
   ShieldAlert,
-  Download,
+  // Download,
   RefreshCw,
-  User2,
+  // User2,
   Eye,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -238,10 +238,16 @@ export default function EBMPendingApprovals() {
 
       const paginatorData = response.data.data;
 
-      if (paginatorData?.data) {
+      // FIX: Strictly check if paginatorData.data is an Array
+      if (paginatorData?.data && Array.isArray(paginatorData.data)) {
         setUsers(paginatorData.data);
         setCurrentPageData(paginatorData);
       } else {
+        // If data is missing or not an array, reset to empty array
+        console.warn(
+          "API returned non-array data for users:",
+          paginatorData?.data,
+        );
         setUsers([]);
         setCurrentPageData(null);
       }
@@ -412,13 +418,21 @@ export default function EBMPendingApprovals() {
           />
           <StatsCard
             title="Music Members"
-            value={users.filter((u) => u.role === "music").length}
+            value={
+              Array.isArray(users)
+                ? users.filter((u) => u.role === "music").length
+                : 0
+            }
             icon={Music}
             color="bg-purple-500"
           />
           <StatsCard
             title="Management Members"
-            value={users.filter((u) => u.role === "management").length}
+            value={
+              Array.isArray(users)
+                ? users.filter((u) => u.role === "management").length
+                : 0
+            }
             icon={Briefcase}
             color="bg-blue-500"
           />
@@ -438,7 +452,7 @@ export default function EBMPendingApprovals() {
       >
         <CardBody className="p-0">
           {/* Toolbar */}
-          {/* <div className="p-4 border-b border-gray-100 dark:border-white/5 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-white/5">
+          <div className="p-4 border-b border-gray-100 dark:border-white/5 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-white/5">
             <Input
               className="w-full sm:max-w-xs h-full outline-none"
               placeholder="Search by name or reg no..."
@@ -461,7 +475,7 @@ export default function EBMPendingApprovals() {
                 Filters
               </Button>
             </div>
-          </div> */}
+          </div>
 
           {/* Content */}
           {loading ? (

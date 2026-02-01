@@ -8,10 +8,10 @@ import {
   TableCell,
   Input,
   Button,
-  DropdownTrigger,
-  Dropdown,
-  DropdownMenu,
-  DropdownItem,
+  // DropdownTrigger,
+  // Dropdown,
+  // DropdownMenu,
+  // DropdownItem,
   Chip,
   User,
   Pagination,
@@ -25,10 +25,10 @@ import {
 import {
   Search,
   Download,
-  MoreVertical,
+  // MoreVertical,
   Eye,
-  CheckCircle2,
-  XCircle,
+  // CheckCircle2,
+  // XCircle,
   CalendarDays,
   Users,
 } from "lucide-react";
@@ -249,15 +249,13 @@ function EventsList({
                     <CalendarDays size={12} />
                     {format(new Date(event.start_date), "MMM d, yyyy")}
                   </span>
-                {/* </div>
+                  {/* </div>
                 <div className="flex justify-end items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2"> */}
                   {event.type && (
                     <Chip
                       size="sm"
                       variant="flat"
-                      color={
-                        event.type === "music" ? "default" : "warning"
-                      }
+                      color={event.type === "music" ? "default" : "warning"}
                       className="h-5 text-[10px] px-1 justify-end"
                     >
                       {event.type}

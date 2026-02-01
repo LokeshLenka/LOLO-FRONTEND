@@ -459,7 +459,7 @@ export default function CreateEvent() {
   const [ebmMembers, setEbmMembers] = useState<EbmMember[]>([]);
 
   const form = useForm<EventFormSchema>({
-    resolver: zodResolver(eventSchema),
+    resolver: zodResolver(eventSchema) as any,
     defaultValues: {
       credits_awarded: 0,
       fee: 0,
@@ -473,6 +473,10 @@ export default function CreateEvent() {
       coordinator2: "",
       coordinator3: "",
       alt_txt: "",
+      type: "",
+      start_date: "",
+      end_date: "",
+      registration_deadline: "",
     },
   });
 
