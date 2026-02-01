@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Fingerprint,
   History,
-  AlertTriangle,
   Lock,
   Globe,
   Activity,

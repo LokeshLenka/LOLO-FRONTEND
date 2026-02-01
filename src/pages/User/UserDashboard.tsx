@@ -1,8 +1,8 @@
 // src/pages/UserDashboard.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
-import { Card, CardBody, Button, Chip, Spinner, Tooltip } from "@heroui/react";
+import { Card, CardBody, Button, Chip, Tooltip } from "@heroui/react";
 import {
   TrendingUp,
   Ticket,
@@ -14,6 +14,7 @@ import {
   TrendingDown,
   Award,
   Activity,
+  Quote,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -350,6 +351,27 @@ const CreditGrowthChart = ({ data }: { data: CreditGrowthData[] }) => {
   );
 };
 
+const QuoteCard = ({ quote }: { quote: string }) => (
+  <Card
+    shadow="none"
+    className="w-full border border-black/5 dark:border-white/5 bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-900/20 dark:to-indigo-900/20 backdrop-blur-sm rounded-2xl"
+  >
+    <CardBody className="px-6 py-4 flex flex-row items-center gap-4">
+      <div className="hidden sm:flex p-2 rounded-xl bg-violet-100 dark:bg-violet-900/30 shrink-0">
+        <Quote
+          size={20}
+          className="text-violet-600 dark:text-violet-400 fill-current opacity-80"
+        />
+      </div>
+      <div>
+        <p className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-200 italic">
+          "{quote}"
+        </p>
+      </div>
+    </CardBody>
+  </Card>
+);
+
 // --- Main Dashboard ---
 export default function UserDashboard() {
   const { username } = useParams();
@@ -493,6 +515,7 @@ export default function UserDashboard() {
         </div>
 
         {/* Quote Banner */}
+        <div className="mt-2">{quote && <QuoteCard quote={quote} />}</div>
       </div>
 
       {/* 2. Stats Grid */}

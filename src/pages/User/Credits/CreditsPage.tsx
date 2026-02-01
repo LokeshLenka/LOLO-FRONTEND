@@ -36,7 +36,7 @@ import {
   ArrowUpDown,
   Sparkles,
   Activity,
-  BarChart3,
+  // BarChart3,
   CheckCircle2,
   Lock,
 } from "lucide-react";
@@ -615,9 +615,12 @@ export default function CreditsPage() {
 
         const endpoint = `/${role}/my/credits?page=${page + 1}&per_page=${rowsPerPage}`;
 
-        const response = await axios.get(`${API_BASE_URL}${endpoint}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get<ApiResponse>(
+          `${API_BASE_URL}${endpoint}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
 
         if (response.data.success) {
           const {

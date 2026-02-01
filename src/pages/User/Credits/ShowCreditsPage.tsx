@@ -9,7 +9,6 @@ import {
   Skeleton,
   Divider,
   Chip,
-  Tooltip,
 } from "@heroui/react";
 import {
   ArrowLeft,
