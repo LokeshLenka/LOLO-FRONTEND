@@ -143,42 +143,31 @@ const eventSchema = z
       path: ["registration_deadline"],
     },
   )
-  .superRefine((data, ctx) => {
-    // Check for duplicate coordinators
-    if (
-      data.coordinator1 &&
-      data.coordinator2 &&
-      data.coordinator1 === data.coordinator2
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Duplicate coordinator",
-        path: ["coordinator2"],
-      });
-    }
-    if (
-      data.coordinator1 &&
-      data.coordinator3 &&
-      data.coordinator1 === data.coordinator3
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Duplicate coordinator",
-        path: ["coordinator3"],
-      });
-    }
-    if (
-      data.coordinator2 &&
-      data.coordinator3 &&
-      data.coordinator2 === data.coordinator3
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Duplicate coordinator",
-        path: ["coordinator3"],
-      });
-    }
-  });
+  .superRefine(
+    ({ coordinator1: c1, coordinator2: c2, coordinator3: c3 }, ctx) => {
+      if (c1 && c2 && c1 === c2) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Must be distinct",
+          path: ["coordinator2"],
+        });
+      }
+      if (c1 && c3 && c1 === c3) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Must be distinct",
+          path: ["coordinator3"],
+        });
+      }
+      if (c2 && c3 && c2 === c3) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Must be distinct",
+          path: ["coordinator3"],
+        });
+      }
+    },
+  );
 
 type EventFormSchema = z.infer<typeof eventSchema>;
 
