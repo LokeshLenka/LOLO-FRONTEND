@@ -143,30 +143,17 @@ const eventSchema = z
       path: ["registration_deadline"],
     },
   )
-  .superRefine(
-    ({ coordinator1: c1, coordinator2: c2, coordinator3: c3 }, ctx) => {
-      if (c1 && c2 && c1 === c2) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Must be distinct",
-          path: ["coordinator2"],
-        });
-      }
-      if (c1 && c3 && c1 === c3) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Must be distinct",
-          path: ["coordinator3"],
-        });
-      }
-      if (c2 && c3 && c2 === c3) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Must be distinct",
-          path: ["coordinator3"],
-        });
-      }
+  .refine(
+    (data) => {
+      const c1 = data.coordinator1;
+      const c2 = data.coordinator2;
+      const c3 = data.coordinator3;
+      if (c1 && c2 && c1 === c2) return false;
+      if (c1 && c3 && c1 === c3) return false;
+      if (c2 && c3 && c2 === c3) return false;
+      return true;
     },
+    { message: "Coordinators must be distinct", path: ["coordinator2"] },
   );
 
 type EventFormSchema = z.infer<typeof eventSchema>;
