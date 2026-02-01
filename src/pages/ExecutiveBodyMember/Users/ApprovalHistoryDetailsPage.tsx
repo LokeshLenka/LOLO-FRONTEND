@@ -54,7 +54,6 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 import { useDebounce } from "@/hooks/useDebounce";
 
 // --- Types ---
@@ -305,18 +304,6 @@ const BooleanChip = ({
   </div>
 );
 
-const getUserFromStorage = (): any => {
-  try {
-    const raw = localStorage.getItem("userProfile");
-    if (!raw) return null;
-    return raw.startsWith("{") ? JSON.parse(raw) : null;
-  } catch (e) {
-    return null;
-  }
-};
-
-const currentUser = getUserFromStorage();
-
 export default function EBMApprovalHistory() {
   // --- State ---
   const [users, setUsers] = useState<UserDetails[]>([]);
@@ -344,8 +331,6 @@ export default function EBMApprovalHistory() {
   // Modal state
   const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const navigate = useNavigate();
 
   const [page, setPage] = useState<number>(() => {
     try {
@@ -836,7 +821,7 @@ export default function EBMApprovalHistory() {
         <CardBody className="p-0">
           {/* Toolbar */}
           <div className="p-4 border-b border-gray-100 dark:border-white/5 bg-white dark:bg-white/5 space-y-4">
-            {/* <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
               <Input
                 className="w-full sm:max-w-xs h-full outline-none"
                 placeholder="Search by name or reg number..."
@@ -848,7 +833,7 @@ export default function EBMApprovalHistory() {
                   inputWrapper: "bg-gray-50 dark:bg-black/20 border-black/10",
                 }}
               />
-            </div> */}
+            </div>
 
             {/* Tabs */}
             <Tabs
@@ -859,7 +844,7 @@ export default function EBMApprovalHistory() {
               classNames={{
                 base: "w-full",
                 tabList:
-                  "gap-6 w-full relative rounded-none p-0 border-b border-divider",
+                  "gap-6 w-full relative rounded-none p-0 border-divider",
                 cursor: "w-full bg-[#03a1b0] h-[3px]",
                 tab: "max-w-fit px-2 h-12 data-[selected=true]:text-[#03a1b0] transition-colors",
                 tabContent: "group-data-[selected=true]:font-bold",
@@ -1042,7 +1027,7 @@ export default function EBMApprovalHistory() {
                           <span className="text-xs text-gray-500 font-medium capitalize pl-1">
                             {subRole
                               .replace(/_/g, " ")
-                              .replace(/\w/g, (l) => l.toUpperCase())}
+                              .replace(/%\w/g, (l) => l.toUpperCase())}
                           </span>
                         </div>
                       </TableCell>
@@ -1065,10 +1050,10 @@ export default function EBMApprovalHistory() {
                       <TableCell>
                         <Chip
                           size="sm"
-                          color={user.is_active ? "success" : "default"}
+                          color={user.is_active ? "success" : "secondary"}
                           variant="dot"
                         >
-                          {user.is_active ? "Active" : "Inactive"}
+                          {/* {user.is_active ? "Active" : "Inactive"} */}
                         </Chip>
                       </TableCell>
                       <TableCell>
