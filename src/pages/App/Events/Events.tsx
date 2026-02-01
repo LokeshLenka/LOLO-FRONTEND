@@ -18,11 +18,11 @@ import TablePagination from "@mui/material/TablePagination";
 import axios, { AxiosError } from "axios";
 
 // --- Interfaces ---
-interface EventImage {
-  uuid: string;
-  url: string;
-  alt_txt: string;
-}
+// interface EventImage {
+//   uuid: string;
+//   url: string;
+//   alt_txt: string;
+// }
 
 interface EventData {
   uuid: string;
@@ -34,7 +34,7 @@ interface EventData {
   end_date: string;
   venue: string;
   registration_deadline?: string;
-  images: EventImage[];
+  cover_image: string | null;
 }
 
 interface LaravelPaginatedResponse {
@@ -44,9 +44,10 @@ interface LaravelPaginatedResponse {
 }
 
 interface ApiResponse {
-  status: number;
+  status: string; // API returns "success" string
+  code: number; // API returns 200 number
   message: string;
-  events: LaravelPaginatedResponse;
+  data: LaravelPaginatedResponse; // <--- Matches your API structure
 }
 
 const CATEGORIES = ["All", "upcoming", "ongoing", "completed"] as const;
@@ -106,7 +107,7 @@ const Event: React.FC = () => {
   const sortParam = searchParams.get("sort") || "date_desc";
 
   const [eventsData, setEventsData] = useState<LaravelPaginatedResponse | null>(
-    null
+    null,
   );
   const [heroEvent, setHeroEvent] = useState<EventData | null>(null); // NEW: Separate state for featured event
   const [loading, setLoading] = useState(true);
@@ -146,33 +147,32 @@ const Event: React.FC = () => {
         },
       });
 
-      if (response.data.events && Array.isArray(response.data.events.data)) {
-        const fetchedEvents = response.data.events.data;
+      console.log(response);
+
+      if (response.data.data && Array.isArray(response.data.data.data)) {
+        // CHANGE 2: Access 'data' instead of 'events'
+        const fetchedEvents = response.data.data.data;
 
         if (isDefaultView && fetchedEvents.length > 0) {
-          // 1. Identify the latest event (Hero)
           const latestEvent = [...fetchedEvents].sort(
             (a, b) =>
               new Date(b.start_date).getTime() -
-              new Date(a.start_date).getTime()
+              new Date(a.start_date).getTime(),
           )[0];
 
           setHeroEvent(latestEvent);
 
-          // 2. Filter the Hero out of the Grid data using UUID so it's not duplicated
           const gridEvents = fetchedEvents.filter(
-            (e) => e.uuid !== latestEvent.uuid
+            (e) => e.uuid !== latestEvent.uuid,
           );
 
-          // 3. Update main data state with the filtered list
           setEventsData({
-            ...response.data.events,
+            ...response.data.data, // CHANGE 3: Update here
             data: gridEvents,
           });
         } else {
-          // Not default view (Searching/Sorting/Page 2+): No Featured Banner
           setHeroEvent(null);
-          setEventsData(response.data.events);
+          setEventsData(response.data.data); // CHANGE 4: Update here
         }
       } else {
         setEventsData(null);
@@ -229,7 +229,7 @@ const Event: React.FC = () => {
   };
 
   const handleRowsPerPageChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const newPerPage = parseInt(event.target.value, 10);
     setSearchParams((prev) => {
@@ -269,7 +269,7 @@ const Event: React.FC = () => {
     return eventsData.data.filter(
       (e) =>
         e.name.toLowerCase().includes(lowerSearch) ||
-        e.description.toLowerCase().includes(lowerSearch)
+        e.description.toLowerCase().includes(lowerSearch),
     );
   }, [eventsData, localSearch]);
 
@@ -455,12 +455,13 @@ const Event: React.FC = () => {
                   <div className="grid lg:grid-cols-2 gap-0">
                     <div className="relative h-[400px] lg:h-[500px] overflow-hidden bg-gray-900">
                       <div className="absolute top-6 left-6 z-10 flex flex-wrap gap-2">
-                        <span className="px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-[#03a1b0] to-purple-500 text-white backdrop-blur-md shadow-lg">
+                        <span className="px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider bg-[#03a1b0] text-white backdrop-blur-md shadow-lg">
                           ⭐ Featured
                         </span>
+
                         <span
                           className={`px-3 py-2 rounded-xl text-sm font-bold uppercase tracking-wider border ${getEventTypeColor(
-                            heroEvent.type
+                            heroEvent.type,
                           )} backdrop-blur-md`}
                         >
                           {heroEvent.type}
@@ -472,7 +473,7 @@ const Event: React.FC = () => {
 
                       <img
                         src={
-                          heroEvent.images?.[0]?.url ||
+                          heroEvent.cover_image ||
                           "https://via.placeholder.com/800x600"
                         }
                         alt={heroEvent.name}
@@ -539,7 +540,7 @@ const Event: React.FC = () => {
                                 }`}
                               >
                                 {formatDeadline(
-                                  heroEvent.registration_deadline
+                                  heroEvent.registration_deadline,
                                 )}
                               </span>
                             </div>
@@ -549,7 +550,7 @@ const Event: React.FC = () => {
 
                       <div className="pt-6 border-t border-white/5">
                         <Link to={`/events/${heroEvent.uuid}`}>
-                          <Button className="w-full sm:w-auto bg-gradient-to-r from-[#03a1b0] to-purple-500 hover:from-[#028f9c] hover:to-purple-600 text-white border-0 rounded-xl px-8 h-14 transition-all group-hover:translate-x-1 flex items-center justify-center gap-3 text-lg font-bold shadow-lg shadow-[#03a1b0]/20">
+                          <Button className="w-full sm:w-auto bg-[#03a1b0] hover:bg-[#028f9c] text-white border-0 rounded-xl px-8 h-14 transition-all group-hover:translate-x-1 flex items-center justify-center gap-3 text-lg font-bold shadow-lg shadow-[#03a1b0]/20">
                             View Event Details <ArrowRight size={20} />
                           </Button>
                         </Link>
@@ -577,7 +578,7 @@ const Event: React.FC = () => {
                   {filteredEvents.map((event) => {
                     const eventDate = formatEventDate(event.start_date);
                     const deadline = formatDeadline(
-                      event.registration_deadline
+                      event.registration_deadline,
                     );
                     const isDeadlineApproaching = event.registration_deadline
                       ? new Date(event.registration_deadline) <
@@ -596,7 +597,7 @@ const Event: React.FC = () => {
                           <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
                             <span
                               className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border ${getEventTypeColor(
-                                event.type
+                                event.type,
                               )} backdrop-blur-md`}
                             >
                               {event.type}
@@ -608,7 +609,7 @@ const Event: React.FC = () => {
 
                           <img
                             src={
-                              event.images?.[0]?.url ||
+                              event.cover_image ||
                               "https://via.placeholder.com/800x600"
                             }
                             alt={event.name}
@@ -718,19 +719,35 @@ const Event: React.FC = () => {
                     onRowsPerPageChange={handleRowsPerPageChange}
                     rowsPerPageOptions={[9, 18, 27]}
                     labelRowsPerPage="Per page:"
+                    className="mx-auto"
                     sx={{
                       color: "inherit",
-                      width: "100%",
-                      ".MuiToolbar-root": {
-                        paddingLeft: 2,
-                        paddingRight: 2,
-                        flexWrap: "wrap",
-                        justifyContent: "center",
-                      },
-                      ".MuiTablePagination-selectLabel": { margin: 0 },
-                      ".MuiTablePagination-displayedRows": { margin: 0 },
                       ".MuiSvgIcon-root": { color: "inherit" },
-                      ".MuiTablePagination-actions": { marginLeft: 1 },
+                      "& .MuiTablePagination-select": { color: "inherit" },
+                      "& .MuiTablePagination-actions button": {
+                        transition: "all 0.3s",
+                        "&:hover": { transform: "scale(1.1)" },
+                      },
+                    }}
+                    slotProps={{
+                      select: {
+                        MenuProps: {
+                          PaperProps: {
+                            className:
+                              "!bg-black/5 dark:!bg-white/5 !text-black dark:!text-white !backdrop-blur-sm !rounded-lg !shadow-xl",
+                            sx: {
+                              "& .MuiMenuItem-root.Mui-selected": {
+                                bgcolor: "#03a1b0 !important",
+                                fontWeight: "bold",
+                              },
+                              "& .MuiMenuItem-root:hover": {
+                                bgcolor: "rgba(3, 161, 176, 0.08) !important",
+                                transform: "scale(1.02)",
+                              },
+                            },
+                          },
+                        },
+                      },
                     }}
                   />
                 </div>
