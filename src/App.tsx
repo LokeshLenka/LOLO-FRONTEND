@@ -71,6 +71,7 @@ import RegisterMember from "./pages/ExecutiveBodyMember/Users/RegisterMember";
 import MyRegistrations from "./pages/ExecutiveBodyMember/Users/MyRegistrations";
 import ApplicantDetailsPage from "./pages/ExecutiveBodyMember/Users/ApplicationDetails";
 import ApprovalHistoryDetailsPage from "./pages/ExecutiveBodyMember/Users/ApprovalHistoryDetailsPage";
+import EventRegistrationsPage from "./pages/ExecutiveBodyMember/EventRegistrations/EventRegistrationsPage";
 
 // --- Helper Components ---
 
@@ -220,7 +221,7 @@ function App() {
               />
               <Route
                 path="/:username/executive_body_member/event-registrations"
-                element={<EventRegistrations />}
+                element={<EventRegistrationsPage />}
               />
               <Route
                 path="/:username/executive_body_member/register-member"
