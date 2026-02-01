@@ -115,7 +115,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
                   Login
                 </Link>
                 <Link to="/signup">
-                  <button className="bg-lolo-pink text-white border border-lolo-pink px-5 py-2 rounded-full hover:bg-black hover:text-lolo-pink transition-all font-medium text-md shadow-[0_0_15px_rgba(236,72,153,0.3)]">
+                  <button className="bg-lolo-pink text-white border border-lolo-pink px-5 py-2 rounded-full hover:!bg-white/90 hover:text-lolo-pink transition-all duration-300 ease-in-out font-medium text-md shadow-[0_0_15px_rgba(236,72,153,0.3)]">
                     Sign Up
                   </button>
                 </Link>
