@@ -1,13 +1,6 @@
 import React from "react";
-import { Card, CardBody, Chip } from "@heroui/react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { Card, CardBody } from "@heroui/react";
+import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Calendar, CheckCircle2, TrendingUp, Users } from "lucide-react";
 import { type DashboardStats } from "../../types/ebm";
 
@@ -15,7 +8,14 @@ interface StatsProps {
   data: DashboardStats;
 }
 
-const StatCard = ({ title, value, sub, icon: Icon, color, trend }: any) => (
+const StatCard = ({
+  title,
+  value,
+  sub,
+  icon: Icon,
+  color,
+  //  trend
+}: any) => (
   <Card className="border border-gray-200 dark:border-white/5 shadow-sm">
     <CardBody className="p-4">
       <div className="flex justify-between items-start">
