@@ -25,7 +25,7 @@ import {
   Banknote,
   Copy,
   Loader2,
-  ArrowRight,
+  // ArrowRight,
   ExternalLink,
 } from "lucide-react";
 
