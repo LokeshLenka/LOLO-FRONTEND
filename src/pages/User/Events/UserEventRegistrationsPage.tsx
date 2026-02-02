@@ -690,7 +690,7 @@ export default function UserEventRegistrationCards() {
       </div>
 
       {/* 2. Header & Controls */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between sticky top-16 md:top-20 z-40 py-4 bg-white/80 dark:bg-black/80 backdrop-blur-sm -mx-4 px-4 rounded-b-2xl border-b border-black/5 dark:border-white/5 transition-all">
+      <div className="w-full mx-auto flex flex-col md:flex-row gap-4 items-center justify-between sticky top-16 md:top-20 z-30 py-4 bg-white/80 dark:bg-black/80 backdrop-blur-sm -mx-4 px-4 rounded-b-2xl border-b border-black/5 dark:border-white/5 transition-all">
         <h2 className="text-2xl font-black text-black dark:text-white tracking-tight flex items-center gap-3 whitespace-nowrap group">
           <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-cyan-900/30 dark:to-blue-900/30 group-hover:scale-110 transition-transform duration-300">
             <Ticket className="text-[#03a1b0] group-hover:rotate-12 transition-transform duration-300" />
@@ -915,7 +915,7 @@ export default function UserEventRegistrationCards() {
       </div>
 
       {/* 4. Enhanced Pagination */}
-      <div className="fixed z-[99] bottom-8 w-full sm:w-[28%] flex right-0 sm:right-22 items-center py-3 rounded-xl bg-white/70 dark:bg-black/70 backdrop-blur-sm border border-black/5 dark:border-white/5">
+      <div className="fixed z-30 bottom-8 w-full sm:w-[28%] flex right-0 sm:right-22 items-center py-3 rounded-xl bg-white/70 dark:bg-black/70 backdrop-blur-sm border border-black/5 dark:border-white/5">
         <TablePagination
           component="div"
           count={totalItems}
