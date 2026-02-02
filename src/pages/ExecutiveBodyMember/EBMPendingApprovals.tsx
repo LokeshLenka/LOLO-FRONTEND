@@ -42,6 +42,7 @@ import {
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { DecisionPanel } from "@/components/core/DecisionPanel";
+import StatsCard from "@/components/core/StatsCard";
 
 // --- Types ---
 
@@ -108,38 +109,6 @@ const STORAGE_KEYS = {
   PAGE: "ebm_pending_approvals_page",
   ROWS: "ebm_pending_approvals_rows_per_page",
 } as const;
-
-// --- Sub-Components for Cleanliness ---
-const StatsCard = ({
-  title,
-  value,
-  icon: Icon,
-  color,
-}: {
-  title: string;
-  value: number | string;
-  icon: any;
-  color: string;
-}) => (
-  <Card
-    shadow="none"
-    className="border border-black/5 dark:border-white/5 bg-white dark:bg-white/5"
-  >
-    <CardBody className="flex flex-row items-center gap-4 p-4">
-      <div className={`p-3 rounded-xl ${color} bg-opacity-10 text-opacity-100`}>
-        <Icon size={20} />
-      </div>
-      <div>
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-          {title}
-        </p>
-        <h4 className="text-2xl font-black text-gray-900 dark:text-white">
-          {value}
-        </h4>
-      </div>
-    </CardBody>
-  </Card>
-);
 
 // hooks/useDebounce.ts
 export function useDebounce<T>(value: T, delay: number): T {
@@ -454,13 +423,16 @@ export default function EBMPendingApprovals() {
           {/* Toolbar */}
           <div className="p-4 border-b border-gray-100 dark:border-white/5 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-white/5">
             <Input
-              className="w-full sm:max-w-xs h-full outline-none"
+              className="w-full sm:max-w-xs h-full outline-none hidden"
               placeholder="Search by name or reg no..."
-              startContent={<Search size={18} className="text-gray-400" />}
+              startContent={
+                <Search size={18} className="text-gray-400 hidden" />
+              }
               value={searchQuery}
               onValueChange={setSearchQuery}
               variant="bordered"
               size="md"
+              hidden
               classNames={{
                 inputWrapper: "bg-gray-50 dark:bg-black/20 border-black/10",
               }}
@@ -471,6 +443,7 @@ export default function EBMPendingApprovals() {
                 variant="flat"
                 startContent={<Filter size={16} />}
                 className="text-gray-600 dark:text-gray-300"
+                hidden
               >
                 Filters
               </Button>

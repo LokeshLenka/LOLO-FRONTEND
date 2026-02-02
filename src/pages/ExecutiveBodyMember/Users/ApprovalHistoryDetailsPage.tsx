@@ -55,6 +55,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/useDebounce";
+import StatsCard from "@/components/core/StatsCard";
 
 // --- Types ---
 interface ProfileBase {
@@ -141,40 +142,6 @@ const STORAGE_KEYS = {
   ROWS: "ebm_approval_history_rows_per_page",
   TAB: "ebm_approval_history_tab",
 } as const;
-
-// --- Sub-Components ---
-const StatsCard = ({
-  title,
-  value,
-  icon: Icon,
-  color,
-}: {
-  title: string;
-  value: number | string;
-  icon: any;
-  color: string;
-}) => (
-  <Card
-    shadow="none"
-    className="border border-black/5 dark:border-white/5 bg-white dark:bg-white/5"
-  >
-    <CardBody className="flex flex-row items-center gap-4 p-4">
-      <div className={`p-3 rounded-xl ${color} bg-opacity-10 text-opacity-100`}>
-        <Icon size={20} />
-      </div>
-      <div className="flex-1">
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-          {title}
-        </p>
-        <div className="flex items-center gap-2">
-          <h4 className="text-2xl font-black text-gray-900 dark:text-white">
-            {value}
-          </h4>
-        </div>
-      </div>
-    </CardBody>
-  </Card>
-);
 
 const StatusBadge = ({ status }: { status: string }) => {
   const statusConfig: Record<
@@ -823,12 +790,13 @@ export default function EBMApprovalHistory() {
           <div className="p-4 border-b border-gray-100 dark:border-white/5 bg-white dark:bg-white/5 space-y-4">
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
               <Input
-                className="w-full sm:max-w-xs h-full outline-none"
+                className="w-full sm:max-w-xs h-full outline-none hidden"
                 placeholder="Search by name or reg number..."
-                startContent={<Search size={18} className="text-gray-400" />}
+                startContent={<Search size={18} className="text-gray-400 hidden" />}
                 value={searchQuery}
                 onValueChange={setSearchQuery}
                 variant="bordered"
+                hidden
                 classNames={{
                   inputWrapper: "bg-gray-50 dark:bg-black/20 border-black/10",
                 }}

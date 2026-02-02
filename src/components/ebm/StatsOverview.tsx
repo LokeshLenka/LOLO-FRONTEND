@@ -16,7 +16,7 @@ const StatCard = ({
   color,
   //  trend
 }: any) => (
-  <Card className="border border-gray-200 dark:border-white/5 shadow-sm">
+  <Card className="border border-gray-200 dark:border-white/5 bg-white dark:bg-white/1 shadow-sm rounded-lg">
     <CardBody className="p-4">
       <div className="flex justify-between items-start">
         <div>
@@ -72,7 +72,7 @@ export const StatsOverview: React.FC<StatsProps> = ({ data }) => {
       </div>
 
       {/* Right Col: Trend Chart */}
-      <Card className="border border-gray-200 dark:border-white/5 shadow-sm bg-white dark:bg-[#18181b]">
+      <Card className="border border-gray-200 dark:border-white/5 shadow-sm bg-white dark:bg-white/1 rounded-lg">
         <CardBody className="p-5">
           <div className="mb-4">
             <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200">
@@ -80,7 +80,7 @@ export const StatsOverview: React.FC<StatsProps> = ({ data }) => {
             </h4>
             <p className="text-xs text-gray-500">Last 7 Days Performance</p>
           </div>
-          <div className="h-[180px] w-full">
+          <div className="h-[180px] w-full ">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data.approval_trend}>
                 <defs>
@@ -92,7 +92,7 @@ export const StatsOverview: React.FC<StatsProps> = ({ data }) => {
                 <XAxis dataKey="date" hide />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#18181b",
+                    backgroundColor: "#18181b00",
                     border: "none",
                     borderRadius: "8px",
                     color: "#fff",
