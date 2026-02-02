@@ -16,7 +16,7 @@ export default function SidebarWidget() {
   const { logout } = useAuth();
 
   return (
-    <div className="fixed left-0 right-0 bottom-0 mx-auto w-full max-w-60 rounded-2xl bg-black/1 p-1 text-center dark:bg-white/1 z-50 mb-32 lg:mb-20">
+    <div className="fixed left-0 right-0 bottom-0 mx-auto w-full max-w-60 rounded-2xl bg-black/1 p-1 text-center dark:bg-white/1 mb-32 lg:mb-20">
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button

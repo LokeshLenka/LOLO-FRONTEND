@@ -25,7 +25,7 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed z-[999] top-0 left-0 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-white/5 z-50 transition-all duration-300 ease-in-out
+      className={`fixed z-50 top-0 left-0 min-h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-white/5 transition-all duration-300 ease-in-out
         ${sidebarWidth}
         ${
           isMobileOpen
