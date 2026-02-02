@@ -353,7 +353,7 @@ export default function ProfileCard({ data }: { data: UserProfileData }) {
                       </h3>
                     </div>
                     <div className="p-1">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {data.role_specific_details.fields.map((field, i) => (
                           <DetailRow key={i} field={field} />
                         ))}
