@@ -650,7 +650,7 @@ export default function UserEventRegistrationCards() {
 
   // ---------------- RENDER ----------------
   return (
-    <section className="relative w-full min-h-screen mx-auto px-0 sm:px-16 space-y-8 py-4 sm:py-8">
+    <section className="relative w-full min-h-screen mx-auto px-1 sm:px-16 space-y-8 py-4 sm:py-8">
       {/* Background Gradients */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-br from-cyan-500/5 via-blue-500/5 to-purple-500/5 rounded-full blur-3xl animate-pulse" />

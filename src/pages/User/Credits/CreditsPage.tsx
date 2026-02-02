@@ -750,7 +750,7 @@ export default function CreditsPage() {
   return (
     <section
       aria-label="Credits rewarded"
-      className="relative w-full min-h-screen mx-auto space-y-8 px-0 sm:px-16 py-4 sm:py-8"
+      className="relative w-full min-h-screen mx-auto space-y-8 px-1 sm:px-16 py-4 sm:py-8"
     >
       {/* Background */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">

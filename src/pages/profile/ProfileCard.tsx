@@ -303,7 +303,7 @@ const SecurityDashboard = ({ data }: { data: UserProfileData }) => {
 
 export default function ProfileCard({ data }: { data: UserProfileData }) {
   return (
-    <section className="w-full min-h-screen py-4 md:p-8 flex justify-center items-start">
+    <section className="w-full min-h-screen py-4 md:py-8 px-1 sm:px-16 flex justify-center items-start">
       <Card
         shadow="none"
         className="w-full max-w-6xl border border-gray-200 dark:border-white/10 bg-black/1 dark:bg-white/1 backdrop-blur-lg rounded-[2rem] overflow-hidden"

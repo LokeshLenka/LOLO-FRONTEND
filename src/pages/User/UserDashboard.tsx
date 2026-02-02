@@ -170,7 +170,7 @@ const CreditGrowthChart = ({ data }: { data: CreditGrowthData[] }) => {
           <Chip
             size="sm"
             variant="flat"
-            className={`font-bold cursor-pointer transition-all ${
+            className={`font-bold cursor-pointer transition-all px-2 ${
               viewMode === "cumulative"
                 ? "bg-[#03a1b0]/20 text-[#03a1b0]"
                 : "bg-gray-100 dark:bg-white/5"
@@ -182,7 +182,7 @@ const CreditGrowthChart = ({ data }: { data: CreditGrowthData[] }) => {
           <Chip
             size="sm"
             variant="flat"
-            className={`font-bold cursor-pointer transition-all ${
+            className={`font-bold cursor-pointer transition-all px-2 ${
               viewMode === "earned"
                 ? "bg-purple-500/20 text-purple-600 dark:text-purple-400"
                 : "bg-gray-100 dark:bg-white/5"
@@ -459,7 +459,7 @@ export default function UserDashboard() {
   const credits = analytics.credits.balance;
 
   return (
-    <section className="w-full min-h-screen py-4 md:py-6 lg:py-8 px-0 sm:px-16 mx-auto space-y-6 md:space-y-8">
+    <section className="w-full min-h-screen py-4 md:py-6 lg:py-8 px-1 sm:px-16 mx-auto space-y-6 md:space-y-8">
       {/* 1. Welcome & Quote Section */}
       <div className="flex flex-col gap-4 md:gap-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
@@ -560,9 +560,9 @@ export default function UserDashboard() {
           >
             <CardBody className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
+                <h3 className="text-xs sm:text-lg font-bold text-black dark:text-white flex items-center gap-2">
                   <div className="p-2 rounded-lg bg-cyan-100 dark:bg-cyan-900/30">
-                    <TrendingUp size={20} className="text-[#03a1b0]" />
+                    <TrendingUp size={20} className="text-[#03a1b0] text-xs sm:text-lg" />
                   </div>
                   Credit Growth
                 </h3>
@@ -570,7 +570,7 @@ export default function UserDashboard() {
                   size="sm"
                   variant="flat"
                   startContent={<Calendar size={12} />}
-                  className="font-bold bg-[#03a1b0]/10 text-[#03a1b0]"
+                  className="font-bold bg-[#03a1b0]/10 text-[#03a1b0] px-2"
                 >
                   Last 12 Months
                 </Chip>
