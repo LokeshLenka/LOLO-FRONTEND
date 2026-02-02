@@ -222,7 +222,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     delete axios.defaults.headers.common["Authorization"];
 
     // 4. Redirect & Toast
-    navigate("/");
+    navigate("/home");
     toast.dismiss();
 
     // 5. Call API to invalidate token (Send token manually in this request)
@@ -302,3 +302,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+// Pa$$w0rd!
