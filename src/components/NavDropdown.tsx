@@ -10,9 +10,8 @@ import {
   Handshake,
   Mail,
   Image,
-  Users2,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion"; // Added Variants type
 
 interface NavDropdownProps {
   isMobile?: boolean;
@@ -63,23 +62,21 @@ export default function NavDropdown({ isMobile = false }: NavDropdownProps) {
         { label: "FAQ", path: "/faq", icon: HelpCircle },
       ],
     },
-    {
-      section: "Developers",
-      items: [
-        {
-          label: "API Documentation",
-          path: "/api-docs",
-          icon: Sparkles,
-        },
-        { label: "Tech Team", path: "/tech-team", icon: Users2 },
-      ],
-    },
   ];
 
-  const containerVariants = isMobile
+  // Explicitly type this as Variants to fix the TypeScript error
+  const containerVariants: Variants = isMobile
     ? {
-        hidden: { opacity: 0, height: 0, overflow: "hidden" },
-        visible: { opacity: 1, height: "auto", transition: { duration: 0.2 } },
+        hidden: {
+          height: 0,
+          opacity: 0,
+          transition: { duration: 0.2, ease: "easeInOut" },
+        },
+        visible: {
+          height: "auto",
+          opacity: 1,
+          transition: { duration: 0.25, ease: "easeOut" },
+        },
       }
     : {
         hidden: { opacity: 0, y: 8, scale: 0.98 },
@@ -122,7 +119,7 @@ export default function NavDropdown({ isMobile = false }: NavDropdownProps) {
         </motion.div>
       </button>
 
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
             initial="hidden"
@@ -132,8 +129,8 @@ export default function NavDropdown({ isMobile = false }: NavDropdownProps) {
             className={`
               ${
                 isMobile
-                  ? "relative w-full ml-0 border-l-2 border-white/10 pl-2 mt-1"
-                  : "absolute right-0 mt-3 w-64 rounded-2xl border border-white/10 bg-gray-900 shadow-2xl z-[100]"
+                  ? "relative w-full ml-0 border-l-2 border-white/10 pl-2 mt-1 bg-[#000000] overflow-hidden"
+                  : "absolute right-0 mt-3 w-64 rounded-2xl border border-white/10 bg-[#000000] shadow-2xl z-[100]"
               }
             `}
           >
@@ -162,7 +159,7 @@ export default function NavDropdown({ isMobile = false }: NavDropdownProps) {
                                   : "text-gray-300 hover:bg-white/5 hover:text-white"
                               }
                             `}
-                            onClick={() => isMobile && setIsOpen(false)} // This usually handled by parent closing, but good for safety
+                            onClick={() => isMobile && setIsOpen(false)}
                           >
                             <div
                               className={`p-1.5 rounded-md transition-colors ${
@@ -218,7 +215,7 @@ export default function NavDropdown({ isMobile = false }: NavDropdownProps) {
                   <div className="h-[1px] bg-white/5 mx-4 mb-2" />
                   <Link
                     to="/gallery"
-                    className="flex items-center justify-between px-3 py-2.5 mx-1 rounded-xl bg-gradient-to-r from-lolo-pink/10 to-lolo-cyan/10 border border-white/5 hover:border-white/20 transition-all group"
+                    className="flex items-center justify-between px-3 py-2.5 mx-1 rounded-xl bg-gradient-to-r from-lolo-pink/10 to-purple-500/10 border border-white/5 hover:border-white/20 transition-all group"
                   >
                     <div className="flex items-center gap-2">
                       <Sparkles size={16} className="text-lolo-pink" />
