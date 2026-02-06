@@ -24,10 +24,10 @@ const FAQS = [
       "Not at all! While skill is important, we value passion and potential just as much. We have mentorship programs where seniors guide juniors. If you have the drive to learn, you're welcome.",
   },
   {
-    category: "Tech & Open Source",
-    question: "I heard this website is Open Source. How can I contribute?",
+    category: "Tech",
+    question: "I heard this website is built by students?",
     answer:
-      "Yes! Our platform is built by students for students. You can check out our repository on GitHub. We welcome contributions for UI improvements, bug fixes, or even new feature suggestions. Look for 'Good First Issues' to get started.",
+      "Yes! Our platform is built entirely by students for students. It's a testament to the technical talent within our club. We are always looking for contributors to help improve the platform.",
   },
   {
     category: "Services",
@@ -58,13 +58,13 @@ const FAQItem = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: i * 0.1 }}
-      className={`group rounded-2xl border transition-all duration-300 ${
+      transition={{ delay: i * 0.05 }}
+      className={`group rounded-2xl border transition-all duration-300 overflow-hidden ${
         isOpen
-          ? "bg-white/5 border-lolo-cyan/30 shadow-[0_0_30px_-10px_rgba(34,211,238,0.15)]"
+          ? "bg-white/[0.03] border-lolo-pink/30 shadow-[0_0_30px_-10px_rgba(236,72,153,0.15)]"
           : "bg-white/[0.02] border-white/5 hover:border-white/10 hover:bg-white/[0.04]"
       }`}
     >
@@ -73,16 +73,16 @@ const FAQItem = ({
         className="flex items-center justify-between w-full p-6 text-left"
       >
         <span
-          className={`text-lg font-medium transition-colors ${
+          className={`text-lg font-medium transition-colors pr-4 ${
             isOpen ? "text-white" : "text-neutral-300 group-hover:text-white"
           }`}
         >
           {item.question}
         </span>
         <div
-          className={`p-2 rounded-full border transition-all duration-300 ${
+          className={`p-2 rounded-full border transition-all duration-300 shrink-0 ${
             isOpen
-              ? "bg-lolo-cyan text-black border-lolo-cyan rotate-180"
+              ? "bg-lolo-pink text-white border-lolo-pink rotate-180"
               : "bg-transparent border-white/10 text-neutral-400 group-hover:border-white/30"
           }`}
         >
@@ -90,25 +90,40 @@ const FAQItem = ({
         </div>
       </button>
 
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            animate={{
+              height: "auto",
+              opacity: 1,
+              transition: {
+                height: {
+                  duration: 0.3,
+                  ease: [0.04, 0.62, 0.23, 0.98], // Cheap spring-like ease
+                },
+                opacity: { duration: 0.2, delay: 0.1 },
+              },
+            }}
+            exit={{
+              height: 0,
+              opacity: 0,
+              transition: {
+                height: { duration: 0.2, ease: "easeInOut" },
+                opacity: { duration: 0.1 },
+              },
+            }}
             className="overflow-hidden"
           >
-            <div className="px-6 pb-6 text-neutral-400 leading-relaxed text-sm md:text-base">
-              {/* Simple parser for bold text in answer */}
+            <div className="px-6 pb-6 text-neutral-400 leading-relaxed text-sm md:text-base border-t border-white/5 pt-4">
               {item.answer.split("**").map((part, index) =>
                 index % 2 === 1 ? (
-                  <span key={index} className="text-lolo-cyan font-semibold">
+                  <span key={index} className="text-lolo-pink font-bold">
                     {part}
                   </span>
                 ) : (
                   part
-                )
+                ),
               )}
             </div>
           </motion.div>
@@ -123,17 +138,17 @@ export default function FAQ() {
 
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans pb-20 pt-24 relative overflow-hidden">
-      {/* --- ADDED: Dual Ambient Glow (Same as AboutUs) --- */}
-      <div className="absolute top-20 left-0 w-[700px] h-[700px] bg-lolo-pink/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-50 right-0 w-[700px] h-[700px] bg-lolo-cyan/10 rounded-full blur-[120px] pointer-events-none" />
+      {/* Background Blobs */}
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-lolo-cyan/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-lolo-pink/5 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 relative z-10">
+      <div className="max-w-3xl mx-auto px-6 relative z-10">
         {/* Header */}
         <div className="text-center mb-16">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-lolo-cyan text-xs font-bold uppercase tracking-widest mb-6"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-lolo-pink text-xs font-bold uppercase tracking-widest mb-6"
           >
             <MessageCircle size={14} />
             <span>Got Questions?</span>
@@ -142,7 +157,7 @@ export default function FAQ() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-bold mb-6"
+            className="text-4xl md:text-6xl font-bold mb-6 tracking-tight"
           >
             Frequently Asked <br />
             <span className="text-lolo-pink font-club">Questions</span>
@@ -152,7 +167,7 @@ export default function FAQ() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-neutral-400 text-lg"
+            className="text-neutral-400 text-lg leading-relaxed max-w-xl mx-auto"
           >
             Everything you need to know about joining, contributing, and jamming
             with us.
@@ -178,18 +193,17 @@ export default function FAQ() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
-          className="mt-16 p-8 rounded-3xl bg-gradient-to-r from-neutral-900 to-black border border-white/10 text-center relative overflow-hidden group"
+          className="mt-20 p-10 rounded-[2.5rem] bg-white/1 border border-white/5 text-center relative overflow-hidden group"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-lolo-pink/10 to-lolo-cyan/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
           <h3 className="text-2xl font-bold text-white mb-2 relative z-10">
             Still have questions?
           </h3>
-          <p className="text-neutral-400 mb-6 relative z-10">
-            Can't find the answer you're looking for? Drop us a line.
+          <p className="text-neutral-400 mb-8 relative z-10 max-w-md mx-auto">
+            Can't find the answer you're looking for? Drop us a line and we'll
+            get back to you shortly.
           </p>
           <Link to="/contact">
-            <button className="relative z-10 inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full font-bold hover:bg-neutral-200 transition-colors">
+            <button className="relative z-10 inline-flex items-center gap-2 px-8 py-3.5 bg-white text-black rounded-full font-bold hover:bg-lolo-pink hover:text-white transition-all shadow-lg active:scale-95">
               Contact Support <ArrowRight size={18} />
             </button>
           </Link>

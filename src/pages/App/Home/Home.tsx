@@ -237,14 +237,14 @@ const Home: React.FC = () => {
           </motion.div>
 
           {/* Scroll Indicator */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5, duration: 1 }}
             className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-50 hidden md:block"
           >
             <ChevronDown className="text-white/50" />
-          </motion.div>
+          </motion.div> */}
         </div>
       </section>
 
@@ -274,7 +274,7 @@ const Home: React.FC = () => {
               <div className="space-y-4 sm:space-y-6 text-gray-400 text-base sm:text-lg leading-relaxed font-light">
                 <p>
                   <strong className="text-white">
-                    Live Out Loud Originals (LOLO)
+                    Living Out Loud Originals (LOLO)
                   </strong>{" "}
                   is SRKR's premier contemporary fusion band and music club.
                   Born from a passion for blending Indian Classical rhythms with

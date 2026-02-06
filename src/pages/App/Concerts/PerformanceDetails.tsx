@@ -1,161 +1,119 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Calendar,
-  MapPin,
-  Clock,
-  Share2,
   ArrowLeft,
-  PlayCircle,
-  Video,
-  ListMusic,
-  Mic2,
-  Music,
-  CheckCircle2,
+  Share2,
+  Clock,
+  MapPin,
+  Calendar,
   Info,
-  Globe,
+  Mic2,
+  ListMusic,
+  PlayCircle,
   Disc,
+  CheckCircle2,
+  ZoomIn,
 } from "lucide-react";
+import { Avatar } from "@heroui/react";
 import { Button } from "@heroui/button";
-import { Divider, Avatar } from "@heroui/react";
+import { Divider } from "@heroui/react";
+import axios from "axios";
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+import { Zoom, Thumbnails } from "yet-another-react-lightbox/plugins";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
 
-// --- Interfaces ---
-interface Song {
-  id: number;
-  title: string;
-  duration: string;
-  artist?: string;
-  is_original?: boolean;
-}
-
-interface Performer {
-  name: string;
-  role: string;
-  avatar_url?: string;
-}
-
-interface ConcertDetailData {
+// --- Mock Interfaces (Reuse from List) ---
+// (Ideally import these from a types file)
+interface ConcertDetailsData {
   uuid: string;
   title: string;
   description: string;
+  genre: "Rock" | "Jazz" | "Classical" | "Fusion" | "Pop";
+  status: "upcoming" | "live" | "archived";
   date: string;
   venue: string;
   duration: string;
-  genre: "Rock" | "Jazz" | "Classical" | "Fusion" | "Pop" | "Synthwave";
-  video_url?: string;
-  poster_url: string;
-  setlist: Song[];
-  performers: Performer[];
-  images: string[];
+  images: string[]; // Simplification for gallery
+  setlist: {
+    id: string;
+    title: string;
+    artist?: string;
+    duration: string;
+    is_original?: boolean;
+  }[];
+  performers: { name: string; role: string; avatar_url?: string }[];
 }
 
-// --- Styles Helper ---
-// Swapped to Cyan/Teal based themes or neutral alternatives
-const getGenreColor = (genre: string) => {
-  switch (genre) {
-    case "Rock":
-      return "bg-red-500/10 text-red-400 border-red-500/20";
-    case "Jazz":
-      return "bg-amber-500/10 text-amber-400 border-amber-500/20";
-    case "Fusion":
-      return "bg-purple-500/10 text-purple-400 border-purple-500/20";
-    case "Synthwave":
-      // Using Cyan for Synthwave to match new theme
-      return "bg-[#03a1b0]/10 text-[#03a1b0] border-[#03a1b0]/20";
-    default:
-      return "bg-gray-500/10 text-gray-400 border-gray-500/20";
-  }
-};
-
 const ConcertDetails: React.FC = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const [concert, setConcert] = useState<ConcertDetailData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(-1);
+  const [concert, setConcert] = useState<ConcertDetailsData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-  // Mock Fetch
+  // --- Mock Data Fetching ---
   useEffect(() => {
-    const fetchConcert = async () => {
-      try {
-        setLoading(true);
-        // --- SIMULATED DATA ---
-        setTimeout(() => {
-          setConcert({
-            uuid: "1",
-            title: "Neon Nights: Live at the Arena",
-            description:
-              "An electrifying night of synthwave and retro-pop hits. The band performed their entire sophomore album alongside crowd favorites. The visual production featured a custom light show synchronized with the beat, creating an unforgettable atmosphere.",
-            date: "2025-11-15T20:00:00",
-            venue: "University Main Auditorium",
-            duration: "1h 45m",
-            genre: "Synthwave",
-            video_url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-            poster_url:
-              "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1200",
-            setlist: [
-              {
-                id: 1,
-                title: "Intro / Awakening",
-                duration: "3:45",
-                is_original: true,
-              },
-              {
-                id: 2,
-                title: "Midnight City",
-                duration: "4:12",
-                artist: "M83",
-              },
-              {
-                id: 3,
-                title: "Cyber Heart",
-                duration: "3:50",
-                is_original: true,
-              },
-              {
-                id: 4,
-                title: "Analog Dreams",
-                duration: "4:05",
-                is_original: true,
-              },
-              { id: 5, title: "Guitar Solo", duration: "2:15" },
-              { id: 6, title: "The Final Countdown", duration: "5:10" },
-            ],
-            performers: [
-              {
-                name: "Alex Rhythm",
-                role: "Guitar",
-                avatar_url: "https://i.pravatar.cc/150?u=1",
-              },
-              {
-                name: "Sarah Keys",
-                role: "Synths",
-                avatar_url: "https://i.pravatar.cc/150?u=2",
-              },
-              {
-                name: "Mike Beat",
-                role: "Drums",
-                avatar_url: "https://i.pravatar.cc/150?u=3",
-              },
-            ],
-            images: [
-              "https://images.unsplash.com/photo-1501612780327-45045538702b?q=80&w=600",
-              "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=600",
-              "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=80&w=600",
-            ],
-          });
-          setLoading(false);
-        }, 1000);
-      } catch (err) {
-        console.error(err);
-        setLoading(false);
-      }
-    };
-    fetchConcert();
-  }, [id, API_BASE_URL]);
+    // Simulate API call
+    setTimeout(() => {
+      setConcert({
+        uuid: id || "1",
+        title: "Neon Nights: Live at the Arena",
+        description:
+          "Experience the electrifying fusion of synth-wave and rock as LOLO takes the stage for a night of unforgettable melodies and high-octane performances.",
+        genre: "Fusion",
+        status: "archived",
+        date: "2025-11-15T20:00:00",
+        venue: "SRKR Open Air Theatre",
+        duration: "2h 30m",
+        images: [
+          "https://via.placeholder.com/800x600",
+          "https://via.placeholder.com/800x600",
+          "https://via.placeholder.com/800x600",
+        ],
+        performers: [
+          {
+            name: "Chandra Shekar",
+            role: "Vocals",
+            avatar_url: "https://i.pravatar.cc/150?u=1",
+          },
+          {
+            name: "Shanmukh",
+            role: "Guitar",
+            avatar_url: "https://i.pravatar.cc/150?u=2",
+          },
+          {
+            name: "Lowell",
+            role: "Keys",
+            avatar_url: "https://i.pravatar.cc/150?u=3",
+          },
+        ],
+        setlist: [
+          {
+            id: "1",
+            title: "Intro: The Awakening",
+            duration: "3:45",
+            is_original: true,
+          },
+          {
+            id: "2",
+            title: "Blinding Lights",
+            artist: "The Weeknd",
+            duration: "3:20",
+          },
+          {
+            id: "3",
+            title: "Midnight City",
+            duration: "4:00",
+            is_original: true,
+          },
+        ],
+      });
+      setLoading(false);
+    }, 1000);
+  }, [id]);
 
   const handleBack = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -168,79 +126,70 @@ const ConcertDetails: React.FC = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-4">
-        <div className="w-12 h-12 border-4 border-[#03a1b0] border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-gray-400 animate-pulse">
-          Loading Concert Details...
-        </p>
+      <div className="min-h-screen bg-[#030303] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-lolo-pink border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
 
-  if (!concert)
-    return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-bold mb-2">Concert Not Found</h2>
-        <Link to="/concerts" className="text-[#03a1b0] hover:underline">
-          Return to Concerts
-        </Link>
-      </div>
-    );
+  if (!concert) return null;
 
-  const eventDate = new Date(concert.date);
-  const dateStr = eventDate.toLocaleDateString("en-IN", {
+  const dateObj = new Date(concert.date);
+  const dateStr = dateObj.toLocaleDateString("en-IN", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
   });
-  const timeStr = eventDate.toLocaleTimeString("en-IN", {
+  const timeStr = dateObj.toLocaleTimeString("en-IN", {
     hour: "2-digit",
     minute: "2-digit",
   });
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-[#03a1b0] selection:text-white pb-20">
+    <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-lolo-pink/30 selection:text-white pb-20 relative overflow-hidden">
+      {/* Background Blobs */}
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-lolo-pink/5 rounded-full blur-[120px] pointer-events-none" />
+
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10 h-16 flex items-center px-6">
+      <nav className="sticky top-0 z-50 bg-[#030303]/80 backdrop-blur-xl border-b border-white/5 h-16 flex items-center px-6">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
           <a
-            href="/concerts"
+            href="#"
             onClick={handleBack}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-bold group cursor-pointer"
+            className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors text-sm font-bold group"
           >
-            <div className="p-1.5 rounded-full bg-white/5 group-hover:bg-white/10 transition-colors">
+            <div className="p-2 rounded-full bg-white/5 group-hover:bg-white/10 transition-colors">
               <ArrowLeft size={16} />
             </div>
-            <span className="inline">Back to Concerts</span>
+            <span>Back to Concerts</span>
           </a>
-
           <button
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
               setShowToast(true);
               setTimeout(() => setShowToast(false), 2000);
             }}
-            className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all active:scale-95"
-            title="Share"
+            className="p-2 text-neutral-400 hover:text-white hover:bg-white/10 rounded-full transition-all active:scale-95"
           >
             <Share2 size={18} />
           </button>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden bg-[#0F111A]">
+      {/* Hero */}
+      <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden bg-[#030303]">
         <div className="absolute inset-0">
           <img
-            src={concert.poster_url}
+            src={concert.images[0]}
             alt={concert.title}
-            className="w-full h-full object-cover opacity-60"
+            className="w-full h-full object-cover opacity-50"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#030303] via-[#030303]/40 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#030303]/90 via-[#030303]/40 to-transparent"></div>
         </div>
 
-        <div className="absolute bottom-0 left-0 w-full p-6 md:p-12">
+        <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 z-10">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -248,53 +197,36 @@ const ConcertDetails: React.FC = () => {
               transition={{ duration: 0.6 }}
             >
               <div className="flex flex-wrap gap-3 mb-6">
-                <span
-                  className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border ${getGenreColor(
-                    concert.genre
-                  )} backdrop-blur-md`}
-                >
+                <span className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-lolo-pink/10 text-lolo-pink border border-lolo-pink/20 backdrop-blur-md">
                   {concert.genre}
                 </span>
-                <span className="px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-white/10 text-white border border-white/10 backdrop-blur-md">
-                  Live Performance
+                <span className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white/5 text-white border border-white/10 backdrop-blur-md">
+                  {concert.status}
                 </span>
               </div>
 
-              <h1 className="text-4xl md:text-6xl font-black leading-tight max-w-4xl mb-6 text-white drop-shadow-xl">
+              <h1 className="text-4xl md:text-7xl font-bold leading-tight max-w-4xl mb-8 text-white drop-shadow-xl">
                 {concert.title}
               </h1>
 
-              <div className="flex flex-wrap gap-y-4 gap-x-8 text-gray-200 font-medium text-sm md:text-base">
+              <div className="flex flex-wrap gap-y-6 gap-x-10 text-neutral-200 font-medium text-sm md:text-base">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/5 rounded-full">
-                    <Calendar size={20} className="text-[#03a1b0]" />
+                  <div className="p-2.5 bg-white/5 rounded-full border border-white/5">
+                    <Calendar size={20} className="text-lolo-pink" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 uppercase font-bold">
+                    <p className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider mb-0.5">
                       Date
                     </p>
                     <p>{dateStr}</p>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/5 rounded-full">
-                    <Clock size={20} className="text-[#03a1b0]" />
+                  <div className="p-2.5 bg-white/5 rounded-full border border-white/5">
+                    <MapPin size={20} className="text-purple-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 uppercase font-bold">
-                      Time
-                    </p>
-                    <p>{timeStr}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/5 rounded-full">
-                    <MapPin size={20} className="text-[#03a1b0]" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 uppercase font-bold">
+                    <p className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider mb-0.5">
                       Venue
                     </p>
                     <p>{concert.venue}</p>
@@ -306,92 +238,49 @@ const ConcertDetails: React.FC = () => {
         </div>
       </section>
 
-      {/* Main Content Grid */}
-      <main className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* LEFT COLUMN: Details & Description */}
-        <div className="lg:col-span-2 space-y-12">
-          {/* About Section */}
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-10">
+        <div className="lg:col-span-2 space-y-16">
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
             <h3 className="text-2xl font-bold mb-6 flex items-center gap-2 text-white">
-              <Info className="text-[#03a1b0]" size={24} /> About the Concert
+              <Info className="text-lolo-pink" size={24} /> About the Concert
             </h3>
-            <div className="prose prose-invert max-w-none text-gray-300 leading-relaxed text-lg">
-              <p>{concert.description}</p>
-            </div>
+            <p className="text-neutral-400 leading-relaxed text-lg">
+              {concert.description}
+            </p>
           </motion.section>
 
-          <Divider className="bg-white/10" />
+          <Divider className="bg-white/5" />
 
-          {/* Video Player */}
-          {concert.video_url && (
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <h3 className="text-2xl font-bold mb-6 flex items-center gap-2 text-white">
-                <Video className="text-[#03a1b0]" size={24} /> Official
-                Recording
-              </h3>
-              <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src={concert.video_url}
-                  title="Concert Video"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="absolute inset-0"
-                />
-              </div>
-            </motion.section>
-          )}
-
-          {/* Concert Stats */}
+          {/* Details Grid */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-2xl font-bold mb-6 flex items-center gap-2 text-white">
-              <Music className="text-[#03a1b0]" size={24} /> Performance Stats
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex items-start gap-4">
-                <Globe className="text-gray-400 mt-1" size={20} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white/[0.02] backdrop-blur-md border border-white/5 rounded-3xl p-6 flex items-start gap-5">
+                <Clock className="text-blue-400 mt-1" size={22} />
                 <div>
-                  <p className="text-xs font-bold text-gray-500 uppercase">
-                    Genre
-                  </p>
-                  <p className="text-white font-medium capitalize">
-                    {concert.genre}
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex items-start gap-4">
-                <Clock className="text-gray-400 mt-1" size={20} />
-                <div>
-                  <p className="text-xs font-bold text-gray-500 uppercase">
+                  <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1">
                     Duration
                   </p>
-                  <p className="text-white font-medium">{concert.duration}</p>
+                  <p className="text-white font-bold text-lg">
+                    {concert.duration}
+                  </p>
                 </div>
               </div>
-
-              <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex items-start gap-4">
-                <Disc className="text-yellow-500 mt-1" size={20} />
+              <div className="bg-white/[0.02] backdrop-blur-md border border-white/5 rounded-3xl p-6 flex items-start gap-5">
+                <Disc className="text-yellow-400 mt-1" size={22} />
                 <div>
-                  <p className="text-xs font-bold text-gray-500 uppercase">
+                  <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1">
                     Total Tracks
                   </p>
-                  <p className="text-white font-medium">
+                  <p className="text-white font-bold text-lg">
                     {concert.setlist.length} Songs
                   </p>
                 </div>
@@ -399,20 +288,20 @@ const ConcertDetails: React.FC = () => {
             </div>
           </motion.section>
 
-          {/* Performers (Grid style like Coordinators) */}
+          {/* Performers */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
             <h3 className="text-2xl font-bold mb-6 flex items-center gap-2 text-white">
-              <Mic2 className="text-[#03a1b0]" size={24} /> Performers
+              <Mic2 className="text-lolo-pink" size={24} /> Performers
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {concert.performers.map((perf, idx) => (
                 <div
                   key={idx}
-                  className="bg-white/5 border border-white/5 rounded-xl p-4 hover:bg-white/10 transition-colors group flex items-center gap-4"
+                  className="bg-white/[0.02] border border-white/5 rounded-2xl p-5 hover:bg-white/[0.04] transition-colors flex items-center gap-4"
                 >
                   <Avatar
                     src={perf.avatar_url}
@@ -420,10 +309,10 @@ const ConcertDetails: React.FC = () => {
                     isBordered
                   />
                   <div>
-                    <h4 className="font-bold text-white text-lg">
+                    <h4 className="font-bold text-white text-base">
                       {perf.name}
                     </h4>
-                    <p className="text-xs text-[#03a1b0] uppercase font-bold tracking-wider">
+                    <p className="text-[10px] text-lolo-pink uppercase font-bold tracking-widest">
                       {perf.role}
                     </p>
                   </div>
@@ -433,65 +322,68 @@ const ConcertDetails: React.FC = () => {
           </motion.section>
 
           {/* Gallery */}
-          {concert.images.length > 0 && (
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <h3 className="text-2xl font-bold mb-6 text-white">
-                Gallery Highlights
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {concert.images.map((img, idx) => (
-                  <div
-                    key={idx}
-                    className="group relative rounded-xl overflow-hidden h-48 border border-white/10"
-                  >
-                    <img
-                      src={img}
-                      alt={`Gallery ${idx}`}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h3 className="text-2xl font-bold mb-6 text-white">
+              Gallery Highlights
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {concert.images.map((img, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => setLightboxIndex(idx)}
+                  className="group relative rounded-2xl overflow-hidden h-48 border border-white/5 cursor-zoom-in"
+                >
+                  <img
+                    src={img}
+                    alt={`Gallery ${idx}`}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <div className="bg-white/10 backdrop-blur-md p-3 rounded-full text-white">
+                      <ZoomIn size={20} />
+                    </div>
                   </div>
-                ))}
-              </div>
-            </motion.section>
-          )}
+                </div>
+              ))}
+            </div>
+          </motion.section>
         </div>
 
-        {/* RIGHT COLUMN: Setlist Sidebar */}
+        {/* Sidebar */}
         <aside className="lg:col-span-1">
-          <div className="sticky top-24 space-y-6">
+          <div className="sticky top-24">
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="p-6 rounded-3xl bg-[#0F111A] border border-[#03a1b0]/30 shadow-2xl shadow-[#03a1b0]/10 relative overflow-hidden">
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#03a1b0]/20 rounded-full blur-[60px]"></div>
+              <div className="p-8 rounded-[2.5rem] bg-white/[0.02] backdrop-blur-xl border border-white/5 shadow-2xl relative overflow-hidden">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-lolo-pink/10 rounded-full blur-[60px]"></div>
 
-                <h3 className="text-xl font-black mb-6 text-white relative z-10 flex items-center gap-2">
-                  <ListMusic size={20} className="text-[#03a1b0]" /> Setlist
+                <h3 className="text-xl font-bold mb-6 text-white relative z-10 flex items-center gap-2">
+                  <ListMusic size={20} className="text-lolo-pink" /> Setlist
                 </h3>
 
                 <div className="space-y-1 relative z-10">
                   {concert.setlist.map((song, idx) => (
                     <div
                       key={song.id}
-                      className="group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-colors cursor-default border border-transparent hover:border-white/5"
+                      className="group flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-colors cursor-default"
                     >
                       <div className="flex items-center gap-3 overflow-hidden">
-                        <span className="text-gray-600 font-mono text-xs w-4 shrink-0">
+                        <span className="text-neutral-600 font-mono text-xs w-4 shrink-0">
                           {(idx + 1).toString().padStart(2, "0")}
                         </span>
                         <div className="truncate">
-                          <p className="font-bold text-sm text-gray-200 group-hover:text-white truncate">
+                          <p className="font-bold text-sm text-neutral-300 group-hover:text-white truncate">
                             {song.title}
                           </p>
                           {song.artist && (
-                            <p className="text-[10px] text-gray-500 truncate">
+                            <p className="text-[10px] text-neutral-500 truncate">
                               by {song.artist}
                             </p>
                           )}
@@ -499,11 +391,11 @@ const ConcertDetails: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {song.is_original && (
-                          <span className="text-[8px] font-bold uppercase bg-[#03a1b0]/20 text-[#03a1b0] px-1.5 py-0.5 rounded">
+                          <span className="text-[8px] font-bold uppercase bg-lolo-pink/20 text-lolo-pink px-1.5 py-0.5 rounded">
                             Orig
                           </span>
                         )}
-                        <span className="text-xs text-gray-500 font-mono">
+                        <span className="text-xs text-neutral-500 font-mono">
                           {song.duration}
                         </span>
                       </div>
@@ -514,9 +406,13 @@ const ConcertDetails: React.FC = () => {
                 <div className="mt-8 pt-6 border-t border-white/5 relative z-10">
                   <Button
                     size="lg"
-                    className="w-full font-bold bg-[#03a1b0] hover:bg-[#028f9c] text-white shadow-lg h-12 rounded-xl transition-all flex items-center justify-center gap-2"
+                    className="w-full font-bold bg-white text-black hover:bg-lolo-pink hover:text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] h-14 text-base rounded-full transition-all flex items-center justify-center gap-2 group"
                   >
-                    <PlayCircle size={18} /> Play All Tracks
+                    <PlayCircle
+                      size={18}
+                      className="transition-transform group-hover:scale-110"
+                    />{" "}
+                    Play All Tracks
                   </Button>
                 </div>
               </div>
@@ -525,6 +421,7 @@ const ConcertDetails: React.FC = () => {
         </aside>
       </main>
 
+      {/* Lightbox & Toast Components */}
       <AnimatePresence>
         {showToast && (
           <motion.div
@@ -532,13 +429,22 @@ const ConcertDetails: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 right-6 z-50 bg-white text-black px-5 py-4 rounded-xl shadow-2xl font-bold flex items-center gap-3 border border-gray-200"
+            className="fixed bottom-6 right-6 z-50 bg-white text-black px-6 py-4 rounded-full shadow-2xl font-bold flex items-center gap-3 border border-white/20"
           >
-            <CheckCircle2 size={20} className="text-green-600" />
-            <span>Link copied to clipboard!</span>
+            <CheckCircle2 size={20} className="text-green-600" />{" "}
+            <span>Link copied!</span>
           </motion.div>
         )}
       </AnimatePresence>
+      <Lightbox
+        index={lightboxIndex}
+        slides={concert.images.map((src) => ({ src }))}
+        open={lightboxIndex >= 0}
+        close={() => setLightboxIndex(-1)}
+        plugins={[Zoom, Thumbnails]}
+        styles={{ container: { backgroundColor: "rgba(0, 0, 0, 0.95)" } }}
+        zoom={{ maxZoomPixelRatio: 3 }}
+      />
     </div>
   );
 };

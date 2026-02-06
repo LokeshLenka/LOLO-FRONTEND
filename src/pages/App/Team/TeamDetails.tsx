@@ -68,7 +68,7 @@ const TeamDetails: React.FC = () => {
   // const { data: member } = useFetchMember(id);
   const member = MOCK_MEMBER; // Using mock
 
-  if (!member)
+  if (member)
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         Member not found

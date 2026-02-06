@@ -16,13 +16,11 @@ import {
   Users,
   Trophy,
   CreditCard,
-  ZoomIn, // Added ZoomIn icon
+  ZoomIn,
 } from "lucide-react";
 import { Button } from "@heroui/button";
 import { Divider } from "@heroui/react";
 import axios from "axios";
-
-// --- Lightbox Imports ---
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import { Zoom, Thumbnails } from "yet-another-react-lightbox/plugins";
@@ -61,17 +59,31 @@ interface EventDetailsData {
   coordinators: (Coordinator | null)[];
 }
 
-// --- Styles Helper ---
+// --- 🎨 CONSISTENT COLOR UTILITIES ---
 const getEventTypeColor = (type: string) => {
-  switch (type) {
-    case "club":
-      return "bg-purple-500/10 text-purple-400 border-purple-500/20";
+  switch (type.toLowerCase()) {
     case "music":
-      return "bg-pink-500/10 text-pink-400 border-pink-500/20";
+      return "bg-pink-500/10 text-pink-400 border-pink-500/20 shadow-[0_0_10px_rgba(236,72,153,0.1)]";
+    case "club":
+    case "management":
+      return "bg-purple-500/10 text-purple-400 border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.1)]";
     case "public":
-      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+      return "bg-cyan-500/10 text-cyan-400 border-cyan-500/20 shadow-[0_0_10px_rgba(34,211,238,0.1)]";
     default:
-      return "bg-gray-500/10 text-gray-400 border-gray-500/20";
+      return "bg-neutral-500/10 text-neutral-400 border-neutral-500/20";
+  }
+};
+
+const getEventStatusColor = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "ongoing":
+      return "bg-amber-500/10 text-amber-400 border-amber-500/20 animate-pulse";
+    case "upcoming":
+      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+    case "completed":
+      return "bg-white/5 text-neutral-500 border-white/5";
+    default:
+      return "bg-white/5 text-neutral-400 border-white/10";
   }
 };
 
@@ -81,8 +93,6 @@ const EventDetails: React.FC = () => {
   const [event, setEvent] = useState<EventDetailsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
-
-  // --- Lightbox State ---
   const [lightboxIndex, setLightboxIndex] = useState(-1);
 
   const APP_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -99,11 +109,9 @@ const EventDetails: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchEventDetails();
   }, [id]);
 
-  // Safe Back Handler
   const handleBack = (e: React.MouseEvent) => {
     e.preventDefault();
     if (window.history.length > 1) {
@@ -115,23 +123,22 @@ const EventDetails: React.FC = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-4">
-        <div className="w-12 h-12 border-4 border-[#03a1b0] border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-gray-400 animate-pulse">Loading Event Details...</p>
+      <div className="min-h-screen bg-[#030303] text-white flex flex-col items-center justify-center gap-4">
+        <div className="w-12 h-12 border-4 border-lolo-pink border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-neutral-400 animate-pulse font-medium">Loading...</p>
       </div>
     );
 
   if (!event)
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-[#030303] text-white flex flex-col items-center justify-center">
         <h2 className="text-2xl font-bold mb-2">Event Not Found</h2>
-        <Link to="/events" className="text-[#03a1b0] hover:underline">
+        <Link to="/events" className="text-lolo-pink hover:underline">
           Return to Events
         </Link>
       </div>
     );
 
-  // Date Formatter
   const startDate = new Date(event.start_date);
   const endDate = new Date(event.end_date);
   const deadlineDate = new Date(event.registration_deadline);
@@ -152,26 +159,29 @@ const EventDetails: React.FC = () => {
   })}`;
 
   const activeCoordinators = event.coordinators.filter(
-    (c): c is Coordinator => c !== null
+    (c): c is Coordinator => c !== null,
   );
 
-  // Prepare slides for lightbox
   const lightboxSlides = event.images.map((img) => ({
     src: img.url,
     alt: img.alt_txt,
   }));
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-[#03a1b0] selection:text-white pb-20">
+    <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-lolo-pink/30 selection:text-white pb-20 relative overflow-hidden">
+      {/* Background Blobs */}
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-lolo-pink/5 rounded-full blur-[120px] pointer-events-none" />
+
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10 h-16 flex items-center px-6">
+      <nav className="sticky top-0 z-50 bg-[#030303]/80 backdrop-blur-xl border-b border-white/5 h-16 flex items-center px-6">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
           <a
             href=""
             onClick={handleBack}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-bold group cursor-pointer"
+            className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors text-sm font-bold group cursor-pointer"
           >
-            <div className="p-1.5 rounded-full bg-white/5 group-hover:bg-white/10 transition-colors">
+            <div className="p-2 rounded-full bg-white/5 group-hover:bg-white/10 transition-colors">
               <ArrowLeft size={16} />
             </div>
             <span className="inline">Back to Events</span>
@@ -183,7 +193,7 @@ const EventDetails: React.FC = () => {
               setShowToast(true);
               setTimeout(() => setShowToast(false), 2000);
             }}
-            className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all active:scale-95"
+            className="p-2 text-neutral-400 hover:text-white hover:bg-white/10 rounded-full transition-all active:scale-95"
             title="Share"
           >
             <Share2 size={18} />
@@ -192,20 +202,20 @@ const EventDetails: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden bg-[#0F111A]">
+      <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden bg-[#030303]">
         <div className="absolute inset-0">
           <img
             src={
               event.images[0]?.url || "https://via.placeholder.com/1920x1080"
             }
             alt={event.name}
-            className="w-full h-full object-cover opacity-60"
+            className="w-full h-full object-cover opacity-50"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#030303] via-[#030303]/60 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#030303]/90 via-transparent to-transparent"></div>
         </div>
 
-        <div className="absolute bottom-0 left-0 w-full p-6 md:p-12">
+        <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 z-10">
           <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -213,29 +223,36 @@ const EventDetails: React.FC = () => {
               transition={{ duration: 0.6 }}
             >
               <div className="flex flex-wrap gap-3 mb-6">
+                {/* 🎨 TYPE BADGE */}
                 <span
-                  className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border ${getEventTypeColor(
-                    event.type
-                  )} backdrop-blur-md`}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border backdrop-blur-md ${getEventTypeColor(
+                    event.type,
+                  )}`}
                 >
                   {event.type} Only
                 </span>
-                <span className="px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider bg-white/10 text-white border border-white/10 backdrop-blur-md">
+
+                {/* 🚦 STATUS BADGE */}
+                <span
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border backdrop-blur-md ${getEventStatusColor(
+                    event.status,
+                  )}`}
+                >
                   {event.status}
                 </span>
               </div>
 
-              <h1 className="text-4xl md:text-6xl font-black leading-tight max-w-4xl mb-6 text-white drop-shadow-xl">
+              <h1 className="text-4xl md:text-7xl font-bold leading-tight max-w-4xl mb-8 text-white drop-shadow-xl">
                 {event.name}
               </h1>
 
-              <div className="flex flex-wrap gap-y-4 gap-x-8 text-gray-200 font-medium text-sm md:text-base">
+              <div className="flex flex-wrap gap-y-6 gap-x-10 text-neutral-200 font-medium text-sm md:text-base">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/5 rounded-full">
-                    <Calendar size={20} className="text-[#03a1b0]" />
+                  <div className="p-2.5 bg-white/5 rounded-full border border-white/5">
+                    <Calendar size={20} className="text-lolo-pink" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 uppercase font-bold">
+                    <p className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider mb-0.5">
                       Date
                     </p>
                     <p>{dateStr}</p>
@@ -243,11 +260,11 @@ const EventDetails: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/5 rounded-full">
-                    <Clock size={20} className="text-[#03a1b0]" />
+                  <div className="p-2.5 bg-white/5 rounded-full border border-white/5">
+                    <Clock size={20} className="text-lolo-pink" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 uppercase font-bold">
+                    <p className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider mb-0.5">
                       Time
                     </p>
                     <p>{timeStr}</p>
@@ -255,11 +272,11 @@ const EventDetails: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/5 rounded-full">
-                    <MapPin size={20} className="text-[#03a1b0]" />
+                  <div className="p-2.5 bg-white/5 rounded-full border border-white/5">
+                    <MapPin size={20} className="text-lolo-pink" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 uppercase font-bold">
+                    <p className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider mb-0.5">
                       Venue
                     </p>
                     <p>{event.venue}</p>
@@ -272,84 +289,80 @@ const EventDetails: React.FC = () => {
       </section>
 
       {/* Main Content Grid */}
-      <main className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* LEFT COLUMN: Details & Description */}
-        <div className="lg:col-span-2 space-y-12">
+      <main className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-10">
+        <div className="lg:col-span-2 space-y-16">
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
             <h3 className="text-2xl font-bold mb-6 flex items-center gap-2 text-white">
-              <Info className="text-[#03a1b0]" size={24} /> About the Event
+              <Info className="text-lolo-pink" size={24} /> About the Event
             </h3>
-            <div className="prose prose-invert max-w-none text-gray-300 leading-relaxed text-lg">
+            <div className="prose prose-invert max-w-none text-neutral-400 leading-relaxed text-lg">
               <p>{event.description}</p>
             </div>
           </motion.section>
 
-          <Divider className="bg-white/10" />
+          <Divider className="bg-white/5" />
 
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-2xl font-bold mb-6 flex items-center gap-2 text-white">
-              <Ticket className="text-[#03a1b0]" size={24} /> Event Details
+            <h3 className="text-2xl font-bold mb-8 flex items-center gap-2 text-white">
+              <Ticket className="text-lolo-pink" size={24} /> Event Details
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex items-start gap-4">
-                <Globe className="text-gray-400 mt-1" size={20} />
-                <div>
-                  <p className="text-xs font-bold text-gray-500 uppercase">
-                    Reg. Mode
-                  </p>
-                  <p className="text-white font-medium capitalize">
-                    {event.registration_mode}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    {event.registration_place}
-                  </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                {
+                  icon: Globe,
+                  label: "Reg. Mode",
+                  val: event.registration_mode,
+                  sub: event.registration_place,
+                  color: "text-blue-400",
+                },
+                {
+                  icon: Users,
+                  label: "Capacity",
+                  val: `${event.max_participants} Participants`,
+                  color: "text-purple-400",
+                },
+                {
+                  icon: Trophy,
+                  label: "Credits",
+                  val: `${event.credits_awarded} Points`,
+                  color: "text-yellow-400",
+                },
+                {
+                  icon: CreditCard,
+                  label: "Entry Fee",
+                  val: event.fee > 0 ? `₹${event.fee}` : "Free Entry",
+                  color: "text-green-400",
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white/[0.02] backdrop-blur-md border border-white/5 rounded-3xl p-6 flex items-start gap-5 hover:border-white/10 transition-colors"
+                >
+                  <item.icon className={`${item.color} mt-1`} size={22} />
+                  <div>
+                    <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1">
+                      {item.label}
+                    </p>
+                    <p className="text-white font-bold text-lg capitalize">
+                      {item.val}
+                    </p>
+                    {item.sub && (
+                      <p className="text-sm text-neutral-500 mt-0.5">
+                        {item.sub}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-
-              <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex items-start gap-4">
-                <Users className="text-gray-400 mt-1" size={20} />
-                <div>
-                  <p className="text-xs font-bold text-gray-500 uppercase">
-                    Capacity
-                  </p>
-                  <p className="text-white font-medium">
-                    {event.max_participants} Participants
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex items-start gap-4">
-                <Trophy className="text-yellow-500 mt-1" size={20} />
-                <div>
-                  <p className="text-xs font-bold text-gray-500 uppercase">
-                    Credits Awarded
-                  </p>
-                  <p className="text-white font-medium">
-                    {event.credits_awarded} Points
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex items-start gap-4">
-                <CreditCard className="text-green-500 mt-1" size={20} />
-                <div>
-                  <p className="text-xs font-bold text-gray-500 uppercase">
-                    Entry Fee
-                  </p>
-                  <p className="text-white font-medium">
-                    {event.fee > 0 ? `₹${event.fee}` : "Free Entry"}
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
           </motion.section>
 
@@ -360,27 +373,26 @@ const EventDetails: React.FC = () => {
               viewport={{ once: true }}
             >
               <h3 className="text-2xl font-bold mb-6 flex items-center gap-2 text-white">
-                <User className="text-[#03a1b0]" size={24} /> Coordinators
+                <User className="text-lolo-pink" size={24} /> Coordinators
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                 {activeCoordinators.map((coord, idx) => (
                   <div
                     key={idx}
-                    className="bg-white/5 border border-white/5 rounded-xl p-4 hover:bg-white/10 transition-colors group"
+                    className="bg-white/[0.02] border border-white/5 rounded-2xl p-5 hover:bg-white/[0.04] transition-colors group"
                   >
-                    <div className="w-12 h-12 bg-[#03a1b0]/20 rounded-full flex items-center justify-center text-[#03a1b0] mb-3 group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 bg-pink-500/10 rounded-full flex items-center justify-center text-lolo-pink mb-4 group-hover:scale-110 transition-transform">
                       <User size={20} />
                     </div>
                     <h4 className="font-bold text-white text-lg">
                       {coord.name}
                     </h4>
-                    <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-2">
+                    <p className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest mb-3">
                       {coord.role.replace(/_/g, " ")}
                     </p>
-
                     <a
                       href={`tel:${coord.phone}`}
-                      className="inline-flex items-center gap-2 text-sm text-gray-300 hover:text-[#03a1b0] transition-colors mt-2"
+                      className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
                     >
                       <Phone size={14} /> {coord.phone}
                     </a>
@@ -390,7 +402,6 @@ const EventDetails: React.FC = () => {
             </motion.section>
           )}
 
-          {/* --- Updated Gallery Section --- */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -401,18 +412,16 @@ const EventDetails: React.FC = () => {
               {event.images.map((img, index) => (
                 <div
                   key={img.uuid}
-                  onClick={() => setLightboxIndex(index)} // Set index on click
-                  className="group relative rounded-xl overflow-hidden h-48 border border-white/10 cursor-zoom-in"
+                  onClick={() => setLightboxIndex(index)}
+                  className="group relative rounded-2xl overflow-hidden h-48 border border-white/5 cursor-zoom-in"
                 >
                   <img
                     src={img.url}
                     alt={img.alt_txt}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
                   />
-
-                  {/* Hover Overlay */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <div className="bg-white/10 backdrop-blur-md p-2 rounded-full text-white">
+                    <div className="bg-white/10 backdrop-blur-md p-3 rounded-full text-white">
                       <ZoomIn size={20} />
                     </div>
                   </div>
@@ -422,7 +431,7 @@ const EventDetails: React.FC = () => {
           </motion.section>
         </div>
 
-        {/* RIGHT COLUMN: Registration Sidebar */}
+        {/* Sidebar */}
         <aside className="lg:col-span-1">
           <div className="sticky top-24 space-y-6">
             <motion.div
@@ -430,27 +439,27 @@ const EventDetails: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="p-8 rounded-3xl bg-[#0F111A] border border-[#03a1b0]/30 shadow-2xl shadow-[#03a1b0]/10 relative overflow-hidden">
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#03a1b0]/20 rounded-full blur-[60px]"></div>
+              <div className="p-8 rounded-[2.5rem] bg-white/[0.02] backdrop-blur-xl border border-white/5 shadow-2xl relative overflow-hidden">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-lolo-pink/10 rounded-full blur-[60px]"></div>
 
-                <h3 className="text-2xl font-black mb-2 text-white relative z-10">
+                <h3 className="text-2xl font-bold mb-2 text-white relative z-10">
                   Registration Open
                 </h3>
 
                 <div className="flex items-baseline gap-2 mb-8 relative z-10">
-                  <span className="text-4xl font-bold text-[#03a1b0]">
+                  <span className="text-4xl font-bold text-white">
                     {event.fee > 0 ? `₹${event.fee}` : "Free"}
                   </span>
                   {event.fee > 0 && (
-                    <span className="text-gray-500 text-sm">per person</span>
+                    <span className="text-neutral-500 text-sm">per person</span>
                   )}
                 </div>
 
-                <div className="space-y-5 mb-8 relative z-10">
+                <div className="space-y-6 mb-8 relative z-10">
                   <div className="flex items-start gap-4">
-                    <div className="mt-1 w-2 h-2 rounded-full bg-[#03a1b0]"></div>
+                    <div className="mt-1.5 w-2 h-2 rounded-full bg-lolo-pink shadow-[0_0_10px_rgba(236,72,153,0.5)]"></div>
                     <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase">
+                      <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-0.5">
                         Deadline
                       </p>
                       <p className="text-white font-medium">
@@ -460,7 +469,7 @@ const EventDetails: React.FC = () => {
                           year: "numeric",
                         })}
                       </p>
-                      <p className="text-sm text-red-400 font-medium">
+                      <p className="text-sm text-red-400 font-medium mt-0.5">
                         {deadlineDate.toLocaleTimeString("en-IN", {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -470,28 +479,44 @@ const EventDetails: React.FC = () => {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="mt-1 w-2 h-2 rounded-full bg-[#03a1b0]"></div>
+                    {/* 🚦 Status Dot: Dynamic color based on status */}
+                    <div
+                      className={`mt-1.5 w-2 h-2 rounded-full ${
+                        event.status === "upcoming"
+                          ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]"
+                          : event.status === "ongoing"
+                            ? "bg-amber-400 animate-pulse"
+                            : "bg-neutral-500"
+                      }`}
+                    ></div>
                     <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase">
+                      <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-0.5">
                         Status
                       </p>
-                      <p className="text-white font-medium capitalize">
+                      {/* 🚦 Status Text: Uses consistent function */}
+                      <span
+                        className={`text-xs font-bold uppercase tracking-wide py-0.5 px-2 rounded-md ${getEventStatusColor(
+                          event.status,
+                        )}`}
+                      >
                         {event.status}
-                      </p>
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 <Button
                   size="lg"
-                  className="w-full font-bold bg-[#03a1b0] hover:bg-[#028a96] text-white shadow-lg shadow-[#03a1b0]/20 h-14 text-lg rounded-xl transition-all relative z-10"
+                  className="w-full font-bold bg-white text-black hover:bg-lolo-pink hover:text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] h-14 text-base rounded-full transition-all relative z-10 group"
                 >
-                  Register Now <Ticket size={20} className="ml-2" />
+                  Register Now
+                  <Ticket
+                    size={18}
+                    className="ml-2 transition-transform group-hover:rotate-12"
+                  />
                 </Button>
-
-                <p className="text-xs text-center text-gray-500 mt-4 relative z-10">
-                  Limited to {event.max_participants} seats. Secure your spot
-                  now.
+                <p className="text-[10px] text-center text-neutral-500 mt-4 uppercase tracking-widest relative z-10">
+                  Limited to {event.max_participants} seats
                 </p>
               </div>
             </motion.div>
@@ -506,7 +531,7 @@ const EventDetails: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 right-6 z-50 bg-white text-black px-5 py-4 rounded-xl shadow-2xl font-bold flex items-center gap-3 border border-gray-200"
+            className="fixed bottom-6 right-6 z-50 bg-white text-black px-6 py-4 rounded-full shadow-2xl font-bold flex items-center gap-3 border border-white/20"
           >
             <CheckCircle2 size={20} className="text-green-600" />
             <span>Link copied to clipboard!</span>
@@ -514,7 +539,6 @@ const EventDetails: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* --- Lightbox Component --- */}
       <Lightbox
         index={lightboxIndex}
         slides={lightboxSlides}

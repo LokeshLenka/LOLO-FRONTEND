@@ -54,17 +54,17 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
    * 2. If SCROLLED -> Blurry semi-transparent black.
    * 3. Default (Top) -> Transparent.
    */
-  const headerClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 w-full border-b ${
+  const headerClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 w-full border-b  ${
     isMenuOpen
-      ? "bg-gray-900 border-white/10 py-3" // SOLID COLOR when menu is open
+      ? "bg-[#000000] border-white/10 py-3" // SOLID COLOR when menu is open
       : scrolled
-      ? "bg-black/80 backdrop-blur-md border-white/10 shadow-md py-3"
-      : "bg-transparent border-transparent py-4"
+        ? "bg-white/1 backdrop-blur-md border-white/10 shadow-md py-3"
+        : "bg-transparent border-transparent py-4"
   }`;
 
   return (
     <header className={headerClasses}>
-      <div className="w-full mx-auto px-4 lg:px-10">
+      <div className="w-full mx-auto px-4 lg:px-10 ">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link
@@ -102,20 +102,20 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
 
             {user ? (
               <Link to={`/${user.username}/dashboard`}>
-                <button className="border border-lolo-cyan text-lolo-cyan px-6 py-2 hover:bg-lolo-cyan hover:text-black transition-all rounded-full text-md font-medium">
+                <button className="px-6 py-2.5 rounded-full border border-white/20 bg-white/5 text-white font-bold hover:border-lolo-pink hover:text-lolo-pink hover:bg-lolo-pink/10 transition-all shadow-[0_0_10px_rgba(0,0,0,0.2)]">
                   Dashboard
                 </button>
               </Link>
             ) : (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-6">
                 <Link
                   to="/login"
-                  className="text-md font-medium hover:text-lolo-pink transition-colors text-white"
+                  className="text-neutral-300 hover:text-lolo-pink transition-colors"
                 >
                   Login
                 </Link>
                 <Link to="/signup">
-                  <button className="bg-lolo-pink text-white border border-lolo-pink px-5 py-2 rounded-full hover:!bg-white/90 hover:text-lolo-pink transition-all duration-300 ease-in-out font-medium text-md shadow-[0_0_15px_rgba(236,72,153,0.3)]">
+                  <button className="bg-white text-black px-6 py-2.5 rounded-full hover:bg-lolo-pink hover:text-white transition-all duration-300 ease-in-out shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(236,72,153,0.4)]">
                     Sign Up
                   </button>
                 </Link>
@@ -143,6 +143,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
       </div>
 
       {/* Mobile menu */}
+      {/* Mobile menu */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -150,8 +151,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
             animate="visible"
             exit="hidden"
             variants={mobileMenuVariants}
-            // CHANGED: bg-[#030303] (Solid) instead of bg-black/95 (Transparent)
-            className="absolute top-full left-0 w-full bg-gray-900 border-t border-white/10 overflow-y-auto max-h-[calc(100vh-80px)] shadow-2xl md:hidden flex flex-col"
+            className="absolute top-full left-0 w-full bg-[#000000] border-t border-white/10 overflow-y-auto max-h-[calc(100vh-80px)] shadow-2xl md:hidden flex flex-col z-50 min-h-screen"
           >
             <div className="px-4 py-6 space-y-2">
               {NAV_ITEMS.map((item) => (
@@ -159,14 +159,14 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${
+                  className={`flex items-center space-x-3 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98] ${
                     location.pathname === item.path
-                      ? "bg-lolo-pink/10 text-lolo-pink"
-                      : "text-white hover:bg-white/5"
+                      ? "bg-lolo-pink/10 text-lolo-pink font-bold"
+                      : "text-neutral-300 hover:bg-white/5 hover:text-white font-medium"
                   }`}
                 >
-                  <item.icon size={18} />
-                  <span className="font-medium">{item.label}</span>
+                  <item.icon size={20} />
+                  <span>{item.label}</span>
                 </Link>
               ))}
 
@@ -174,40 +174,39 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
                 <NavDropdown isMobile />
               </div>
 
-              <div className="h-px bg-white/10 my-4 mx-4" />
+              <div className="h-px bg-white/10 my-6 mx-4" />
 
-              <div className="px-2">
+              <div className="px-2 space-y-4">
                 {user ? (
                   <Link
                     to="/dashboard"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 text-lolo-cyan hover:bg-lolo-cyan/10 rounded-xl transition-colors"
+                    className="flex items-center justify-center space-x-2 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-4 rounded-2xl transition-all active:scale-[0.98]"
                   >
-                    <User size={18} />
-                    <span className="font-medium">Dashboard</span>
+                    <User size={18} className="text-lolo-pink" />
+                    <span>Go to Dashboard</span>
                   </Link>
                 ) : (
-                  <div className="flex flex-col gap-3 px-2">
-                    <Link
-                      to="/login"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center justify-center space-x-2 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-colors text-white"
-                    >
-                      <LogIn size={16} />
-                      <span className="font-medium">Login</span>
+                  <div className="flex flex-col gap-4">
+                    <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                      <button className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-4 rounded-full transition-all active:scale-[0.98]">
+                        <LogIn size={18} className="text-neutral-400" />
+                        <span>Login</span>
+                      </button>
                     </Link>
 
                     <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                      <button className="w-full bg-lolo-pink py-3 rounded-xl font-bold text-white shadow-lg active:scale-[0.98]">
-                        Sign Up
+                      <button className="w-full bg-white text-black hover:bg-lolo-pink hover:text-white font-bold py-4 rounded-full shadow-[0_4px_14px_0_rgba(255,255,255,0.1)] transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                        <span>Sign Up</span>
                       </button>
                     </Link>
                   </div>
                 )}
               </div>
             </div>
-            {/* Added extra padding at bottom for mobile scrolling safety */}
-            <div className="pb-60" />
+
+            {/* Bottom spacer for safe area scrolling */}
+            <div className="pb-32" />
           </motion.div>
         )}
       </AnimatePresence>
