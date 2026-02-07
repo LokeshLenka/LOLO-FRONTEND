@@ -1,4 +1,4 @@
-import DetailedTimeline from "@/components/DetailedTimeline";
+// import DetailedTimeline from "@/components/DetailedTimeline";
 import { motion } from "framer-motion";
 import { Music, Mic2, Users, Briefcase, Sparkles } from "lucide-react";
 

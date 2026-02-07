@@ -8,7 +8,6 @@ import {
   Mic2,
   Disc3,
   Award,
-  ChevronDown,
   Headphones,
   CalendarDays,
 } from "lucide-react";

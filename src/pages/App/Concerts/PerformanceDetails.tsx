@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -18,7 +18,6 @@ import {
 import { Avatar } from "@heroui/react";
 import { Button } from "@heroui/button";
 import { Divider } from "@heroui/react";
-import axios from "axios";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import { Zoom, Thumbnails } from "yet-another-react-lightbox/plugins";
@@ -140,10 +139,10 @@ const ConcertDetails: React.FC = () => {
     month: "long",
     day: "numeric",
   });
-  const timeStr = dateObj.toLocaleTimeString("en-IN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  // const timeStr = dateObj.toLocaleTimeString("en-IN", {
+  //   hour: "2-digit",
+  //   minute: "2-digit",
+  // });
 
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-lolo-pink/30 selection:text-white pb-20 relative overflow-hidden">

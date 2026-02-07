@@ -10,7 +10,6 @@ import {
   ArrowUpDown,
   Star,
   MapPin,
-  Calendar,
   Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
