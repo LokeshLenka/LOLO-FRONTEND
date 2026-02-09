@@ -1,100 +1,220 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronRight, Circle } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
-interface MenuItemProps {
-  item: any;
+// --- Types ---
+export interface NavItem {
+  name: string;
+  path?: string;
+  icon?: React.ReactNode;
+  subItems?: NavItem[];
+}
+
+interface SidebarMenuItemProps {
+  item: NavItem;
   isExpanded: boolean;
   isMobileOpen: boolean;
   isHovered: boolean;
+  depth?: number;
 }
 
-export const SidebarMenuItem: React.FC<MenuItemProps> = ({ item, isExpanded, isMobileOpen, isHovered }) => {
+// --- Helper: Recursively check if item (or any child) is active ---
+const checkIsActive = (
+  item: NavItem,
+  currentPath: string,
+  currentSearch: string,
+): boolean => {
+  // 1. Separate path and query params from the Item's definition
+  const itemPath = item.path?.split("?")[0] || "";
+  const itemQueryString = item.path?.includes("?")
+    ? item.path.split("?")[1]
+    : "";
+
+  // 2. Check if this specific item matches the current URL
+  if (item.path) {
+    // A. Check Path Match (Exact match OR Prefix match for nested routes, ignoring root '/')
+    const isPathMatch =
+      currentPath === itemPath ||
+      (itemPath !== "/" && currentPath.startsWith(itemPath));
+
+    if (isPathMatch) {
+      // B. Check Query Param Match (Only if the menu item strictly defines them)
+      if (itemQueryString) {
+        const currentParams = new URLSearchParams(currentSearch);
+        const itemParams = new URLSearchParams(itemQueryString);
+
+        let allParamsMatch = true;
+        itemParams.forEach((val, key) => {
+          if (currentParams.get(key) !== val) {
+            allParamsMatch = false;
+          }
+        });
+
+        if (allParamsMatch) return true;
+      } else {
+        // If menu item has NO params, simple path match is enough
+        return true;
+      }
+    }
+  }
+
+  // 3. Recursive Check: Is any child active?
+  if (item.subItems) {
+    return item.subItems.some((sub) =>
+      checkIsActive(sub, currentPath, currentSearch),
+    );
+  }
+
+  return false;
+};
+
+// --- Main Component ---
+export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
+  item,
+  isExpanded,
+  isMobileOpen,
+  isHovered,
+  depth = 0,
+}) => {
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const showContent = isExpanded || isMobileOpen || isHovered;
 
-  const isActive = (path: string) => location.pathname === path;
-  const showText = isExpanded || isHovered || isMobileOpen;
+  // Calculate if this folder should be "Active" (highlighted text/open state)
+  const isActive = useMemo(
+    () => checkIsActive(item, location.pathname, location.search),
+    [item, location.pathname, location.search],
+  );
 
-  // Auto-expand if child is active
+  // Initialize open state based on activity
+  const [isOpen, setIsOpen] = useState(isActive);
+
+  // Sync state: If a child becomes active (e.g. user navigated), force open
   useEffect(() => {
-    if (item.subItems?.some((sub: any) => isActive(sub.path))) {
+    if (isActive) {
       setIsOpen(true);
     }
-  }, [location.pathname, item.subItems]);
+  }, [isActive]);
 
-  const baseClasses = `
-    flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer mb-1
-    ${!showText ? "justify-center" : ""}
+  const toggleMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpen((prev) => !prev);
+  };
+
+  // Indentation logic for nested levels
+  const paddingLeft = depth > 0 ? `${depth * 12 + 12}px` : "12px";
+
+  // Calculate if the specific LINK is active (Leaf node check only)
+  const isLinkActive = useMemo(() => {
+    if (!item.path) return false;
+
+    // Parse item logic
+    const itemPath = item.path.split("?")[0];
+    const itemQuery = item.path.includes("?") ? item.path.split("?")[1] : "";
+
+    // Path check
+    const isPath =
+      location.pathname === itemPath ||
+      (itemPath !== "/" && location.pathname.startsWith(itemPath));
+
+    // Query check
+    if (itemQuery) {
+      const currentParams = new URLSearchParams(location.search);
+      const itemParams = new URLSearchParams(itemQuery);
+      let match = true;
+      itemParams.forEach((val, key) => {
+        if (currentParams.get(key) !== val) match = false;
+      });
+      return isPath && match;
+    }
+    return isPath;
+  }, [item.path, location.pathname, location.search]);
+
+  // Styles for leaf links
+  const linkClasses = `
+    group flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
+    ${
+      isLinkActive
+        ? "bg-cyan-50/10 text-cyan-600 dark:text-cyan-400 font-medium"
+        : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white"
+    }
   `;
 
-  const activeClasses = "bg-[#03a1b0]/10 text-[#03a1b0]";
-  const inactiveClasses = "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200";
-
-  // --- Render Submenu Parent ---
-  if (item.subItems) {
-    const isParentActive = item.subItems.some((sub: any) => isActive(sub.path));
-    
+  // --- RENDER: FOLDER (Item with SubItems) ---
+  if (item.subItems && item.subItems.length > 0) {
     return (
-      <li>
+      <li className="mb-1">
         <button
-          onClick={() => setIsOpen(!isOpen)}
-          className={`${baseClasses} w-full ${isOpen || isParentActive ? activeClasses : inactiveClasses}`}
+          onClick={toggleMenu}
+          className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg transition-colors duration-200 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white ${
+            isActive ? "text-cyan-600 dark:text-cyan-400 font-medium" : ""
+          }`}
+          style={{ paddingLeft: showContent ? paddingLeft : "12px" }}
         >
-          <span className={`${isOpen || isParentActive ? "text-[#03a1b0]" : "text-gray-500"}`}>
-            {item.icon}
-          </span>
-          
-          {showText && (
-            <>
-              <span className="flex-1 text-left font-medium text-sm">{item.name}</span>
-              <ChevronDown size={16} className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
-            </>
+          <div className="flex items-center gap-3 overflow-hidden">
+            <span className="flex-shrink-0">
+              {item.icon ? (
+                item.icon
+              ) : (
+                // Use a smaller circle/dot for nested items without icons
+                <Circle size={6} className={depth > 0 ? "opacity-50" : ""} />
+              )}
+            </span>
+            {showContent && (
+              <span className="truncate text-sm">{item.name}</span>
+            )}
+          </div>
+
+          {showContent && (
+            <span className="flex-shrink-0 transition-transform duration-200">
+              {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </span>
           )}
         </button>
 
-        {showText && (
-          <div
-            ref={contentRef}
-            style={{ height: isOpen ? contentRef.current?.scrollHeight : 0 }}
-            className="overflow-hidden transition-[height] duration-300 ease-in-out"
-          >
-            <ul className="pl-10 pr-2 pt-1 pb-2 space-y-1">
-              {item.subItems.map((sub: any) => (
-                <li key={sub.path}>
-                  <Link
-                    to={sub.path}
-                    className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
-                      isActive(sub.path)
-                        ? "text-[#03a1b0] bg-[#03a1b0]/5 font-medium"
-                        : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
-                    }`}
-                  >
-                    {sub.name}
-                  </Link>
-                </li>
+        <AnimatePresence>
+          {isOpen && showContent && (
+            <motion.ul
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="overflow-hidden space-y-1 mt-1"
+            >
+              {item.subItems.map((subItem, idx) => (
+                <SidebarMenuItem
+                  key={`${subItem.name}-${idx}`}
+                  item={subItem}
+                  isExpanded={isExpanded}
+                  isMobileOpen={isMobileOpen}
+                  isHovered={isHovered}
+                  depth={depth + 1}
+                />
               ))}
-            </ul>
-          </div>
-        )}
+            </motion.ul>
+          )}
+        </AnimatePresence>
       </li>
     );
   }
 
-  // --- Render Single Link ---
-  const isLinkActive = isActive(item.path);
-  
+  // --- RENDER: LINK (Leaf Node) ---
   return (
-    <li>
+    <li className="mb-1">
       <Link
-        to={item.path}
-        className={`${baseClasses} ${isLinkActive ? activeClasses : inactiveClasses}`}
+        to={item.path || "#"}
+        className={linkClasses}
+        style={{ paddingLeft: showContent ? paddingLeft : "12px" }}
       >
-        <span className={`${isLinkActive ? "text-[#03a1b0]" : "text-gray-500 group-hover:text-gray-900"}`}>
-          {item.icon}
+        <span className="flex-shrink-0">
+          {item.icon ? (
+            item.icon
+          ) : (
+            <Circle size={6} className={depth > 0 ? "opacity-50" : ""} />
+          )}
         </span>
-        {showText && <span className="font-medium text-sm">{item.name}</span>}
+        {showContent && <span className="truncate text-sm">{item.name}</span>}
       </Link>
     </li>
   );
