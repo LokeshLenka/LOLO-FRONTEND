@@ -13,8 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// import { Input } from "@/components/ui/input";
-// import { Button } from "@/components/ui/button/button";
 
 export const ManagementStep: React.FC<{
   form: any;
@@ -28,53 +26,76 @@ export const ManagementStep: React.FC<{
     { value: "video_editor", label: "Video Editor" },
   ];
 
-  // --- Helper Styles ---
+  // Updated Helper Styles
   const selectTriggerStyle =
-    "bg-white/5 border-white/10 text-white focus:ring-[#03a1b0]/50 h-12 data-[placeholder]:text-gray-400";
-  const selectContentStyle = "bg-[#0F111A] border-white/10 text-white";
-  const selectItemStyle = "focus:bg-white/10 focus:text-[#03a1b0]";
+    "bg-white/5 border border-white/10 text-white focus:ring-0 focus:ring-offset-0 focus:border-lolo-pink h-14 rounded-2xl data-[placeholder]:text-neutral-600 transition-all font-medium";
+  const selectContentStyle =
+    "bg-[#09090b] border-white/10 text-white rounded-xl";
+  const selectItemStyle =
+    "focus:bg-white/10 focus:text-lolo-pink cursor-pointer font-medium";
 
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-2 mb-8">
-        <h2 className="text-2xl font-bold text-white">{registrationType}</h2>
-        <div className="h-0.5 w-20 bg-[#03a1b0] mx-auto rounded-full" />
-        <h3 className="text-lg font-medium text-gray-300 pt-4">
-          Management Information
-        </h3>
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="space-y-8">
+        <div className="text-center space-y-3 mb-10">
+          <h2 className="text-3xl font-black text-white tracking-tight">
+            {registrationType}
+          </h2>
+          <div className="h-1 w-24 bg-lolo-pink mx-auto rounded-full" />
+          <h3 className="text-lg font-bold text-neutral-400">
+            Management Information
+          </h3>
+        </div>
+
+        <FormField
+          control={form.control}
+          name="sub_role"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
+                Management Role *
+              </FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl className="h-14">
+                  <SelectTrigger className={selectTriggerStyle}>
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className={selectContentStyle}>
+                  {managementCategories.map(({ label, value }) => (
+                    <SelectItem
+                      key={value}
+                      value={value}
+                      className={selectItemStyle}
+                    >
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage className="text-red-400 text-xs ml-1" />
+            </FormItem>
+          )}
+        />
       </div>
 
-      {/* Year Of Study */}
-      <FormField
-        control={form.control}
-        name="sub_role"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-xs font-bold uppercase text-gray-500">
-              Management Role
-            </FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
-              <FormControl className="h-12">
-                <SelectTrigger className={selectTriggerStyle}>
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent className={selectContentStyle}>
-                {managementCategories.map(({ label, value }) => (
-                  <SelectItem
-                    key={value}
-                    value={value}
-                    className={selectItemStyle}
-                  >
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage className="text-red-400 text-xs" />
-          </FormItem>
-        )}
-      />
+      <div className="mt-12 text-center text-xs text-neutral-500 relative z-10 font-medium leading-relaxed">
+        By continuing, you agree to our <br className="hidden sm:block" />
+        <a
+          href="#"
+          className="underline underline-offset-4 hover:text-lolo-pink transition-colors"
+        >
+          Terms of Service
+        </a>{" "}
+        and{" "}
+        <a
+          href="#"
+          className="underline underline-offset-4 hover:text-lolo-pink transition-colors"
+        >
+          Privacy Policy
+        </a>
+        .
+      </div>
     </div>
   );
 };

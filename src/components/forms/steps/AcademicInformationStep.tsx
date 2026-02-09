@@ -28,11 +28,11 @@ export const AcademicInformationStep: React.FC<{
     { value: "csbs", label: "CSBS" },
     { value: "csd", label: "CSD" },
     { value: "cse", label: "CSE" },
-    { value: "csg", label: "CSG" }, // added
-    { value: "csit", label: "CSIT" }, // already there but placed correctly
+    { value: "csg", label: "CSG" },
+    { value: "csit", label: "CSIT" },
     { value: "ece", label: "ECE" },
     { value: "eee", label: "EEE" },
-    { value: "it", label: "IT" }, // added
+    { value: "it", label: "IT" },
     { value: "mech", label: "MECH" },
   ];
 
@@ -65,10 +65,8 @@ export const AcademicInformationStep: React.FC<{
     { value: false, label: "No" },
   ];
 
-  // --- Preserved Logic: State for disabling lateral status ---
   const [lateralStudentHidden, setlateralStudentHidden] = useState(true);
 
-  // --- Preserved Logic: Watch year field ---
   React.useEffect(() => {
     const value = form.watch("year");
     if (value === "second" || value === "third" || value === "fourth") {
@@ -79,10 +77,8 @@ export const AcademicInformationStep: React.FC<{
     }
   }, [form.watch("year")]);
 
-  // --- Preserved Logic: State for disabling college_hostel_status ---
   const [hostelStudentHidden, setHostelStudentHidden] = useState(true);
 
-  // --- Preserved Logic: Watch hostel_student field ---
   React.useEffect(() => {
     const value = form.watch("hostel_status");
     if (value === true) {
@@ -93,18 +89,27 @@ export const AcademicInformationStep: React.FC<{
     }
   }, [form.watch("hostel_status")]);
 
-  // --- Helper Styles ---
+  // Updated Styles
+  const inputStyle =
+    "bg-white/5 border border-white/10 text-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-lolo-pink h-14 rounded-2xl placeholder:text-neutral-600 transition-colors";
+
   const selectTriggerStyle =
-    "bg-white/5 border-white/10 text-white focus:ring-[#03a1b0]/50 h-12 data-[placeholder]:text-gray-400";
-  const selectContentStyle = "bg-[#0F111A] border-white/10 text-white";
-  const selectItemStyle = "focus:bg-white/10 focus:text-[#03a1b0]";
+    "bg-white/5 border border-white/10 text-white focus:ring-0 focus:ring-offset-0 focus:border-lolo-pink h-14 rounded-2xl data-[placeholder]:text-neutral-600 transition-all font-medium";
+
+  const selectContentStyle =
+    "bg-[#09090b] border-white/10 text-white rounded-xl";
+
+  const selectItemStyle =
+    "focus:bg-white/10 focus:text-lolo-pink cursor-pointer font-medium";
 
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-2 mb-8">
-        <h2 className="text-2xl font-bold text-white">{registrationType}</h2>
-        <div className="h-0.5 w-20 bg-[#03a1b0] mx-auto rounded-full" />
-        <h3 className="text-lg font-medium text-gray-300 pt-4">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="text-center space-y-3 mb-10">
+        <h2 className="text-3xl font-black text-white tracking-tight">
+          {registrationType}
+        </h2>
+        <div className="h-1 w-24 bg-lolo-pink mx-auto rounded-full" />
+        <h3 className="text-lg font-bold text-neutral-400">
           Academic Information
         </h3>
       </div>
@@ -115,17 +120,13 @@ export const AcademicInformationStep: React.FC<{
         name="reg_num"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-xs font-bold uppercase text-gray-500">
+            <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
               Registration Number *
             </FormLabel>
             <FormControl>
-              <Input
-                {...field}
-                className="bg-white/5 border-white/10 text-white focus:ring-[#03a1b0]/50 h-12"
-                required
-              />
+              <Input {...field} className={inputStyle} required />
             </FormControl>
-            <FormMessage className="text-red-400 text-xs" />
+            <FormMessage className="text-red-400 text-xs ml-1" />
           </FormItem>
         )}
       />
@@ -137,11 +138,11 @@ export const AcademicInformationStep: React.FC<{
           name="branch"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+              <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
                 Branch *
               </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl className="h-12">
+                <FormControl className="h-14">
                   <SelectTrigger className={selectTriggerStyle}>
                     <SelectValue placeholder="Select your branch" />
                   </SelectTrigger>
@@ -158,7 +159,7 @@ export const AcademicInformationStep: React.FC<{
                   ))}
                 </SelectContent>
               </Select>
-              <FormMessage className="text-red-400 text-xs" />
+              <FormMessage className="text-red-400 text-xs ml-1" />
             </FormItem>
           )}
         />
@@ -169,7 +170,7 @@ export const AcademicInformationStep: React.FC<{
           name="gender"
           render={({ field }) => (
             <FormItem className="w-full">
-              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+              <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
                 Gender *
               </FormLabel>
               <Select
@@ -177,7 +178,7 @@ export const AcademicInformationStep: React.FC<{
                 value={field.value}
                 required
               >
-                <FormControl className="h-12">
+                <FormControl className="h-14">
                   <SelectTrigger className={`w-full ${selectTriggerStyle}`}>
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
@@ -194,7 +195,7 @@ export const AcademicInformationStep: React.FC<{
                   ))}
                 </SelectContent>
               </Select>
-              <FormMessage className="text-red-400 text-xs" />
+              <FormMessage className="text-red-400 text-xs ml-1" />
             </FormItem>
           )}
         />
@@ -207,11 +208,11 @@ export const AcademicInformationStep: React.FC<{
           name="year"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+              <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
                 Year Of Study *
               </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl className="h-12">
+                <FormControl className="h-14">
                   <SelectTrigger className={selectTriggerStyle}>
                     <SelectValue placeholder="Select your year" />
                   </SelectTrigger>
@@ -228,34 +229,32 @@ export const AcademicInformationStep: React.FC<{
                   ))}
                 </SelectContent>
               </Select>
-              <FormMessage className="text-red-400 text-xs" />
+              <FormMessage className="text-red-400 text-xs ml-1" />
             </FormItem>
           )}
         />
 
-        {/* Lateral Status (Conditional) */}
+        {/* Lateral Status */}
         <FormField
           control={form.control}
           name="lateral_status"
           render={({ field }) => (
-            <FormItem
-              className={lateralStudentHidden ? "hidden" : "block"} // Preserve visibility logic
-            >
-              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+            <FormItem className={lateralStudentHidden ? "hidden" : "block"}>
+              <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
                 Are You A Lateral Student *
               </FormLabel>
               <FormControl>
-                <div className="flex gap-3 mt-2">
+                <div className="flex gap-3 mt-2 h-14">
                   {lateralStudentOptions.map(({ label, value }) => (
                     <Button
                       key={Number(value)}
                       type="button"
                       onClick={() => field.onChange(value)}
                       disabled={lateralStudentHidden}
-                      className={`flex-1 h-10 border font-bold transition-all ${
+                      className={`flex-1 h-full rounded-2xl font-bold transition-all border ${
                         field.value === value
-                          ? "bg-[#03a1b0] border-[#03a1b0] text-white shadow-lg shadow-[#03a1b0]/20"
-                          : "bg-transparent border-white/10 text-gray-400 hover:text-white hover:bg-white/5"
+                          ? "bg-lolo-pink border-lolo-pink text-white shadow-[0_0_15px_rgba(236,72,153,0.3)]"
+                          : "bg-transparent border-white/10 text-neutral-400 hover:text-white hover:bg-white/5"
                       }`}
                     >
                       {label}
@@ -263,7 +262,7 @@ export const AcademicInformationStep: React.FC<{
                   ))}
                 </div>
               </FormControl>
-              <FormMessage className="text-red-400 text-xs" />
+              <FormMessage className="text-red-400 text-xs ml-1" />
             </FormItem>
           )}
         />
@@ -276,20 +275,20 @@ export const AcademicInformationStep: React.FC<{
           name="hostel_status"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+              <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
                 Are You A Hostel Student *
               </FormLabel>
               <FormControl>
-                <div className="flex gap-3 mt-2">
+                <div className="flex gap-3 mt-2 h-14">
                   {hostelStudentOptions.map(({ label, value }) => (
                     <Button
                       key={Number(value)}
                       type="button"
                       onClick={() => field.onChange(value)}
-                      className={`flex-1 h-10 border font-bold transition-all ${
+                      className={`flex-1 h-full rounded-2xl font-bold transition-all border ${
                         field.value === value
-                          ? "bg-[#03a1b0] border-[#03a1b0] text-white shadow-lg shadow-[#03a1b0]/20"
-                          : "bg-transparent border-white/10 text-gray-400 hover:text-white hover:bg-white/5"
+                          ? "bg-lolo-pink border-lolo-pink text-white shadow-[0_0_15px_rgba(236,72,153,0.3)]"
+                          : "bg-transparent border-white/10 text-neutral-400 hover:text-white hover:bg-white/5"
                       }`}
                     >
                       {label}
@@ -297,31 +296,31 @@ export const AcademicInformationStep: React.FC<{
                   ))}
                 </div>
               </FormControl>
-              <FormMessage className="text-red-400 text-xs" />
+              <FormMessage className="text-red-400 text-xs ml-1" />
             </FormItem>
           )}
         />
 
-        {/* College Hostel Status (Conditional) */}
+        {/* College Hostel Status */}
         <FormField
           control={form.control}
           name="college_hostel_status"
           render={({ field }) => (
             <FormItem className={hostelStudentHidden ? "hidden" : "block"}>
-              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+              <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
                 Residing In College Hostel? *
               </FormLabel>
               <FormControl>
-                <div className="flex gap-3 mt-2">
+                <div className="flex gap-3 mt-2 h-14">
                   {collegeHostelStudentOptions.map(({ label, value }) => (
                     <Button
                       key={Number(value)}
                       type="button"
                       onClick={() => field.onChange(value)}
-                      className={`flex-1 h-10 border font-bold transition-all ${
+                      className={`flex-1 h-full rounded-2xl font-bold transition-all border ${
                         field.value === value
-                          ? "bg-[#03a1b0] border-[#03a1b0] text-white shadow-lg shadow-[#03a1b0]/20"
-                          : "bg-transparent border-white/10 text-gray-400 hover:text-white hover:bg-white/5"
+                          ? "bg-lolo-pink border-lolo-pink text-white shadow-[0_0_15px_rgba(236,72,153,0.3)]"
+                          : "bg-transparent border-white/10 text-neutral-400 hover:text-white hover:bg-white/5"
                       }`}
                     >
                       {label}
@@ -329,7 +328,7 @@ export const AcademicInformationStep: React.FC<{
                   ))}
                 </div>
               </FormControl>
-              <FormMessage className="text-red-400 text-xs" />
+              <FormMessage className="text-red-400 text-xs ml-1" />
             </FormItem>
           )}
         />

@@ -21,7 +21,7 @@ export const PasswordInput = forwardRef<
         type="button"
         variant="ghost"
         size="sm"
-        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent hover:text-lolo-pink rounded-r-2xl"
         onClick={() => setShowPassword((prev) => !prev)}
       >
         {showPassword ? (

@@ -21,7 +21,6 @@ export default function LoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({});
 
-  // FIX: Removed 'error' from destructuring
   const { login, loading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,7 +32,6 @@ export default function LoginForm({
     if (!username.trim()) {
       errors.username = ["Please enter your username."];
     } else if (username.trim().length < 3) {
-      // Changed to 3, 10 might be too strict for some usernames
       errors.username = ["Username must be at least 3 characters."];
     }
     if (!password) {
@@ -53,28 +51,31 @@ export default function LoginForm({
   return (
     <div
       className={cn(
-        "grid md:grid-cols-2 overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-[#03a1b0]/10 bg-[#09090b]/60 backdrop-blur-xl",
+        "grid md:grid-cols-2 overflow-hidden rounded-[2.5rem] border border-white/5 shadow-2xl bg-white/[0.02] backdrop-blur-xl",
         className,
       )}
       {...props}
     >
       {/* Left Side: Form */}
-      <div className="p-8 md:p-12 flex flex-col justify-center">
-        <div className="flex flex-col space-y-2 text-center mb-8">
-          <h1 className="text-3xl font-black tracking-tight text-white">
-            Welcome <span className="text-[#03a1b0]">Back</span>
+      <div className="p-8 md:p-14 flex flex-col justify-center relative">
+        {/* Subtle inner glow */}
+        <div className="absolute top-0 left-0 w-64 h-64 bg-lolo-pink/5 rounded-full blur-[80px] pointer-events-none"></div>
+
+        <div className="flex flex-col text-center space-y-2 mb-10 relative z-10">
+          <h1 className="text-4xl font-black tracking-tight text-white">
+            Welcome <span className="text-lolo-pink">Back</span>
           </h1>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-center text-neutral-400 font-medium">
             Enter your credentials to access your dashboard
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
           {/* Username Field */}
           <div className="space-y-2">
             <Label
               htmlFor="username"
-              className="text-xs font-bold uppercase text-gray-500 ml-1"
+              className="text-xs font-bold uppercase text-neutral-500 ml-1 tracking-wider"
             >
               Username
             </Label>
@@ -92,13 +93,13 @@ export default function LoginForm({
               required
               autoComplete="username"
               className={cn(
-                "bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#03a1b0]/50 focus-visible:border-[#03a1b0] h-12 rounded-xl transition-all",
+                "bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus-visible:ring-lolo-pink/50 focus-visible:border-lolo-pink h-14 rounded-2xl transition-all text-base",
                 fieldErrors.username &&
                   "border-red-500/50 focus-visible:ring-red-500/50",
               )}
             />
             {fieldErrors.username && (
-              <p className="text-xs text-red-400 ml-1 flex items-center gap-1">
+              <p className="text-xs text-red-400 ml-1 flex items-center gap-1 font-medium">
                 <AlertCircle size={12} /> {fieldErrors.username[0]}
               </p>
             )}
@@ -109,13 +110,13 @@ export default function LoginForm({
             <div className="flex items-center justify-between">
               <Label
                 htmlFor="password"
-                className="text-xs font-bold uppercase text-gray-500 ml-1"
+                className="text-xs font-bold uppercase text-neutral-500 ml-1 tracking-wider"
               >
                 Password
               </Label>
               <a
                 href="#"
-                className="text-xs text-[#03a1b0] hover:text-[#03a1b0]/80 hover:underline transition-colors"
+                className="text-xs font-bold text-lolo-pink hover:text-white hover:underline transition-colors"
               >
                 Forgot password?
               </a>
@@ -139,7 +140,7 @@ export default function LoginForm({
                 required
                 autoComplete="current-password"
                 className={cn(
-                  "bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#03a1b0]/50 focus-visible:border-[#03a1b0] h-12 rounded-xl transition-all pr-10",
+                  "bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus-visible:ring-lolo-pink/50 focus-visible:border-lolo-pink h-14 rounded-2xl transition-all pr-12 text-base",
                   fieldErrors.password &&
                     "border-red-500/50 focus-visible:ring-red-500/50",
                 )}
@@ -148,19 +149,19 @@ export default function LoginForm({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-white hover:bg-transparent"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 text-neutral-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
                 onClick={() => setShowPassword((prev) => !prev)}
               >
                 {showPassword ? (
-                  <EyeOff className="w-5 h-5 mr-2" />
+                  <EyeOff className="w-5 h-5" />
                 ) : (
-                  <Eye className="w-5 h-5 mr-2" />
+                  <Eye className="w-5 h-5" />
                 )}
               </Button>
             </div>
 
             {fieldErrors.password && (
-              <p className="text-xs text-red-400 ml-1 flex items-center gap-1">
+              <p className="text-xs text-red-400 ml-1 flex items-center gap-1 font-medium">
                 <AlertCircle size={12} /> {fieldErrors.password[0]}
               </p>
             )}
@@ -169,38 +170,36 @@ export default function LoginForm({
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full h-12 bg-[#03a1b0] hover:bg-[#028a96] text-white font-bold rounded-xl shadow-lg shadow-[#03a1b0]/20 transition-all active:scale-[0.98]"
+            className="w-full h-14 bg-white text-black hover:bg-lolo-pink hover:text-white font-bold rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all active:scale-[0.98] mt-2 text-base"
             disabled={loading}
           >
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Logging in...
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Logging in...
               </>
             ) : (
               "Sign In"
             )}
           </Button>
 
-          {/* FIX: Removed the general error display block since we use Toast now */}
-
           {/* Divider */}
-          <div className="relative my-6">
+          <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-white/10" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#0d0e12] px-2 text-gray-500">
+            <div className="relative flex justify-center text-xs uppercase font-bold tracking-wider">
+              <span className="bg-[#09090b] px-3 text-neutral-500">
                 Or continue with
               </span>
             </div>
           </div>
 
           {/* Signup Link */}
-          <div className="text-center text-sm text-gray-400">
+          <div className="text-center text-sm text-neutral-400 font-medium">
             Don't have an account?{" "}
             <a
               href="/signup"
-              className="text-white font-bold hover:text-[#03a1b0] hover:underline transition-all"
+              className="text-white font-bold hover:text-lolo-pink hover:underline transition-all"
             >
               Sign up
             </a>
@@ -209,18 +208,20 @@ export default function LoginForm({
       </div>
 
       {/* Right Side: Image / Visual */}
-      <div className="relative hidden md:block bg-[#03a1b0]/10 border-l border-white/5">
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10"></div>
+      <div className="relative hidden md:block bg-black border-l border-white/5 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10"></div>
         <img
           src={lolo_login_1}
           alt="SRKR LOLO Login"
-          className="h-full w-full object-cover opacity-80 transition-all duration-1000"
+          className="h-full w-full object-cover opacity-60 hover:opacity-80 transition-all duration-1000 hover:scale-105"
         />
 
-        <div className="absolute bottom-0 left-0 w-full p-8 z-20">
-          <div className="h-1 w-12 bg-[#03a1b0] mb-4"></div>
-          <h2 className="text-2xl font-black text-white mb-2">SRKR LOLO</h2>
-          <p className="text-gray-300 text-sm leading-relaxed">
+        <div className="absolute bottom-0 left-0 w-full p-12 z-20">
+          <div className="h-1.5 w-16 bg-lolo-pink mb-6 rounded-full"></div>
+          <h2 className="text-3xl font-black text-white mb-3 tracking-tight">
+            SRKR LOLO
+          </h2>
+          <p className="text-neutral-300 text-base leading-relaxed max-w-sm font-medium">
             Experience the rhythm of campus life. Join workshops, explore
             events, and connect with the community.
           </p>

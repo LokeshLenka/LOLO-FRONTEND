@@ -13,10 +13,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 // --- 1. FIXED Schema Logic ---
-// Make all required fields explicitly required and optional fields explicitly optional
 const formSchema = z
   .object({
-    // Required fields (explicitly)
     first_name: z.string().min(1, "First name is required"),
     last_name: z.string().min(1, "Last name is required"),
     phone_no: z
@@ -33,19 +31,17 @@ const formSchema = z
     branch: z.string().min(1, "Branch is required"),
     year: z.string().min(1, "Year of study is required"),
     gender: z.string().min(1, "Gender is required"),
-    sub_role: z.string().min(1, "Sub role is required"), // Make it required for step 3
+    sub_role: z.string().min(1, "Sub role is required"),
 
     other_fields_of_interest: z.string(),
     experience: z.string(),
     passion: z.string(),
     instrument_avail: z.boolean(),
 
-    // Optional fields (explicitly)
     lateral_status: z.boolean(),
     hostel_status: z.boolean(),
     college_hostel_status: z.boolean(),
 
-    // Hidden system fields (with default values)
     role: z.string(),
     registration_type: z.string(),
   })
@@ -56,7 +52,6 @@ const formSchema = z
 
 type FormData = z.infer<typeof formSchema>;
 
-// --- 2. Custom Hook Logic Preserved ---
 interface StepField {
   name: keyof FormData;
 }
@@ -96,17 +91,6 @@ const useMultiStepForm = (totalSteps: number, form: any) => {
     },
   };
 
-  // const additionalFields: Record<number, StepField[]> = {
-  //   4: [
-  //     { name: "role" },
-  //     { name: "registration_type" },
-  //     { name: "other_fields_of_interest" },
-  //     { name: "experience" },
-  //     { name: "passion" },
-  //     { name: "instrument_avail" },
-  //   ], // these values are fixed
-  // };
-
   const isFirstStep = currentStep === 1;
   const isLastStep = currentStep === totalSteps;
 
@@ -141,7 +125,6 @@ const useMultiStepForm = (totalSteps: number, form: any) => {
   };
 };
 
-// --- 3. Aesthetic Wrapper Component ---
 const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
   const {
     currentStep,
@@ -176,14 +159,11 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
     try {
       const submitData = {
         ...data,
-        // 1. Convert Booleans to integers (0/1)
         lateral_status: data.lateral_status ? 1 : 0,
         hostel_status: data.hostel_status ? 1 : 0,
         college_hostel_status: data.college_hostel_status ? 1 : 0,
         instrument_avail: data.instrument_avail ? 1 : 0,
 
-        // 2. FIX: Send "N/A" instead of "" or "default".
-        // Laravel converts "" to null, which causes the crash.
         other_fields_of_interest:
           data.other_fields_of_interest === "default" ||
           !data.other_fields_of_interest
@@ -207,7 +187,7 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (response.status === 200 || response.status === 201) {
@@ -235,7 +215,6 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
       let errorMessage = "Something went wrong. Please try again.";
 
       if (error.response) {
-        // If 500 error persists, allow the user to see it might be a duplicate data issue
         if (error.response.status === 500) {
           errorMessage =
             "Server Error: Please check if this Registration Number is already registered.";
@@ -261,31 +240,24 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-10">
       {/* Aesthetic Progress Stepper */}
       <div className="flex items-center justify-center gap-2 mb-2">
         {[1, 2, 3].map((step) => (
           <div key={step} className="flex items-center overflow-hidden">
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border transition-all ${
+              className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${
                 currentStep >= step
-                  ? "bg-[#03a1b0] border-[#03a1b0] text-white"
-                  : "bg-transparent border-white/20 text-gray-500"
+                  ? "bg-lolo-pink border-lolo-pink text-white shadow-[0_0_10px_rgba(236,72,153,0.4)]"
+                  : "bg-transparent border-white/10 text-neutral-500"
               }`}
             >
-              {currentStep > step ? <Check size={12} /> : step}
+              {currentStep > step ? <Check size={14} strokeWidth={3} /> : step}
             </div>
-            {step === 1 && (
+            {step < 3 && (
               <div
-                className={`ml-2 w-10 sm:w-16 h-0.5 transition-all ${
-                  currentStep > 1 ? "bg-[#03a1b0]" : "bg-white/10"
-                }`}
-              />
-            )}
-            {step === 2 && (
-              <div
-                className={`ml-2 w-10 sm:w-16 h-0.5 transition-all ${
-                  currentStep > 2 ? "bg-[#03a1b0]" : "bg-white/10"
+                className={`ml-2 w-12 sm:w-20 h-0.5 rounded-full transition-all duration-500 ${
+                  currentStep > step ? "bg-lolo-pink" : "bg-white/10"
                 }`}
               />
             )}
@@ -299,7 +271,7 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex items-center justify-between pt-6 border-t border-white/10">
+      <div className="flex items-center justify-between pt-8 border-t border-white/5">
         <div className="flex items-center gap-2">
           {form.formState.isDirty && (
             <Button
@@ -310,24 +282,24 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
                 goToFirstStep();
                 form.reset();
               }}
-              className="border-white/10 text-gray-400 hover:bg-white/5 hover:text-white bg-transparent"
+              className="border-white/10 text-neutral-400 hover:bg-white/5 hover:text-white bg-transparent rounded-xl h-12"
             >
               Reset
             </Button>
           )}
         </div>
 
-        <div className="flex items-center gap-0 sm:gap-2">
+        <div className="flex items-center gap-3">
           {!isFirstStep && (
             <Button
               variant="ghost"
               onClick={goToPrevious}
               type="button"
               disabled={isSubmitting}
-              className="text-white hover:bg-white/10 hover:text-white"
+              className="text-neutral-300 hover:bg-white/5 hover:text-white rounded-xl h-12"
             >
-              <ChevronLeft className="w-4 h-4" />
-              <span className="hidden sm:block"> Previous </span>
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              <span className="hidden sm:block">Previous</span>
             </Button>
           )}
 
@@ -336,13 +308,13 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
               type="button"
               onClick={() => form.handleSubmit(handleSubmit)()}
               disabled={isSubmitting}
-              className={`bg-[#03a1b0] hover:bg-[#028a96] text-white font-bold shadow-lg shadow-[#03a1b0]/20 min-w-[80px] ${
-                isSubmitting ? "cursor-not-allowed" : ""
+              className={`bg-white text-black hover:bg-lolo-pink hover:text-white font-bold h-12 px-8 rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all ${
+                isSubmitting ? "cursor-not-allowed opacity-80" : ""
               }`}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Submitting
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" /> Submitting
                 </>
               ) : (
                 "Submit"
@@ -353,10 +325,10 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
               type="button"
               onClick={goToNext}
               disabled={isSubmitting}
-              className="bg-[#03a1b0] hover:bg-[#028a96] text-white font-bold"
+              className="bg-white text-black hover:bg-lolo-pink hover:text-white font-bold h-12 px-6 rounded-xl transition-all"
             >
               Next
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           )}
         </div>
@@ -369,7 +341,6 @@ export const MusicSignUp: React.FC = () => {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      // Required fields - empty strings
       first_name: "",
       last_name: "",
       phone_no: "",
@@ -387,12 +358,10 @@ export const MusicSignUp: React.FC = () => {
       passion: "default",
       instrument_avail: false,
 
-      // Optional boolean fields - use false instead of empty string
       lateral_status: false,
       hostel_status: false,
       college_hostel_status: false,
 
-      // Hidden system fields - provide the default values here
       role: "music",
       registration_type: "music",
     },
