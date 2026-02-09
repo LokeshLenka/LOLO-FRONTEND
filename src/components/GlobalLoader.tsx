@@ -1,44 +1,58 @@
-import { useEffect, useRef } from "react";
-import LoadingBar, { type LoadingBarRef } from "react-top-loading-bar";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 export default function GlobalLoader() {
-  const ref = useRef<LoadingBarRef>(null);
+  const [loading, setLoading] = useState(false);
   const location = useLocation();
 
   // 1. Trigger on Route Changes
   useEffect(() => {
-    ref.current?.continuousStart();
-    // A slightly shorter timeout feels snappier
+    setLoading(true);
     const timer = setTimeout(() => {
-      ref.current?.complete();
-    }, 300);
+      setLoading(false);
+    }, 500); 
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
   // 2. Trigger on Axios Requests
   useEffect(() => {
+    let activeRequests = 0;
+
     const reqInterceptor = axios.interceptors.request.use(
       (config) => {
-        ref.current?.continuousStart();
+        if (activeRequests === 0) {
+          setLoading(true);
+        }
+        activeRequests++;
         return config;
       },
       (error) => {
-        ref.current?.complete();
+        activeRequests--;
+        if (activeRequests === 0) {
+          setLoading(false);
+        }
         return Promise.reject(error);
-      }
+      },
     );
 
     const resInterceptor = axios.interceptors.response.use(
       (response) => {
-        ref.current?.complete();
+        activeRequests--;
+        if (activeRequests === 0) {
+          setLoading(false);
+        }
         return response;
       },
       (error) => {
-        ref.current?.complete();
+        activeRequests--;
+        if (activeRequests === 0) {
+          setLoading(false);
+        }
         return Promise.reject(error);
-      }
+      },
     );
 
     return () => {
@@ -48,20 +62,39 @@ export default function GlobalLoader() {
   }, []);
 
   return (
-    <LoadingBar
-      // Brand Cyan Color
-      color="#03a1b0"
-      ref={ref}
-      // Slightly thicker for better visibility on high-res screens
-      height={3}
-      // Custom Shadow for the "Liquid/Neon" Glow effect
-      // This creates a cyan glow below the bar
-      shadow={true}
-      style={{
-        boxShadow: "0 0 10px #03a1b0, 0 0 5px #03a1b0",
-      }}
-      // Ensure z-index is higher than your sticky headers (usually z-40 or z-50)
-      containerClassName="z-[99999]"
-    />
+    <AnimatePresence>
+      {loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-[#030303]/80 backdrop-blur-md"
+        >
+          <div className="flex flex-col items-center gap-6 relative">
+            {/* Glow Effect behind spinner */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-lolo-pink/20 rounded-full blur-2xl pointer-events-none" />
+
+            {/* Spinner Container */}
+            <div className="relative bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-xl shadow-2xl">
+              <Loader2
+                className="w-10 h-10 text-lolo-pink animate-spin"
+                strokeWidth={2.5}
+              />
+            </div>
+
+            {/* Text */}
+            <motion.h1 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-white text-xl font-black tracking-widest uppercase relative z-10"
+            >
+              SRKR <span className="text-lolo-pink">LOLO</span>
+            </motion.h1>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
