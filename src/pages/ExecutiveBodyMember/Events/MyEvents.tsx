@@ -356,7 +356,7 @@ export default function MyEvents() {
       {/* 2. Main Data Table */}
       <Card
         shadow="none"
-        className="border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 rounded-xl overflow-hidden mx-0 shadow-sm dark:shadow-none"
+        className="border border-gray-200 dark:border-slate-800 bg-white dark:bg-white/1 rounded-xl overflow-hidden mx-0 shadow-sm dark:shadow-none"
       >
         <CardBody className="p-0">
           {isLoading ? (
@@ -396,11 +396,11 @@ export default function MyEvents() {
                   // Ensure table has a minimum width to force horizontal scroll on small screens
                   wrapper:
                     "shadow-none bg-transparent rounded-none p-0 min-w-[800px] md:min-w-full",
-                  th: "bg-gray-50 dark:bg-slate-900/80 text-gray-500 dark:text-slate-500 font-bold uppercase text-[10px] tracking-wider py-4 border-b border-gray-200 dark:border-slate-800",
+                  th: "bg-white dark:bg-white/1 text-gray-500 dark:text-slate-500 font-bold uppercase text-[10px] tracking-wider py-4 border-b border-gray-200 dark:border-slate-800",
                   td: "py-4 border-b border-gray-100 dark:border-slate-800/50 group-data-[last=true]:border-none",
-                  tr: "hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer",
+                  tr: "hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors",
                 }}
-                onRowAction={(key) => handleEventClick(String(key))}
+                // onRowAction={(key) => handleEventClick(String(key))}
               >
                 <TableHeader columns={columns}>
                   {(column) => (

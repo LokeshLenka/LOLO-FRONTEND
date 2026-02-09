@@ -55,8 +55,6 @@ import { DateTimePicker } from "@/components/ui/MUIDatePicker";
 interface EbmMember {
   id: number;
   username: string;
-  first_name: string | null;
-  last_name: string | null;
   full_name: string;
 }
 
@@ -143,23 +141,34 @@ const eventSchema = z
       path: ["registration_deadline"],
     },
   )
+  // ... inside eventSchema definition ...
+
+  // ... inside eventSchema definition ...
+
   .refine(
     (data) => {
-      const values = [
+      // 1. Gather all coordinator values
+      const rawValues = [
         data.coordinator1,
         data.coordinator2,
         data.coordinator3,
-      ].filter((v) => v && v !== "None");
+      ];
 
-      // Rule 1: at least one coordinator
-      if (values.length === 0) return false;
+      // 2. Filter for ONLY valid IDs (non-null, non-empty, not " ", not "None")
+      const validIds = rawValues.filter((v) => {
+        // Check if value exists and is not a whitespace-only string
+        return v !== null && v !== undefined && v.trim().length > 0;
+      });
 
-      // Rule 2: no duplicates among selected values
-      return new Set(values).size === values.length;
+      // 3. Rule: At least one coordinator is required
+      if (validIds.length === 0) return false;
+
+      // 4. Rule: All selected valid IDs must be unique
+      const uniqueIds = new Set(validIds);
+      return uniqueIds.size === validIds.length;
     },
     {
-      message:
-        "Select at least one coordinator and ensure all selected coordinators are distinct",
+      message: "Select at least one coordinator. Selections must be unique.",
       path: ["coordinator1"],
     },
   );
@@ -269,8 +278,16 @@ export default function CreateEvent() {
   const onSubmit: SubmitHandler<EventFormSchema> = async (data) => {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
-      if (value !== null && value !== undefined && value !== "")
-        formData.append(key, String(value));
+      if (
+        value === null ||
+        value === undefined ||
+        value === "" ||
+        value === "none" ||
+        value === " "
+      ) {
+        return; // Do not append anything for this key
+      }
+      formData.append(key, String(value));
     });
     formData.append("status", "upcoming");
     images.forEach((imgObj) => formData.append("images[]", imgObj.file));
@@ -285,6 +302,10 @@ export default function CreateEvent() {
         setImages([]);
       }
     } catch (error: any) {
+      if (error.response) {
+        // THIS is what you need to see
+        console.log("Server Validation Errors:", error.response.data.errors);
+      }
       if (error.response?.status === 422) {
         toast.error("Validation failed");
         Object.keys(error.response.data.errors).forEach((key) =>
@@ -819,8 +840,12 @@ export default function CreateEvent() {
                             Coordinator {i + 1}
                           </FormLabel>
                           <Select
-                            onValueChange={field.onChange}
-                            value={field.value || ""}
+                            // CONTROLLED VALUE: Convert null/undefined to "none" for the UI
+                            value={field.value || "none"}
+                            onValueChange={(value) => {
+                              // STATE UPDATE: Convert "none" back to null for the form data
+                              field.onChange(value === "none" ? null : value);
+                            }}
                           >
                             <FormControl>
                               <SelectTrigger className="h-10 bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 transition-colors">
@@ -829,29 +854,27 @@ export default function CreateEvent() {
                                 />
                               </SelectTrigger>
                             </FormControl>
-                            {/* UPDATED: Added rich styling from Registration Mode */}
+
                             <SelectContent className="bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-xl rounded-lg overflow-hidden max-h-60">
+                              {/* "None" Option with explicit value "none" */}
                               <SelectItem
-                                value=" "
+                                value="none"
                                 className="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors py-2.5 px-3 text-sm font-medium"
                               >
                                 <span className="text-muted-foreground italic">
                                   None
                                 </span>
                               </SelectItem>
+
+                              {/* Member Options */}
                               {ebmMembers.map((member) => (
                                 <SelectItem
                                   key={member.id}
                                   value={String(member.id)}
                                   className={clsx(
                                     "cursor-pointer transition-colors py-2.5 px-3 text-sm font-medium",
-                                    // Hover State
                                     "hover:bg-zinc-50 dark:hover:bg-zinc-900",
-                                    // Focus State
                                     "focus:bg-zinc-50 dark:focus:bg-zinc-900",
-                                    // SELECTED STATE (Updated)
-                                    // Background: Subtle Gray (Zinc-100/800)
-                                    // Text: Cyan-600
                                     "data-[state=checked]:bg-zinc-100 dark:data-[state=checked]:bg-zinc-800",
                                     "data-[state=checked]:text-cyan-600 dark:data-[state=checked]:text-cyan-400",
                                     "data-[state=checked]:font-semibold",
