@@ -23,8 +23,6 @@ import AboutUs from "./pages/App/Support/AboutUs";
 import ContactUs from "./pages/App/Support/ContactUs";
 import FAQ from "./pages/App/Support/FAQ";
 import Gallery from "./pages/App/Gallery/Gallery";
-import TechTeam from "./pages/App/Developers/TechTeam";
-import DeveloperHub from "./pages/App/Developers/DeveloperHub";
 import NotFound from "./pages/OtherPages/NotFound";
 
 // --- Auth & Registration Pages ---
@@ -50,6 +48,7 @@ import ApplicantDetailsPage from "./pages/ExecutiveBodyMember/Users/ApplicationD
 import ApprovalHistoryDetailsPage from "./pages/ExecutiveBodyMember/Users/ApprovalHistoryDetailsPage";
 import EventRegistrationsPage from "./pages/ExecutiveBodyMember/EventRegistrations/EventRegistrationsPage";
 import UserEventRegistrationCards from "./pages/User/Events/UserEventRegistrationsPage";
+import { PublicUserSignUp } from "./pages/PublicUsers/PublicUserSignUp";
 
 // --- Helper Components ---
 
@@ -89,9 +88,9 @@ function App() {
             <Route path="faq" element={<FAQ />} />
 
             {/* Technical Pages */}
-            <Route path="tech-team" element={<TechTeam />} />
+            {/* <Route path="tech-team" element={<TechTeam />} />
             <Route path="api-docs" element={<DeveloperHub />} />
-            <Route path="timeline-detail" element={<Home />} />
+            <Route path="timeline-detail" element={<Home />} /> */}
           </Route>
           {/* ================= INDEPENDENT PUBLIC PAGES ================= */}
           {/* Details Pages (Full Screen or different layout) */}
@@ -99,12 +98,17 @@ function App() {
           <Route path="/concerts/:id" element={<ConcertDetails />} />
           <Route path="/publications/:id" element={<PublicationDetails />} />
           <Route path="/team/:id" element={<TeamDetails />} />
+          {/* ----------------------------------------------------------------- */}
           {/* Auth & Status Pages */}
+          {/* ----------------------------------------------------------------- */}
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/success" element={<SuccessRegistration />} />
           <Route path="/registration-status" element={<RegistrationStatus />} />
+          {/* For Public users(not a part of club) */}
+          {/* <Route path="/public-user/register" element={<PublicUserSignUp />} /> */}
+          <Route path="/event/:eventuuid/public-user/register" element={<PublicUserSignUp />} />
           {/* Test Route */}
           {/* <Route path="/test/music" element={<MusicProfile />} /> */}
           {/* ================= PROTECTED DASHBOARD ROUTES ================= */}
