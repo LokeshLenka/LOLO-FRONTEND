@@ -3,9 +3,15 @@ import {
   ClipboardPenLine,
   CircleStar,
   CircleUser,
+  Home,
 } from "lucide-react";
 
 export const getCommonNavItems = (basePath: string) => [
+  {
+    icon: <Home />,
+    name: "Home",
+    path: `/`,
+  },
   {
     icon: <LayoutGrid />,
     name: "Dashboard",

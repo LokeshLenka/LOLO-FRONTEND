@@ -126,7 +126,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
           {/* Mobile controls */}
           <div className="flex items-center gap-4 md:hidden">
             {user && (
-              <Link to="/profile" className="text-white">
+              <Link to={`/${user.username}/dashboard`} className="text-white">
                 <User size={20} />
               </Link>
             )}
@@ -179,7 +179,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
               <div className="px-2 space-y-4">
                 {user ? (
                   <Link
-                    to="/dashboard"
+                    to={`${user.username}/dashboard`}
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center justify-center space-x-2 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-4 rounded-2xl transition-all active:scale-[0.98]"
                   >
