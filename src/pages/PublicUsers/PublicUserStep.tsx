@@ -1,5 +1,4 @@
-import React from //, { useState }
-"react";
+import React from "react";
 import {
   FormControl,
   FormField,
@@ -58,16 +57,24 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
     { value: false, label: "No" },
   ];
 
+  // Updated styles: Removed focus:ring and rely on border-color for clean focus state
+  const inputStyle =
+    "bg-white/5 border border-white/10 text-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-lolo-pink h-14 rounded-2xl placeholder:text-neutral-600 transition-colors";
+
   const selectTriggerStyle =
-    "bg-white/5 border-white/10 text-white focus:ring-[#03a1b0]/50 h-12 data-[placeholder]:text-gray-400";
-  const selectContentStyle = "bg-[#0F111A] border-white/10 text-white";
-  const selectItemStyle = "focus:bg-white/10 focus:text-[#03a1b0]";
+    "bg-white/5 border border-white/10 text-white focus:ring-0 focus:ring-offset-0 focus:border-lolo-pink h-14 rounded-2xl data-[placeholder]:text-neutral-600 transition-all font-medium";
+
+  const selectContentStyle =
+    "bg-[#09090b] border-white/10 text-white rounded-xl";
+  const selectItemStyle =
+    "focus:bg-white/10 focus:text-lolo-pink cursor-pointer font-medium";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Personal Information Section */}
       <div className="space-y-6">
-        <h3 className="text-lg font-medium text-gray-300">
+        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+          <span className="w-1.5 h-6 bg-lolo-pink rounded-full"></span>
           Personal Information
         </h3>
 
@@ -77,17 +84,17 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
           name="full_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+              <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
                 Full Name *
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  className="bg-white/5 border-white/10 text-white focus:ring-[#03a1b0]/50 h-12"
+                  className={inputStyle}
                   placeholder="Enter your full name"
                 />
               </FormControl>
-              <FormMessage className="text-red-400 text-xs" />
+              <FormMessage className="text-red-400 text-xs ml-1" />
             </FormItem>
           )}
         />
@@ -99,18 +106,18 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase text-gray-500">
+                <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
                   Email Address *
                 </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     type="email"
-                    className="bg-white/5 border-white/10 text-white focus:ring-[#03a1b0]/50 h-12"
+                    className={inputStyle}
                     placeholder="your.email@example.com"
                   />
                 </FormControl>
-                <FormMessage className="text-red-400 text-xs" />
+                <FormMessage className="text-red-400 text-xs ml-1" />
               </FormItem>
             )}
           />
@@ -121,18 +128,18 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
             name="phone_no"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase text-gray-500">
+                <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
                   Phone Number *
                 </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    className="bg-white/5 border-white/10 text-white focus:ring-[#03a1b0]/50 h-12"
+                    className={inputStyle}
                     placeholder="10-digit number"
                     maxLength={10}
                   />
                 </FormControl>
-                <FormMessage className="text-red-400 text-xs" />
+                <FormMessage className="text-red-400 text-xs ml-1" />
               </FormItem>
             )}
           />
@@ -144,16 +151,13 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
             name="gender"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase text-gray-500">
+                <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
                   Gender *
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl className="h-12">
+                  <FormControl className="h-14">
                     <SelectTrigger className={selectTriggerStyle}>
-                      <SelectValue
-                        placeholder="Select gender"
-                        className="bg-white/5 border-white/10 text-white focus:ring-[#03a1b0]/50 h-12"
-                      />
+                      <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent className={selectContentStyle}>
@@ -168,31 +172,31 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage className="text-red-400 text-xs" />
+                <FormMessage className="text-red-400 text-xs ml-1" />
               </FormItem>
             )}
           />
 
-          {/* College Hostel Status (Conditional) */}
+          {/* College Hostel Status */}
           <FormField
             control={form.control}
             name="college_hostel_status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase text-gray-500">
-                  Are you staying in the college hostel? *
+                <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
+                  Staying in college hostel? *
                 </FormLabel>
                 <FormControl>
-                  <div className="flex gap-3 mt-2">
+                  <div className="flex gap-3 mt-2 h-14">
                     {collegeHostelStudentOptions.map(({ label, value }) => (
                       <Button
                         key={Number(value)}
                         type="button"
                         onClick={() => field.onChange(value)}
-                        className={`flex-1 h-10 border font-bold transition-all ${
+                        className={`flex-1 h-full rounded-2xl font-bold transition-all border ${
                           field.value === value
-                            ? "bg-[#03a1b0] border-[#03a1b0] text-white shadow-lg shadow-[#03a1b0]/20"
-                            : "bg-transparent border-white/10 text-gray-400 hover:text-white hover:bg-white/5"
+                            ? "bg-lolo-pink border-lolo-pink text-white shadow-[0_0_15px_rgba(236,72,153,0.3)]"
+                            : "bg-transparent border-white/10 text-neutral-400 hover:text-white hover:bg-white/5"
                         }`}
                       >
                         {label}
@@ -200,7 +204,7 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
                     ))}
                   </div>
                 </FormControl>
-                <FormMessage className="text-red-400 text-xs" />
+                <FormMessage className="text-red-400 text-xs ml-1" />
               </FormItem>
             )}
           />
@@ -208,8 +212,9 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
       </div>
 
       {/* Academic Information Section */}
-      <div className="space-y-6 pt-6">
-        <h3 className="text-lg font-medium text-gray-300">
+      <div className="space-y-6 pt-8 border-t border-white/5">
+        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+          <span className="w-1.5 h-6 bg-purple-500 rounded-full"></span>
           Academic Information
         </h3>
 
@@ -219,18 +224,18 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
           name="reg_num"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-bold uppercase text-gray-500">
+              <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
                 Registration Number *
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  className="bg-white/5 border-white/10 text-white focus:ring-[#03a1b0]/50 h-12"
+                  className={inputStyle}
                   placeholder="10-digit registration number"
                   maxLength={10}
                 />
               </FormControl>
-              <FormMessage className="text-red-400 text-xs" />
+              <FormMessage className="text-red-400 text-xs ml-1" />
             </FormItem>
           )}
         />
@@ -242,11 +247,11 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
             name="branch"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase text-gray-500">
+                <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
                   Branch *
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl className="h-12">
+                  <FormControl className="h-14">
                     <SelectTrigger className={selectTriggerStyle}>
                       <SelectValue placeholder="Select your branch" />
                     </SelectTrigger>
@@ -263,7 +268,7 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage className="text-red-400 text-xs" />
+                <FormMessage className="text-red-400 text-xs ml-1" />
               </FormItem>
             )}
           />
@@ -274,11 +279,11 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
             name="year"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase text-gray-500">
+                <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
                   Year Of Study *
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl className="h-12">
+                  <FormControl className="h-14">
                     <SelectTrigger className={selectTriggerStyle}>
                       <SelectValue placeholder="Select your year" />
                     </SelectTrigger>
@@ -295,7 +300,7 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage className="text-red-400 text-xs" />
+                <FormMessage className="text-red-400 text-xs ml-1" />
               </FormItem>
             )}
           />
