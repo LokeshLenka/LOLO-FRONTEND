@@ -8,10 +8,6 @@ import {
   TableCell,
   Input,
   Button,
-  // DropdownTrigger,
-  // Dropdown,
-  // DropdownMenu,
-  // DropdownItem,
   Chip,
   User,
   Pagination,
@@ -25,19 +21,18 @@ import {
 import {
   Search,
   Download,
-  // MoreVertical,
   Eye,
-  // CheckCircle2,
-  // XCircle,
   CalendarDays,
   Users,
+  LayoutDashboard,
+  RefreshCcw,
 } from "lucide-react";
-// Import keepPreviousData for v5, or implement custom logic if on v4
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import axios from "axios";
 import { format } from "date-fns";
+import clsx from "clsx";
 
-// --- Types ---
+// --- Updated Types ---
 
 type Event = {
   id: number;
@@ -51,16 +46,20 @@ type Event = {
   cover_image?: string;
 };
 
+// UPDATED TYPE DEFINITION
 type Registration = {
   id: number;
   uuid: string;
-  status: string;
+  registration_status: string; // Changed from 'status'
+  payment_status: string; // New field
+  payment_reference: string; // New field
   created_at: string;
   user: {
     id: number;
-    username: string;
+    fullname?: string; // New field
+    username?: string;
     email?: string;
-    avatar?: string;
+    // avatar removed
   };
 };
 
@@ -68,7 +67,6 @@ type Registration = {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// Define return type for better TS inference
 type EventsResponse = {
   data: Event[];
   last_page: number;
@@ -81,14 +79,10 @@ const fetchEvents = async (
   search: string,
 ): Promise<EventsResponse> => {
   try {
-    // UPDATED URL: /ebm/my-events matches your Laravel route 'myEvents'
     const { data } = await axios.get(`${API_BASE_URL}/events`, {
       params: { page, per_page: 8, search },
     });
-    // Return the paginated object directly
     return data?.data || { data: [], last_page: 1, current_page: 1, total: 0 };
-
-    console.log(data);
   } catch (error) {
     console.error("Failed to fetch events:", error);
     return { data: [], last_page: 1, current_page: 1, total: 0 };
@@ -115,52 +109,66 @@ export default function EventRegistrationsPage() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   return (
-    <div className="p-6 h-[calc(100vh-64px)] overflow-hidden flex flex-col gap-6 bg-gray-50 dark:bg-zinc-950">
+    <div className="w-full min-h-screen bg-transparent relative text-zinc-900 dark:text-zinc-100 selection:bg-cyan-500/30 bg-white dark:bg-gray-900">
       {/* Header */}
-      <div className="flex flex-col gap-2 shrink-0">
-        <Breadcrumbs>
-          <BreadcrumbItem>Dashboard</BreadcrumbItem>
-          <BreadcrumbItem>Events</BreadcrumbItem>
-          <BreadcrumbItem>Registrations</BreadcrumbItem>
-        </Breadcrumbs>
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Event Registrations
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">
-              Manage attendees and approval statuses across all your events.
-            </p>
+      <div className="w-full bg-white dark:bg-transparent py-5 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="mx-auto px-6 lg:px-8 flex flex-col gap-2">
+          <Breadcrumbs
+            radius="none"
+            itemClasses={{
+              item: "text-zinc-500 data-[current=true]:text-cyan-600 data-[current=true]:font-semibold",
+              separator: "text-zinc-400",
+            }}
+          >
+            <BreadcrumbItem>Dashboard</BreadcrumbItem>
+            <BreadcrumbItem>Events</BreadcrumbItem>
+            <BreadcrumbItem>Registrations</BreadcrumbItem>
+          </Breadcrumbs>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-cyan-600/90 shadow-none">
+              <LayoutDashboard className="text-white h-5 w-5 sm:h-6 sm:w-6" />
+            </div>
+            <div>
+              <h1 className="font-bold tracking-tight text-xl sm:text-2xl truncate">
+                Event Registrations
+              </h1>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content Area - Split View */}
-      <div className="flex flex-col lg:flex-row gap-6 h-full min-h-0">
-        {/* Left Panel: Event Selector */}
-        <div className="w-full lg:w-1/3 flex flex-col gap-4 h-full min-h-0">
-          <EventsList
-            selectedId={selectedEvent?.uuid}
-            onSelect={setSelectedEvent}
-          />
-        </div>
+      {/* Main Content Area */}
+      <div className="mx-auto px-4 py-4 h-[calc(100vh-60px)]">
+        <div className="flex flex-col lg:flex-row gap-2 h-full min-h-0">
+          {/* Left Panel: Event Selector */}
+          <div className="w-full lg:w-1/3 flex flex-col gap-4 h-full min-h-0 ">
+            <EventsList
+              selectedId={selectedEvent?.uuid}
+              onSelect={setSelectedEvent}
+            />
+          </div>
 
-        {/* Right Panel: Registration Details */}
-        <div className="w-full lg:w-2/3 flex flex-col h-full min-h-0">
-          <Card className="h-full border border-gray-200 dark:border-zinc-800 shadow-sm">
-            <CardBody className="p-0 h-full flex flex-col overflow-hidden">
-              {selectedEvent ? (
-                <RegistrationsTable event={selectedEvent} />
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-gray-400">
-                  <Users size={64} className="mb-4 opacity-20" />
-                  <p className="text-lg font-medium">
-                    Select an event to view registrations
-                  </p>
-                </div>
-              )}
-            </CardBody>
-          </Card>
+          {/* Right Panel: Registration Details */}
+          <div className="w-full lg:w-2/3 flex flex-col h-full min-h-0">
+            <Card
+              className="h-full border border-zinc-200 dark:border-zinc-800 shadow-sm"
+              radius="none"
+              shadow="sm"
+            >
+              <CardBody className="p-0 h-full flex flex-col overflow-hidden">
+                {selectedEvent ? (
+                  <RegistrationsTable event={selectedEvent} />
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-zinc-400">
+                    <Users size={64} className="mb-4 opacity-20" />
+                    <p className="text-lg font-medium">
+                      Select an event to view registrations
+                    </p>
+                  </div>
+                )}
+              </CardBody>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
@@ -168,7 +176,7 @@ export default function EventRegistrationsPage() {
 }
 
 // --- Sub-Component: Events List ---
-
+// (This component remains largely unchanged from previous version)
 function EventsList({
   selectedId,
   onSelect,
@@ -182,34 +190,39 @@ function EventsList({
   const { data, isLoading } = useQuery({
     queryKey: ["events-list", page, search],
     queryFn: () => fetchEvents(page, search),
-    placeholderData: keepPreviousData, // FIX: Use placeholderData instead of keepPreviousData
+    placeholderData: keepPreviousData,
   });
 
-  // Data structure fix: fetchEvents returns the paginated object directly
   const events = data?.data || [];
   const totalPages = data?.last_page || 1;
 
   return (
-    <Card className="h-full border border-gray-200 dark:border-zinc-800 shadow-sm flex flex-col">
+    <Card
+      className="h-full border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col bg-white dark:bg-white/1 rounded-lg"
+      radius="none"
+      shadow="sm"
+    >
       <CardBody className="p-4 flex flex-col gap-4 h-full">
+        {/* Search Input (Hidden as per requirement) */}
         <Input
           placeholder="Search events..."
-          startContent={<Search size={16} className="text-gray-400" />}
+          startContent={<Search size={16} className="text-zinc-400 hidden" />}
           value={search}
           onValueChange={setSearch}
           isClearable
+          hidden
           classNames={{
-            inputWrapper: "bg-gray-100 dark:bg-zinc-900 shadow-none",
+            inputWrapper: "hidden",
           }}
         />
 
-        <div className="flex-1 overflow-y-auto min-h-0 flex flex-col gap-2 pr-1">
+        <div className="flex-1 overflow-y-auto min-h-0 flex flex-col gap-2 pr-1 custom-scrollbar">
           {isLoading ? (
             [...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="rounded-lg h-20 w-full" />
+              <Skeleton key={i} className="h-20 w-full rounded-none" />
             ))
           ) : events.length === 0 ? (
-            <div className="text-center py-10 text-gray-400">
+            <div className="text-center py-10 text-zinc-400">
               No events found
             </div>
           ) : (
@@ -217,16 +230,21 @@ function EventsList({
               <button
                 key={event.uuid}
                 onClick={() => onSelect(event)}
-                className={`text-left p-3 rounded-xl border transition-all duration-200 group
-                  ${
-                    selectedId === event.uuid
-                      ? "bg-primary-50/50 border-primary-200 dark:bg-primary-900/20 dark:border-primary-800 ring-1 ring-primary-500"
-                      : "bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700"
-                  }`}
+                className={clsx(
+                  "text-left p-3 border-b border-zinc-100 dark:border-zinc-800 transition-all duration-200 group relative",
+                  selectedId === event.uuid
+                    ? "bg-gray-100 dark:bg-gray-950 border-l-4 !border-l-cyan-600 pl-[9px]"
+                    : "bg-white dark:bg-transparent hover:bg-gray-200 dark:hover:bg-gray-950 border-l-4 !border-l-transparent",
+                )}
               >
                 <div className="flex justify-between items-start mb-1">
                   <h3
-                    className={`font-semibold text-sm line-clamp-1 ${selectedId === event.uuid ? "text-primary-700 dark:text-primary-400" : "text-gray-900 dark:text-gray-200"}`}
+                    className={clsx(
+                      "font-semibold text-sm line-clamp-1",
+                      selectedId === event.uuid
+                        ? "text-cyan-700 dark:text-cyan-400"
+                        : "text-zinc-900 dark:text-zinc-200",
+                    )}
                   >
                     {event.name}
                   </h3>
@@ -234,32 +252,29 @@ function EventsList({
                     <Chip
                       size="sm"
                       variant="flat"
-                      color={
-                        event.status === "published" ? "success" : "warning"
-                      }
-                      className="h-5 text-[10px] px-1"
+                      radius="none"
+                      classNames={{
+                        base:
+                          event.status === "published"
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+                        content: "font-bold text-[10px] uppercase px-1",
+                      }}
                     >
                       {event.status}
                     </Chip>
                   )}
                 </div>
 
-                <div className="flex justify-between items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  <span className="flex items-center gap-1">
+                <div className="flex justify-between items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+                  <span className="flex items-center gap-1 font-medium">
                     <CalendarDays size={12} />
                     {format(new Date(event.start_date), "MMM d, yyyy")}
                   </span>
-                  {/* </div>
-                <div className="flex justify-end items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2"> */}
                   {event.type && (
-                    <Chip
-                      size="sm"
-                      variant="flat"
-                      color={event.type === "music" ? "default" : "warning"}
-                      className="h-5 text-[10px] px-1 justify-end"
-                    >
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                       {event.type}
-                    </Chip>
+                    </span>
                   )}
                 </div>
               </button>
@@ -267,16 +282,18 @@ function EventsList({
           )}
         </div>
 
-        {/* Pagination */}
-        <div className="pt-2 flex justify-center border-t border-gray-100 dark:border-zinc-800">
+        <div className="pt-2 flex justify-center border-t border-zinc-100 dark:border-zinc-800">
           <Pagination
             total={totalPages}
             page={page}
             onChange={setPage}
             size="sm"
-            variant="light"
+            radius="none"
             showControls
-            color="primary"
+            classNames={{
+              cursor: "bg-cyan-600 text-white font-bold",
+              item: "bg-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+            }}
           />
         </div>
       </CardBody>
@@ -286,9 +303,11 @@ function EventsList({
 
 // --- Sub-Component: Registrations Table ---
 
+// UPDATED COLUMNS
 const columns = [
   { name: "ATTENDEE", uid: "user" },
-  { name: "STATUS", uid: "status" },
+  { name: "STATUS", uid: "registration_status" }, // Updated key
+  { name: "PAYMENT", uid: "payment_status" }, // New column
   { name: "REGISTERED AT", uid: "created_at" },
   { name: "ACTIONS", uid: "actions" },
 ];
@@ -296,7 +315,12 @@ const columns = [
 function RegistrationsTable({ event }: { event: Event }) {
   const [filterValue, setFilterValue] = useState("");
 
-  const { data: registrations = [], isLoading } = useQuery({
+  const {
+    data: registrations = [],
+    isLoading,
+    refetch,
+    isRefetching,
+  } = useQuery({
     queryKey: ["registrations", event.uuid],
     queryFn: () => fetchRegistrations(event.uuid),
     enabled: !!event.uuid,
@@ -305,9 +329,11 @@ function RegistrationsTable({ event }: { event: Event }) {
   const filteredItems = useMemo(() => {
     let filteredUsers = [...registrations];
     if (filterValue) {
-      filteredUsers = filteredUsers.filter((item) =>
-        item.user.username.toLowerCase().includes(filterValue.toLowerCase()),
-      );
+      filteredUsers = filteredUsers.filter((item) => {
+        // Fallback to username if fullname is missing
+        const nameToSearch = item.user.fullname || item.user.username || "";
+        return nameToSearch.toLowerCase().includes(filterValue.toLowerCase());
+      });
     }
     return filteredUsers;
   }, [filterValue, registrations]);
@@ -318,44 +344,104 @@ function RegistrationsTable({ event }: { event: Event }) {
         return (
           <User
             avatarProps={{
-              radius: "lg",
-              src: item.user.avatar,
+              radius: "none",
+              // Avatar removed from type, passing undefined/null or using a placeholder if you have one
+              src: undefined,
               fallback: <Users size={16} />,
+              className: "bg-zinc-100 dark:bg-zinc-800 text-zinc-400",
             }}
+            // Use fullname if available, else username
             description={item.user.email || `@${item.user.username}`}
-            name={item.user.username}
+            name={item.user.fullname || item.user.username}
             classNames={{
-              name: "text-sm font-semibold text-gray-900 dark:text-white",
-              description: "text-xs text-gray-500 dark:text-gray-400",
+              name: "text-sm font-semibold text-zinc-900 dark:text-white",
+              description: "text-xs text-zinc-500 dark:text-zinc-400",
             }}
           />
         );
-      case "status":
-        const statusColorMap: Record<
-          string,
-          "success" | "warning" | "danger" | "default"
-        > = {
-          approved: "success",
-          pending: "warning",
-          rejected: "danger",
+
+      // Updated to match 'registration_status'
+      case "registration_status":
+        const regStatusConfig: Record<string, { bg: string; text: string }> = {
+          approved: {
+            bg: "bg-emerald-100 dark:bg-emerald-900/20",
+            text: "text-emerald-700 dark:text-emerald-400",
+          },
+          pending: {
+            bg: "bg-amber-100 dark:bg-amber-900/20",
+            text: "text-amber-700 dark:text-amber-400",
+          },
+          rejected: {
+            bg: "bg-red-100 dark:bg-red-900/20",
+            text: "text-red-700 dark:text-red-400",
+          },
         };
+        const regConf = regStatusConfig[item.registration_status] || {
+          bg: "bg-zinc-100",
+          text: "text-zinc-600",
+        };
+
         return (
           <Chip
-            className="capitalize"
-            color={statusColorMap[item.status] || "default"}
+            className={clsx("border-none", regConf.bg)}
+            classNames={{ content: clsx("font-bold capitalize", regConf.text) }}
             size="sm"
+            radius="none"
             variant="flat"
           >
-            {item.status}
+            {item.registration_status}
           </Chip>
         );
+
+      // New Payment Status Logic
+      case "payment_status":
+        const payStatusConfig: Record<string, { bg: string; text: string }> = {
+          paid: {
+            bg: "bg-blue-100 dark:bg-blue-900/20",
+            text: "text-blue-700 dark:text-blue-400",
+          },
+          unpaid: {
+            bg: "bg-orange-100 dark:bg-orange-900/20",
+            text: "text-orange-700 dark:text-orange-400",
+          },
+          free: {
+            bg: "bg-zinc-100 dark:bg-zinc-800",
+            text: "text-zinc-600 dark:text-zinc-400",
+          },
+        };
+        const payConf = payStatusConfig[item.payment_status] || {
+          bg: "bg-zinc-100",
+          text: "text-zinc-600",
+        };
+
+        return (
+          <div className="flex flex-col gap-1">
+            <Chip
+              className={clsx("border-none", payConf.bg)}
+              classNames={{
+                content: clsx("font-bold capitalize", payConf.text),
+              }}
+              size="sm"
+              radius="none"
+              variant="flat"
+            >
+              {item.payment_status}
+            </Chip>
+            {item.payment_reference && (
+              <span className="text-[10px] text-zinc-400 font-mono tracking-tighter">
+                #{item.payment_reference.slice(0, 8)}
+              </span>
+            )}
+          </div>
+        );
+
       case "created_at":
         return (
           <div className="flex flex-col">
-            <span className="text-sm text-gray-900 dark:text-gray-200">
+            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-200">
               {format(new Date(item.created_at), "MMM d, yyyy")}
             </span>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-zinc-500 font-mono">
               {format(new Date(item.created_at), "h:mm a")}
             </span>
           </div>
@@ -363,43 +449,16 @@ function RegistrationsTable({ event }: { event: Event }) {
       case "actions":
         return (
           <div className="relative flex justify-end items-center gap-2">
-            {/* <Dropdown>
-              <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light">
-                  <MoreVertical className="text-gray-500" size={18} />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu aria-label="Action event">
-                <DropdownItem key="view" startContent={<Eye size={16} />}>
-                  View Details
-                </DropdownItem>
-                <DropdownItem
-                  key="approve"
-                  startContent={<CheckCircle2 size={16} />}
-                >
-                  Approve
-                </DropdownItem>
-                <DropdownItem
-                  key="reject"
-                  startContent={<XCircle size={16} />}
-                  className="text-danger"
-                  color="danger"
-                >
-                  Reject
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown> */}
             <Tooltip
               content="View Registration"
-              className="bg-black dark:bg-white text-white dark:text-black backdrop-blur-lg border"
+              className="bg-zinc-900 text-white rounded-none text-xs"
               placement="bottom"
             >
               <Button
                 isIconOnly
                 size="sm"
-                className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
-                // isLoading={processingId === user.uuid}
-                // onPress={() => handleActionIntent(user, "view")}
+                radius="none"
+                className="bg-zinc-100 text-zinc-600 hover:bg-cyan-50 hover:text-cyan-600 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:text-cyan-400"
               >
                 <Eye size={18} />
               </Button>
@@ -412,51 +471,84 @@ function RegistrationsTable({ event }: { event: Event }) {
   }, []);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white dark:bg-white/1">
       {/* Table Toolbar */}
-      <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-gray-50/50 dark:bg-zinc-900/50">
+      <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-white dark:!bg-black/1">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
             {event.name}
-            <Chip size="sm" variant="flat" className="ml-2">
-              {filteredItems.length} Attendees
+            <Chip
+              size="sm"
+              variant="flat"
+              radius="none"
+              className="ml-2 bg-zinc-100 text-zinc-600 font-bold"
+            >
+              {filteredItems.length}
             </Chip>
           </h2>
-          <p className="text-xs text-gray-500 truncate max-w-md">
+          <p className="text-xs text-zinc-500 truncate max-w-md flex items-center gap-1">
+            <span className="font-semibold text-cyan-600">Venue:</span>{" "}
             {event.venue}
           </p>
         </div>
 
         <div className="flex gap-2">
+          {/* Hidden Search Input */}
           <Input
             isClearable
-            className="w-full sm:max-w-[44%]"
-            placeholder="Search attendees..."
-            startContent={<Search className="text-gray-400" size={16} />}
+            className="w-full sm:max-w-[200px]"
+            placeholder="Search..."
+            startContent={<Search className="text-zinc-400 hidden" size={16} />}
             value={filterValue}
             onValueChange={setFilterValue}
             size="sm"
-            variant="bordered"
+            hidden
+            classNames={{
+              inputWrapper: "hidden",
+            }}
           />
-          <Button
-            startContent={<Download size={16} />}
-            size="sm"
-            variant="flat"
-          >
-            Export
-          </Button>
+
+          <div className="flex justify-center gap-2">
+            <Button
+              startContent={
+                <RefreshCcw
+                  size={16}
+                  className={isRefetching ? "animate-spin" : ""}
+                />
+              }
+              size="sm"
+              radius="none"
+              className="text-black dark:text-white font-medium min-w-8 sm:min-w-fit px-2 sm:px-3"
+              onPress={() => refetch()}
+              isDisabled={isLoading || isRefetching}
+            >
+              <span className="hidden sm:inline">
+                {isRefetching ? "Refreshing..." : "Refresh"}
+              </span>
+            </Button>
+
+            <Button
+              startContent={<Download size={16} />}
+              size="sm"
+              radius="none"
+              className="text-black dark:text-white font-medium min-w-8 sm:min-w-fit px-2 sm:px-3"
+            >
+              <span className="hidden sm:inline">Export</span>
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* HeroUI Table */}
       <Table
         aria-label="Registrations table"
         removeWrapper
+        radius="none"
         classNames={{
           base: "flex-1 overflow-hidden",
           table: "min-h-[400px]",
-          th: "bg-gray-50 dark:bg-zinc-900 text-gray-500 font-semibold",
-          td: "border-b border-gray-100 dark:border-zinc-800/50 group-last:border-none",
+          th: "bg-white dark:bg-white/1 text-zinc-500 font-bold uppercase text-[10px] tracking-wider border-b border-zinc-200 dark:border-zinc-800 rounded-none first:rounded-none last:rounded-none",
+          td: "border-b border-zinc-100 dark:border-zinc-800/50 group-last:border-none py-4",
+          tr: "hover:bg-gray-100 dark:hover:bg-gray-950 transition-colors",
         }}
       >
         <TableHeader columns={columns}>
@@ -474,9 +566,9 @@ function RegistrationsTable({ event }: { event: Event }) {
           isLoading={isLoading}
           loadingContent={<Skeleton className="h-full w-full opacity-50" />}
           emptyContent={
-            <div className="flex flex-col items-center justify-center p-10 text-gray-400">
+            <div className="flex flex-col items-center justify-center p-10 text-zinc-400">
               <Users size={48} className="mb-2 opacity-50" />
-              <p>No registrations found for this event.</p>
+              <p>No registrations found.</p>
             </div>
           }
         >
