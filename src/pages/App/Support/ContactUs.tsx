@@ -71,7 +71,7 @@ const ContactUs = () => {
 
   // ✅ Typed change handler
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -133,9 +133,7 @@ const ContactUs = () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      toast.success(
-        "Message sent successfully! We'll get back to you soon."
-      );
+      toast.success("Message sent successfully! We'll get back to you soon.");
 
       // Reset form
       setFormData({
@@ -257,10 +255,10 @@ const ContactUs = () => {
                     type="text"
                     value={formData.name}
                     onChange={handleChange}
-                    className={`w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-cyan transition-all duration-300 pr-8 ${
+                    className={`w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-pink transition-all duration-300 pr-8 ${
                       errors.name
                         ? "border-red-400 focus:border-red-400"
-                        : "hover:border-white/20 focus:border-lolo-cyan"
+                        : "hover:border-white/20 focus:border-lolo-pink"
                     }`}
                     placeholder="Jane Doe"
                   />
@@ -281,7 +279,7 @@ const ContactUs = () => {
                       name="role"
                       value={role}
                       onChange={handleRoleChange}
-                      className="w-full bg-transparent border-b border-white/10 py-3 text-white focus:outline-none focus:border-lolo-cyan transition-all duration-300 appearance-none cursor-pointer pr-8"
+                      className="w-full bg-transparent border-b border-white/10 py-3 text-white focus:outline-none focus:border-lolo-pink transition-all duration-300 appearance-none cursor-pointer pr-8"
                     >
                       <option
                         className="bg-neutral-900 text-neutral-300"
@@ -368,10 +366,10 @@ const ContactUs = () => {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-cyan transition-all duration-300 pr-8 ${
+                  className={`w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-pink transition-all duration-300 pr-8 ${
                     errors.email
                       ? "border-red-400 focus:border-red-400"
-                      : "hover:border-white/20 focus:border-lolo-cyan"
+                      : "hover:border-white/20 focus:border-lolo-pink"
                   }`}
                   placeholder="jane@example.com"
                 />
@@ -392,10 +390,10 @@ const ContactUs = () => {
                   rows={4}
                   value={formData.message}
                   onChange={handleChange}
-                  className={`w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-cyan transition-all duration-300 resize-none leading-relaxed pr-8 ${
+                  className={`w-full bg-transparent border-b border-white/10 py-3 text-white placeholder-neutral-700 focus:outline-none focus:border-lolo-pink transition-all duration-300 resize-none leading-relaxed pr-8 ${
                     errors.message
                       ? "border-red-400 focus:border-red-400"
-                      : "hover:border-white/20 focus:border-lolo-cyan"
+                      : "hover:border-white/20 focus:border-lolo-pink"
                   }`}
                   placeholder="Tell us about your project, idea, or just say hi..."
                 />
@@ -415,7 +413,7 @@ const ContactUs = () => {
                 className={`group w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-white text-black rounded-full font-bold text-sm transition-all duration-300 ${
                   isSubmitting
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] hover:bg-opacity-90"
+                    : " hover:bg-lolo-pink hover:text-white"
                 }`}
               >
                 {isSubmitting ? (

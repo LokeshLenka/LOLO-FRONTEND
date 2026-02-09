@@ -25,6 +25,7 @@ import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import { Zoom, Thumbnails } from "yet-another-react-lightbox/plugins";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
+import { toast } from "sonner";
 
 // --- Interfaces ---
 interface EventImage {
@@ -120,6 +121,37 @@ const EventDetails: React.FC = () => {
       navigate("/events");
     }
   };
+
+  function handleRegistration() {
+    // Placeholder for registration logic
+    if (!event) {
+      toast.error(
+        "Something Went Wrong!.Please refresh the page and try again later.",
+      );
+      return;
+    }
+
+    if (event.status !== "upcoming") {
+      toast.error(
+        "Registration is closed for this event. Please check other events.",
+      );
+      return;
+    }
+
+    if (event.registration_mode.toLowerCase() === "offline") {
+      toast.warning(
+        "This event requires offline registration. Please visit the registration desk.",
+      );
+    }
+
+    if (
+      event.registration_mode.toLowerCase() === "online" &&
+      event.type.toLowerCase() === "public"
+    ) {
+      // Redirect to registration page or open registration modal
+      navigate(`/event/${event.uuid}/public-user/register`);
+    }
+  }
 
   if (loading)
     return (
@@ -508,6 +540,7 @@ const EventDetails: React.FC = () => {
                 <Button
                   size="lg"
                   className="w-full font-bold bg-white text-black hover:bg-lolo-pink hover:text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] h-14 text-base rounded-full transition-all relative z-10 group"
+                  onPress={handleRegistration}
                 >
                   Register Now
                   <Ticket

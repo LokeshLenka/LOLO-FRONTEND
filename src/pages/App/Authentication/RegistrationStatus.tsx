@@ -185,7 +185,7 @@ export default function RegistrationStatus() {
                 placeholder="Enter your email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-14 pl-12 bg-white/5 border-white/10 text-white focus-visible:ring-lolo-pink/50 focus-visible:border-lolo-pink rounded-2xl transition-all placeholder:text-neutral-600 text-base"
+                className="h-14 px-12 bg-white/5 border-white/10 text-white focus-visible:ring-lolo-pink/50 focus-visible:border-lolo-pink rounded-2xl transition-all placeholder:text-neutral-600 text-base"
                 required
               />
               {email && (
