@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { AnimatePresence, motion, useInView } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Calendar,
   MapPin,
@@ -60,7 +60,7 @@ interface EventDetailsData {
   coordinators: (Coordinator | null)[];
 }
 
-// --- 🎨 COLOR UTILITIES ---
+// --- 🎨 CONSISTENT COLOR UTILITIES ---
 const getEventTypeColor = (type: string) => {
   switch (type.toLowerCase()) {
     case "music":
@@ -96,16 +96,6 @@ const EventDetails: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(-1);
 
-  // --- 🪄 ANIMATION LOGIC ---
-  // We attach the ref specifically to the BUTTON CONTAINER, not the whole card.
-  // This ensures the sticky footer stays visible until the actual button enters the viewport.
-  const staticButtonRef = useRef(null);
-
-  // 'margin: "0px"' means it triggers exactly when the button enters the viewport bottom.
-  const isStaticButtonInView = useInView(staticButtonRef, {
-    margin: "0px 0px 0px 0px",
-  });
-
   const APP_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
@@ -133,24 +123,32 @@ const EventDetails: React.FC = () => {
   };
 
   function handleRegistration() {
+    // Placeholder for registration logic
     if (!event) {
-      toast.error("Something Went Wrong!.Please refresh page.");
+      toast.error(
+        "Something Went Wrong!.Please refresh the page and try again later.",
+      );
       return;
     }
 
     if (event.status !== "upcoming") {
-      toast.error("Registration is closed for this event.");
+      toast.error(
+        "Registration is closed for this event. Please check other events.",
+      );
       return;
     }
 
     if (event.registration_mode.toLowerCase() === "offline") {
-      toast.warning("This event requires offline registration.");
+      toast.warning(
+        "This event requires offline registration. Please visit the registration desk.",
+      );
     }
 
     if (
       event.registration_mode.toLowerCase() === "online" &&
       event.type.toLowerCase() === "public"
     ) {
+      // Redirect to registration page or open registration modal
       navigate(`/event/${event.uuid}/public-user/register`);
     }
   }
@@ -184,7 +182,13 @@ const EventDetails: React.FC = () => {
     day: "numeric",
   });
 
-  const timeStr = `${startDate.toLocaleDateString("en-IN", { month: "short", day: "numeric" })}, ${startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${endDate.toLocaleDateString("en-IN", { month: "short", day: "numeric" })}, ${endDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+  const timeStr = `${startDate.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  })} - ${endDate.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
 
   const activeCoordinators = event.coordinators.filter(
     (c): c is Coordinator => c !== null,
@@ -196,7 +200,11 @@ const EventDetails: React.FC = () => {
   }));
 
   return (
-    <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-lolo-pink/30 selection:text-white pb-28 lg:pb-12 relative overflow-hidden">
+    <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-lolo-pink/30 selection:text-white pb-20 relative overflow-hidden">
+      {/* Background Blobs */}
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-lolo-pink/5 rounded-full blur-[120px] pointer-events-none" />
+
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-[#030303]/80 backdrop-blur-xl border-b border-white/5 h-16 flex items-center px-6">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
@@ -218,6 +226,7 @@ const EventDetails: React.FC = () => {
               setTimeout(() => setShowToast(false), 2000);
             }}
             className="p-2 text-neutral-400 hover:text-white hover:bg-white/10 rounded-full transition-all active:scale-95"
+            title="Share"
           >
             <Share2 size={18} />
           </button>
@@ -246,20 +255,29 @@ const EventDetails: React.FC = () => {
               transition={{ duration: 0.6 }}
             >
               <div className="flex flex-wrap gap-3 mb-6">
+                {/* 🎨 TYPE BADGE */}
                 <span
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border backdrop-blur-md ${getEventTypeColor(event.type)}`}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border backdrop-blur-md ${getEventTypeColor(
+                    event.type,
+                  )}`}
                 >
-                  {event.type}
+                  {event.type} Only
                 </span>
+
+                {/* 🚦 STATUS BADGE */}
                 <span
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border backdrop-blur-md ${getEventStatusColor(event.status)}`}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border backdrop-blur-md ${getEventStatusColor(
+                    event.status,
+                  )}`}
                 >
                   {event.status}
                 </span>
               </div>
+
               <h1 className="text-4xl md:text-7xl font-bold leading-tight max-w-4xl mb-8 text-white drop-shadow-xl">
                 {event.name}
               </h1>
+
               <div className="flex flex-wrap gap-y-6 gap-x-10 text-neutral-200 font-medium text-sm md:text-base">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 bg-white/5 rounded-full border border-white/5">
@@ -272,17 +290,19 @@ const EventDetails: React.FC = () => {
                     <p>{dateStr}</p>
                   </div>
                 </div>
+
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 bg-white/5 rounded-full border border-white/5">
                     <Clock size={20} className="text-lolo-pink" />
                   </div>
                   <div>
                     <p className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider mb-0.5">
-                      Duration
+                      Time
                     </p>
-                    <p className="whitespace-nowrap">{timeStr}</p>
+                    <p>{timeStr}</p>
                   </div>
                 </div>
+
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 bg-white/5 rounded-full border border-white/5">
                     <MapPin size={20} className="text-lolo-pink" />
@@ -312,7 +332,7 @@ const EventDetails: React.FC = () => {
               <Info className="text-lolo-pink" size={24} /> About the Event
             </h3>
             <div className="prose prose-invert max-w-none text-neutral-400 leading-relaxed text-lg">
-              <p>{event.description}</p>
+              <div style={{ whiteSpace: "pre-line" }}>{event.description}</div>
             </div>
           </motion.section>
 
@@ -326,6 +346,7 @@ const EventDetails: React.FC = () => {
             <h3 className="text-2xl font-bold mb-8 flex items-center gap-2 text-white">
               <Ticket className="text-lolo-pink" size={24} /> Event Details
             </h3>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[
                 {
@@ -442,19 +463,21 @@ const EventDetails: React.FC = () => {
           </motion.section>
         </div>
 
-        {/* Sidebar / Registration Card */}
-        <aside className="lg:col-span-1 block">
-          <div className="lg:sticky lg:top-24 space-y-6">
+        {/* Sidebar */}
+        <aside className="lg:col-span-1">
+          <div className="sticky top-24 space-y-6">
             <motion.div
               initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
             >
               <div className="p-8 rounded-[2.5rem] bg-white/[0.02] backdrop-blur-xl border border-white/5 shadow-2xl relative overflow-hidden">
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-lolo-pink/10 rounded-full blur-[60px]"></div>
+
                 <h3 className="text-2xl font-bold mb-2 text-white relative z-10">
                   Registration Open
                 </h3>
+
                 <div className="flex items-baseline gap-2 mb-8 relative z-10">
                   <span className="text-4xl font-bold text-white">
                     {event.fee > 0 ? `₹${event.fee}` : "Free"}
@@ -463,6 +486,7 @@ const EventDetails: React.FC = () => {
                     <span className="text-neutral-500 text-sm">per person</span>
                   )}
                 </div>
+
                 <div className="space-y-6 mb-8 relative z-10">
                   <div className="flex items-start gap-4">
                     <div className="mt-1.5 w-2 h-2 rounded-full bg-lolo-pink shadow-[0_0_10px_rgba(236,72,153,0.5)]"></div>
@@ -485,16 +509,27 @@ const EventDetails: React.FC = () => {
                       </p>
                     </div>
                   </div>
+
                   <div className="flex items-start gap-4">
+                    {/* 🚦 Status Dot: Dynamic color based on status */}
                     <div
-                      className={`mt-1.5 w-2 h-2 rounded-full ${event.status === "upcoming" ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]" : event.status === "ongoing" ? "bg-amber-400 animate-pulse" : "bg-neutral-500"}`}
+                      className={`mt-1.5 w-2 h-2 rounded-full ${
+                        event.status === "upcoming"
+                          ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]"
+                          : event.status === "ongoing"
+                            ? "bg-amber-400 animate-pulse"
+                            : "bg-neutral-500"
+                      }`}
                     ></div>
                     <div>
                       <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-0.5">
                         Status
                       </p>
+                      {/* 🚦 Status Text: Uses consistent function */}
                       <span
-                        className={`text-xs font-bold uppercase tracking-wide py-0.5 px-2 rounded-md ${getEventStatusColor(event.status)}`}
+                        className={`text-xs font-bold uppercase tracking-wide py-0.5 px-2 rounded-md ${getEventStatusColor(
+                          event.status,
+                        )}`}
                       >
                         {event.status}
                       </span>
@@ -502,21 +537,17 @@ const EventDetails: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 🎯 REF IS ATTACHED HERE: Detects when the *button area* enters view */}
-                <div ref={staticButtonRef}>
-                  <Button
-                    size="lg"
-                    className="w-full font-bold bg-white text-black hover:bg-lolo-pink hover:text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] h-14 text-base rounded-full transition-all relative z-10 group"
-                    onPress={handleRegistration}
-                  >
-                    Register Now{" "}
-                    <Ticket
-                      size={18}
-                      className="ml-2 transition-transform group-hover:rotate-12"
-                    />
-                  </Button>
-                </div>
-
+                <Button
+                  size="lg"
+                  className="w-full font-bold bg-white text-black hover:bg-lolo-pink hover:text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] h-14 text-base rounded-full transition-all relative z-10 group"
+                  onPress={handleRegistration}
+                >
+                  Register Now
+                  <Ticket
+                    size={18}
+                    className="ml-2 transition-transform group-hover:rotate-12"
+                  />
+                </Button>
                 <p className="text-[10px] text-center text-neutral-500 mt-4 uppercase tracking-widest relative z-10">
                   Limited to {event.max_participants} seats
                 </p>
@@ -526,35 +557,6 @@ const EventDetails: React.FC = () => {
         </aside>
       </main>
 
-      {/* 📱 STICKY FOOTER (MIXED WITH CARD ANIMATION) */}
-      <AnimatePresence>
-        {!isStaticButtonInView && (
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className="fixed bottom-0 left-0 right-0 p-4 bg-[#030303]/90 backdrop-blur-xl border-t border-white/10 z-40 lg:hidden flex items-center justify-between gap-4 safe-area-bottom"
-          >
-            <div className="flex flex-col">
-              <span className="text-[10px] text-neutral-400 uppercase font-bold tracking-wider">
-                Total Fee
-              </span>
-              <span className="text-xl font-bold text-white">
-                {event.fee > 0 ? `₹${event.fee}` : "Free"}
-              </span>
-            </div>
-            <Button
-              size="lg"
-              className="flex-1 font-bold bg-white text-black hover:bg-lolo-pink hover:text-white shadow-lg h-12 rounded-full"
-              onPress={handleRegistration}
-            >
-              Register Now <Ticket size={18} className="ml-2" />
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <AnimatePresence>
         {showToast && (
           <motion.div
@@ -562,7 +564,7 @@ const EventDetails: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-24 right-6 z-50 bg-white text-black px-6 py-4 rounded-full shadow-2xl font-bold flex items-center gap-3 border border-white/20"
+            className="fixed bottom-6 right-6 z-50 bg-white text-black px-6 py-4 rounded-full shadow-2xl font-bold flex items-center gap-3 border border-white/20"
           >
             <CheckCircle2 size={20} className="text-green-600" />
             <span>Link copied to clipboard!</span>
