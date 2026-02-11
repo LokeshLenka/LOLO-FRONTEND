@@ -1,4 +1,4 @@
-import  { useState } from "react";
+import { useState } from "react";
 import {
   motion,
   type Variants,
@@ -28,10 +28,10 @@ const RANK_DATA: RankData = {
     {
       name: "Bronze",
       range: "0 - 49 Credits",
-      color: "text-orange-400",
-      barColor: "bg-orange-400",
-      gradient: "from-orange-500/10 to-orange-900/5",
-      border: "border-orange-500/20",
+      color: "text-orange-600",
+      barColor: "bg-orange-600",
+      gradient: "from-orange-600/20 to-orange-950/10",
+      border: "border-orange-600/30",
       icon: "🥉",
       perks: [
         "Access to general workshops",
@@ -42,10 +42,10 @@ const RANK_DATA: RankData = {
     {
       name: "Silver",
       range: "50 - 99 Credits",
-      color: "text-slate-300",
-      barColor: "bg-slate-300",
-      gradient: "from-slate-500/10 to-slate-900/5",
-      border: "border-slate-400/20",
+      color: "text-slate-100",
+      barColor: "bg-slate-400",
+      gradient: "from-slate-400/20 to-slate-700/10",
+      border: "border-slate-400/40",
       icon: "🥈",
       perks: [
         "Backstage Access Pass",
@@ -56,10 +56,10 @@ const RANK_DATA: RankData = {
     {
       name: "Gold",
       range: "100 - 149 Credits",
-      color: "text-yellow-400",
-      barColor: "bg-yellow-400",
-      gradient: "from-yellow-500/10 to-yellow-900/5",
-      border: "border-yellow-500/20",
+      color: "text-yellow-500",
+      barColor: "bg-yellow-500",
+      gradient: "from-yellow-500/20 to-amber-700/10",
+      border: "border-yellow-500/40",
       icon: "🥇",
       perks: [
         "Perform in 'Gold' tier slots",
@@ -70,10 +70,10 @@ const RANK_DATA: RankData = {
     {
       name: "Platinum",
       range: "150+ Credits",
-      color: "text-cyan-300",
-      barColor: "bg-cyan-300",
-      gradient: "from-cyan-500/10 to-cyan-900/5",
-      border: "border-cyan-500/20",
+      color: "text-cyan-400",
+      barColor: "bg-cyan-400",
+      gradient: "from-cyan-400/20 to-cyan-700/10",
+      border: "border-cyan-400/40",
       icon: "💎",
       perks: [
         "Club Leadership Eligibility",
@@ -86,10 +86,10 @@ const RANK_DATA: RankData = {
     {
       name: "Bronze",
       range: "0 - 49 Credits",
-      color: "text-orange-400",
-      barColor: "bg-orange-400",
-      gradient: "from-orange-500/10 to-orange-900/5",
-      border: "border-orange-500/20",
+      color: "text-orange-500",
+      barColor: "bg-orange-500",
+      gradient: "from-orange-500/20 to-orange-900/10",
+      border: "border-orange-500/30",
       icon: "📋",
       perks: [
         "Event Volunteer Badge",
@@ -100,10 +100,10 @@ const RANK_DATA: RankData = {
     {
       name: "Silver",
       range: "50 - 99 Credits",
-      color: "text-slate-300",
-      barColor: "bg-slate-300",
-      gradient: "from-slate-500/10 to-slate-900/5",
-      border: "border-slate-400/20",
+      color: "text-slate-200",
+      barColor: "bg-slate-400",
+      gradient: "from-slate-400/20 to-slate-700/10",
+      border: "border-slate-400/40",
       icon: "🤝",
       perks: [
         "Team Lead Role",
@@ -114,10 +114,10 @@ const RANK_DATA: RankData = {
     {
       name: "Gold",
       range: "100 - 149 Credits",
-      color: "text-yellow-400",
-      barColor: "bg-yellow-400",
-      gradient: "from-yellow-500/10 to-yellow-900/5",
-      border: "border-yellow-500/20",
+      color: "text-yellow-500",
+      barColor: "bg-yellow-500",
+      gradient: "from-yellow-500/20 to-amber-700/10",
+      border: "border-yellow-500/40",
       icon: "💼",
       perks: [
         "Budget Management Access",
@@ -128,10 +128,10 @@ const RANK_DATA: RankData = {
     {
       name: "Platinum",
       range: "150+ Credits",
-      color: "text-cyan-300",
-      barColor: "bg-cyan-300",
-      gradient: "from-cyan-500/10 to-cyan-900/5",
-      border: "border-cyan-500/20",
+      color: "text-cyan-400",
+      barColor: "bg-cyan-400",
+      gradient: "from-cyan-400/20 to-cyan-700/10",
+      border: "border-cyan-400/40",
       icon: "👔",
       perks: [
         "Core Council Membership",
