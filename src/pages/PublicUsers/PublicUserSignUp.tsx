@@ -7,22 +7,21 @@ import { Form } from "@/components/ui/form";
 import {
   ArrowLeft,
   Loader2,
-  Info,
   Search,
   ArrowRight,
   CheckCircle2,
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { PublicUserStep } from "./PublicUserStep";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  useDisclosure,
-} from "@heroui/react";
+// import {
+//   Modal,
+//   ModalContent,
+//   ModalHeader,
+//   ModalBody,
+//   useDisclosure,
+// } from "@heroui/react";
 import { Input } from "@/components/ui/input";
 
 // --- Types for Razorpay ---
@@ -60,6 +59,7 @@ declare global {
 const checkSchema = z.object({
   reg_num_check: z
     .string()
+    .trim()
     .min(10, "Registration number must be at least 10 digits")
     .max(10, "Registration number must not be greater than 10 digits"),
 });
@@ -73,6 +73,7 @@ const formSchema = z.object({
   email: z.string().email("Invalid email address"),
   reg_num: z
     .string()
+    .trim()
     .min(10, "Registration number must be at least 10 digits")
     .max(10, "Registration number must not be greater than 10 digits"),
   branch: z.string().min(1, "Branch is required"),
@@ -101,18 +102,19 @@ const loadRazorpayScript = () => {
 
 export const PublicUserSignUp: React.FC = () => {
   const navigate = useNavigate();
+  const { eventId } = useParams();
   const [step, setStep] = useState<"check" | "register">("check");
   const [isProcessing, setIsProcessing] = useState(false);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  // const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-  useEffect(() => {
-    const hasSeenInfo = sessionStorage.getItem("hasSeenRegistrationInfo");
-    if (!hasSeenInfo) {
-      onOpen();
-      sessionStorage.setItem("hasSeenRegistrationInfo", "true");
-    }
-  }, [onOpen]);
+  // useEffect(() => {
+  //   const hasSeenInfo = sessionStorage.getItem("hasSeenRegistrationInfo");
+  //   if (!hasSeenInfo) {
+  //     onOpen();
+  //     sessionStorage.setItem("hasSeenRegistrationInfo", "true");
+  //   }
+  // }, [onOpen]);
 
   const checkForm = useForm({
     resolver: zodResolver(checkSchema),
@@ -153,9 +155,10 @@ export const PublicUserSignUp: React.FC = () => {
       // 2. Create Order on Backend
       // The backend should return { id: 'order_xxx', amount: 50000, key: 'rzp_test_xxx' }
       const orderRes = await axios.post(
-        `${API_BASE_URL}/create-payment-order`,
+        `${API_BASE_URL}/payment/create-order/`,
         {
           reg_num: userData.reg_num,
+          event_id: eventId,
         },
       );
 
@@ -180,7 +183,10 @@ export const PublicUserSignUp: React.FC = () => {
         handler: async (response: RazorpayResponse) => {
           // 4. Verify Payment on Backend
           try {
-            toast.loading("Verifying payment...", { id: toastId });
+            toast.loading("Verifying payment...", {
+              id: toastId,
+              duration: 5000,
+            });
 
             const verifyRes = await axios.post(
               `${API_BASE_URL}/verify-payment`,
@@ -204,7 +210,7 @@ export const PublicUserSignUp: React.FC = () => {
             console.error("Verification Error:", verifyError);
             toast.error(
               "Payment verification failed. Please contact support.",
-              { id: toastId },
+              { id: toastId, duration: 5000 },
             );
           }
         },
@@ -277,6 +283,7 @@ export const PublicUserSignUp: React.FC = () => {
       if (response.status === 200 || response.status === 201) {
         toast.success("Details saved! Proceeding to payment...", {
           id: toastId,
+          duration: 3000,
         });
 
         // Trigger payment immediately after successful registration
@@ -302,7 +309,7 @@ export const PublicUserSignUp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-lolo-pink/30 selection:text-white relative overflow-hidden flex flex-col items-center">
+    <div className="min-h-screen bg-[#000000] text-white font-sans selection:bg-lolo-pink/30 selection:text-white relative overflow-hidden flex flex-col items-center">
       {/* Background Blobs */}
       <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-lolo-cyan/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-lolo-pink/5 rounded-full blur-[120px] pointer-events-none" />
@@ -322,44 +329,46 @@ export const PublicUserSignUp: React.FC = () => {
 
       <div className="relative z-10 w-full max-w-4xl px-4 pt-24 pb-12">
         <div className="text-center space-y-3 mb-12 flex flex-col items-center justify-center">
-          <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight flex items-center gap-3">
-            Student Registration
-            <button
-              onClick={onOpen}
-              className="p-2 bg-white/5 hover:bg-lolo-pink/20 rounded-full text-neutral-400 hover:text-lolo-pink transition-colors outline-none"
-            >
-              <Info size={20} strokeWidth={2.5} />
-            </button>
-          </h2>
-          <div className="h-1 w-24 bg-lolo-pink mx-auto rounded-full" />
+          <h1 className="text-4xl md:text-7xl font-black mb-6 tracking-tight text-white">
+            <span className="relative inline-block">
+              <span className="bg-gradient-to-r from-purple-400 via-white to-purple-400 bg-clip-text text-transparent animate-text-shimmer bg-[length:200%_auto]">
+                Event
+              </span>
+            </span>{" "}
+            <span className="bg-gradient-to-r from-lolo-pink via-white to-lolo-pink bg-clip-text text-transparent animate-text-shimmer bg-[length:200%_auto]">
+              Registration
+            </span>
+          </h1>
+          {/* <div className="h-1 w-24 bg-lolo-pink mx-auto rounded-full" /> */}
         </div>
 
-        <div className="bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-6 md:p-12 shadow-2xl relative overflow-hidden">
+        <div className="bg-[#000000] backdrop-blur-xl border border-white/5 p-6 md:p-12 shadow-2xl relative overflow-hidden rounded-3xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-lolo-pink/5 rounded-full blur-[80px] pointer-events-none"></div>
 
           {step === "check" ? (
             <div className="max-w-md mx-auto relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-white mb-2">
-                  Check Registration
+                <h3 className="text-2xl font-bold text-white mb-3">
+                  Already Registered?
                 </h3>
-                <p className="text-neutral-400 text-sm">
-                  Enter your registration number to verify and pay.
+                <p className="text-neutral-400 text-sm leading-relaxed">
+                  Enter your registration number to proceed to payment, or we'll
+                  help you register if you're new.
                 </p>
               </div>
 
               <div className="space-y-6">
-                <div className="relative">
+                <div className="relative items-center">
                   <Input
-                    placeholder="Enter Registration Number"
-                    className="bg-white/5 border border-white/10 text-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-lolo-pink h-16 rounded-2xl placeholder:text-neutral-600 transition-colors pl-12 text-lg font-medium"
+                    placeholder="e.g., 2X19CS1234"
+                    className="bg-white/5 border border-white/10 text-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-lolo-pink h-16 rounded-full placeholder:text-neutral-600 transition-colors pl-10 sm:pl-12 text-lg font-medium"
                     {...checkForm.register("reg_num_check")}
                     disabled={isProcessing}
                     onChange={(e) =>
                       checkForm.setValue("reg_num_check", e.target.value)
                     }
                   />
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 w-5 h-5" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 w-4 h-4 sm:w-5 h-5" />
                 </div>
                 {checkForm.formState.errors.reg_num_check && (
                   <p className="text-red-400 text-sm text-center">
@@ -370,16 +379,16 @@ export const PublicUserSignUp: React.FC = () => {
                 <Button
                   onClick={checkForm.handleSubmit(handleCheck)}
                   disabled={isProcessing}
-                  className="w-full h-14 bg-white text-black hover:bg-lolo-pink hover:text-white font-bold rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all active:scale-[0.98] text-base"
+                  className="w-full h-14 bg-white text-black hover:bg-lolo-pink hover:text-white font-bold rounded-full shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all active:scale-[0.98] text-base"
                 >
                   {isProcessing ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Processing...
+                      Checking...
                     </>
                   ) : (
                     <>
-                      Continue <ArrowRight className="ml-2 w-5 h-5" />
+                      Check Status <ArrowRight className="ml-2 w-5 h-5" />
                     </>
                   )}
                 </Button>
@@ -426,7 +435,7 @@ export const PublicUserSignUp: React.FC = () => {
         </div>
       </div>
 
-      <Modal
+      {/* <Modal
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         backdrop="blur"
@@ -471,7 +480,7 @@ export const PublicUserSignUp: React.FC = () => {
             </>
           )}
         </ModalContent>
-      </Modal>
+      </Modal> */}
     </div>
   );
 };
