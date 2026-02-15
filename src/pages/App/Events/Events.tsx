@@ -279,8 +279,7 @@ const Event: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-lolo-pink/30 selection:text-white pb-24 relative overflow-hidden">
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-lolo-cyan/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-lolo-pink/5 rounded-full blur-[120px] pointer-events-none" />
+     
 
       {/* Hero & Header */}
       <div className="relative overflow-hidden z-10">
@@ -342,7 +341,7 @@ const Event: React.FC = () => {
       </div>
 
       {/* Filters & Sorting Bar */}
-      <div className="relative z-20 w-full py-6 mb-12 bg-transparent backdrop-blur-md">
+      <div className="relative z-20 w-full mb-6 bg-transparent backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="overflow-x-auto no-scrollbar w-full md:w-auto">
             <div className="flex gap-2 min-w-max">
@@ -350,7 +349,7 @@ const Event: React.FC = () => {
                 <button
                   key={category}
                   onClick={() => handleCategoryChange(category)}
-                  className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all border ${
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${
                     statusParam === category
                       ? "bg-white text-black border-white"
                       : "bg-white/[0.02] border-white/5 text-neutral-400 hover:border-white/20 hover:text-white"
@@ -365,7 +364,7 @@ const Event: React.FC = () => {
           <div className="relative ml-auto">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-white/[0.02] border border-white/5 rounded-full text-sm font-medium text-neutral-400 hover:text-white hover:border-white/20 transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-white/[0.02] border border-white/5 rounded-full text-sm font-medium text-neutral-400 hover:text-white hover:border-white/20 transition-all"
             >
               <ArrowUpDown size={14} />
               <span>Sort</span>
@@ -426,21 +425,10 @@ const Event: React.FC = () => {
                 transition={{ duration: 0.6 }}
                 className="relative"
               >
-                <div className="flex items-center gap-2 mb-6">
-                  <Star
-                    className="text-lolo-pink"
-                    size={20}
-                    fill="currentColor"
-                  />
-                  <h2 className="text-xl font-bold text-white tracking-wide uppercase">
-                    Featured Event
-                  </h2>
-                </div>
-
-                <div className="group relative bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-lolo-pink/30 transition-all duration-500">
+                <div className="group relative bg-white/[0.08] rounded-[2.5rem] overflow-hidden transition-all duration-500 border-2 border-white/[0.02]">
                   <div className="grid lg:grid-cols-2 gap-0">
-                    <div className="relative h-[400px] lg:h-[500px] overflow-hidden">
-                      <div className="absolute top-6 left-6 z-10 flex flex-wrap gap-2">
+                    <div className="relative overflow-hidden h-full min-h-[400px] lg:min-h-[500px] self-stretch">
+                      <div className="absolute top-6 left-6 z-10 flex flex-wrap gap-2 items-center">
                         {/* Featured Tag */}
                         <span className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-white text-black backdrop-blur-md shadow-lg">
                           ⭐ Featured
@@ -471,7 +459,7 @@ const Event: React.FC = () => {
                           "https://via.placeholder.com/800x600"
                         }
                         alt={heroEvent.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="absolute inset-0 block w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
 
                       <div className="absolute bottom-6 left-6 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl px-5 py-3 flex flex-col items-center min-w-[90px] text-center">
@@ -577,7 +565,7 @@ const Event: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="group relative bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-lolo-pink/30 transition-all duration-500 flex flex-col min-h-[500px]"
+                        className="group relative bg-white/[0.08] backdrop-blur-xl border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-lolo-pink/30 transition-all duration-500 flex flex-col min-h-[500px]"
                       >
                         <div className="relative h-64 overflow-hidden">
                           <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
