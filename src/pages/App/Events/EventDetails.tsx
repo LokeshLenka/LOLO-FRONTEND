@@ -9,19 +9,14 @@ import {
   ArrowLeft,
   Ticket,
   CheckCircle2,
-  Info,
   User,
   Phone,
   Globe,
   Users,
   Trophy,
   CreditCard,
-  ZoomIn,
-  Image as ImageIcon,
-  ChevronLeft,
 } from "lucide-react";
 import { Button } from "@heroui/button";
-import { Divider } from "@heroui/react";
 import axios from "axios";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
@@ -29,7 +24,6 @@ import { Zoom, Thumbnails } from "yet-another-react-lightbox/plugins";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import { toast } from "sonner";
 import SectionHeader from "@/components/HomeSectionHeader";
-import { Line } from "recharts";
 
 // --- Types ---
 interface EventImage {
@@ -121,10 +115,10 @@ const RegistrationCard = memo<{
     0,
     event.max_participants - currentParticipants,
   );
-  const capacityPercentage = Math.min(
-    100,
-    (currentParticipants / event.max_participants) * 100,
-  );
+  // const capacityPercentage = Math.min(
+  //   100,
+  //   (currentParticipants / event.max_participants) * 100,
+  // );
 
   return (
     // ✨ FIX: Sticky positioning needs a defined height container in grid
@@ -270,7 +264,7 @@ const EventDetails: React.FC = () => {
       if (!id) return;
       try {
         const response = await axios.get(`${APP_BASE_URL}/events/${id}`);
-        setEvent(response.data.data || response.data);
+        setEvent(response.data.data);
       } catch (error) {
         console.error("Error fetching event details:", error);
       } finally {
@@ -660,9 +654,11 @@ const EventDetails: React.FC = () => {
           >
             <SectionHeader
               title={
-                <span className="font-club text-lolo-pink lg:text-4xl drop-shadow-[0_0_10px_rgba(236,72,153,0.4)]">
-                  Gallery
-                </span>
+                <>
+                  <span className="font-club text-lolo-pink lg:text-4xl drop-shadow-[0_0_10px_rgba(236,72,153,0.4)] flex items-center gap-2 justify-center">
+                    Gallery
+                  </span>
+                </>
               }
             />
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

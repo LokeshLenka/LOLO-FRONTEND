@@ -10,7 +10,6 @@ import {
   ChevronDown,
   ArrowUpDown,
   MapPin,
-  Star,
   Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -279,8 +278,6 @@ const Event: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-lolo-pink/30 selection:text-white pb-24 relative overflow-hidden">
-     
-
       {/* Hero & Header */}
       <div className="relative overflow-hidden z-10">
         <div className="max-w-7xl mx-auto px-4 pt-24 pb-12 relative z-10 text-center">
