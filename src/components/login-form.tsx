@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import lolo_login_1 from "../assets/LOLO_Logo_1.jpg";
 import { useAuth } from "../context/AuthContext";
 import { Loader2, AlertCircle, EyeOff, Eye } from "lucide-react";
+import { toast } from "sonner";
 
 interface ValidationErrors {
   username?: string[];
@@ -114,12 +115,17 @@ export default function LoginForm({
               >
                 Password
               </Label>
-              <a
-                href="#"
-                className="text-xs font-bold text-lolo-pink hover:text-white hover:underline transition-colors"
+              <button
+                type="button"
+                onClick={() => {
+                  toast.info(
+                    "Please contact support for password reset assistance.",
+                  );
+                }}
+                className="text-xs font-bold text-lolo-pink hover:text-white hover:underline transition-colors bg-none border-none cursor-pointer p-0"
               >
                 Forgot password?
-              </a>
+              </button>
             </div>
 
             <div className="relative">
