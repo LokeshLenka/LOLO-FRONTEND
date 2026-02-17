@@ -19,9 +19,13 @@ import { type UseFormReturn } from "react-hook-form";
 
 interface PublicUserStepProps {
   form: UseFormReturn<any>;
+  prefix: string; // ✨ NEW: Allows dynamic path mapping
 }
 
-export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
+export const PublicUserStep: React.FC<PublicUserStepProps> = ({
+  form,
+  prefix,
+}) => {
   const branches = [
     { value: "aids", label: "AIDS" },
     { value: "aiml", label: "AIML" },
@@ -37,274 +41,215 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({ form }) => {
     { value: "it", label: "IT" },
     { value: "mech", label: "MECH" },
   ];
-
-  const branchOptions = branches.sort((a, b) => a.label.localeCompare(b.label));
-
   const yearOptions = [
     { value: "first", label: "First Year" },
     { value: "second", label: "Second Year" },
     { value: "third", label: "Third Year" },
     { value: "fourth", label: "Fourth Year" },
   ];
-
   const genderOptions = [
     { value: "male", label: "Male" },
     { value: "female", label: "Female" },
   ];
-
   const collegeHostelStudentOptions = [
     { value: true, label: "Yes" },
     { value: false, label: "No" },
   ];
 
-  // Updated styles: Removed focus:ring and rely on border-color for clean focus state
   const inputStyle =
-    "bg-white/5 border border-white/10 text-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-lolo-pink h-14 rounded-2xl placeholder:text-neutral-600 transition-colors";
-
-  const selectTriggerStyle =
-    "bg-white/5 border border-white/10 text-white focus:ring-0 focus:ring-offset-0 focus:border-lolo-pink h-14 rounded-2xl data-[placeholder]:text-neutral-600 transition-all font-medium";
-
-  const selectContentStyle =
-    "bg-[#09090b] border-white/10 text-white rounded-xl";
-  const selectItemStyle =
-    "focus:bg-white/10 focus:text-lolo-pink cursor-pointer font-medium";
+    "bg-white/5 border border-white/10 text-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-lolo-pink h-12 rounded-xl placeholder:text-neutral-600 transition-colors text-sm";
+  const labelStyle =
+    "text-[10px] font-bold uppercase text-neutral-500 tracking-wider ml-1 mb-1.5 block";
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Personal Information Section */}
-      <div className="space-y-6">
-        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-          <span className="w-1.5 h-6 bg-lolo-pink rounded-full"></span>
-          Personal Information
-        </h3>
-
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Full Name */}
         <FormField
           control={form.control}
-          name="full_name"
+          name={`${prefix}.full_name`} // ✨ Dynamic Name
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
-                Full Name *
-              </FormLabel>
+              <FormLabel className={labelStyle}>Full Name *</FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   className={inputStyle}
-                  placeholder="Enter your full name"
+                  placeholder="Full Name"
                 />
               </FormControl>
-              <FormMessage className="text-red-400 text-xs ml-1" />
+              <FormMessage className="text-red-400 text-xs" />
             </FormItem>
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Email */}
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
-                  Email Address *
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="email"
-                    className={inputStyle}
-                    placeholder="your.email@example.com"
-                  />
-                </FormControl>
-                <FormMessage className="text-red-400 text-xs ml-1" />
-              </FormItem>
-            )}
-          />
-
-          {/* Phone Number */}
-          <FormField
-            control={form.control}
-            name="phone_no"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
-                  Phone Number *
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    className={inputStyle}
-                    placeholder="10-digit number"
-                    maxLength={10}
-                  />
-                </FormControl>
-                <FormMessage className="text-red-400 text-xs ml-1" />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Gender */}
-          <FormField
-            control={form.control}
-            name="gender"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
-                  Gender *
-                </FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl className="h-14">
-                    <SelectTrigger className={selectTriggerStyle}>
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className={selectContentStyle}>
-                    {genderOptions.map(({ label, value }) => (
-                      <SelectItem
-                        key={value}
-                        value={value}
-                        className={selectItemStyle}
-                      >
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage className="text-red-400 text-xs ml-1" />
-              </FormItem>
-            )}
-          />
-
-          {/* College Hostel Status */}
-          <FormField
-            control={form.control}
-            name="college_hostel_status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
-                  Staying in college hostel? *
-                </FormLabel>
-                <FormControl>
-                  <div className="flex gap-3 mt-2 h-14">
-                    {collegeHostelStudentOptions.map(({ label, value }) => (
-                      <Button
-                        key={Number(value)}
-                        type="button"
-                        onClick={() => field.onChange(value)}
-                        className={`flex-1 h-full rounded-2xl font-bold transition-all border ${
-                          field.value === value
-                            ? "bg-lolo-pink border-lolo-pink text-white shadow-[0_0_15px_rgba(236,72,153,0.3)]"
-                            : "bg-transparent border-white/10 text-neutral-400 hover:text-white hover:bg-white/5"
-                        }`}
-                      >
-                        {label}
-                      </Button>
-                    ))}
-                  </div>
-                </FormControl>
-                <FormMessage className="text-red-400 text-xs ml-1" />
-              </FormItem>
-            )}
-          />
-        </div>
-      </div>
-
-      {/* Academic Information Section */}
-      <div className="space-y-6 pt-8 border-t border-white/5">
-        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-          <span className="w-1.5 h-6 bg-purple-500 rounded-full"></span>
-          Academic Information
-        </h3>
-
-        {/* Registration Number */}
+        {/* Reg Number */}
         <FormField
           control={form.control}
-          name="reg_num"
+          name={`${prefix}.reg_num`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
-                Registration Number *
-              </FormLabel>
+              <FormLabel className={labelStyle}>Registration No *</FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   className={inputStyle}
-                  placeholder="10-digit registration number"
+                  placeholder="Reg Number"
                   maxLength={10}
                 />
               </FormControl>
-              <FormMessage className="text-red-400 text-xs ml-1" />
+              <FormMessage className="text-red-400 text-xs" />
             </FormItem>
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Branch */}
-          <FormField
-            control={form.control}
-            name="branch"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
-                  Branch *
-                </FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl className="h-14">
-                    <SelectTrigger className={selectTriggerStyle}>
-                      <SelectValue placeholder="Select your branch" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className={selectContentStyle}>
-                    {branchOptions.map(({ label, value }) => (
-                      <SelectItem
-                        key={value}
-                        value={value}
-                        className={selectItemStyle}
-                      >
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage className="text-red-400 text-xs ml-1" />
-              </FormItem>
-            )}
-          />
+        {/* Email */}
+        <FormField
+          control={form.control}
+          name={`${prefix}.email`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={labelStyle}>Email *</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  type="email"
+                  className={inputStyle}
+                  placeholder="Email Address"
+                />
+              </FormControl>
+              <FormMessage className="text-red-400 text-xs" />
+            </FormItem>
+          )}
+        />
 
-          {/* Year Of Study */}
-          <FormField
-            control={form.control}
-            name="year"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
-                  Year Of Study *
-                </FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl className="h-14">
-                    <SelectTrigger className={selectTriggerStyle}>
-                      <SelectValue placeholder="Select your year" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className={selectContentStyle}>
-                    {yearOptions.map(({ label, value }) => (
-                      <SelectItem
-                        key={value}
-                        value={value}
-                        className={selectItemStyle}
-                      >
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage className="text-red-400 text-xs ml-1" />
-              </FormItem>
-            )}
-          />
-        </div>
+        {/* Phone */}
+        <FormField
+          control={form.control}
+          name={`${prefix}.phone_no`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={labelStyle}>Phone *</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  className={inputStyle}
+                  placeholder="Phone Number"
+                  maxLength={10}
+                />
+              </FormControl>
+              <FormMessage className="text-red-400 text-xs" />
+            </FormItem>
+          )}
+        />
+
+        {/* Branch */}
+        <FormField
+          control={form.control}
+          name={`${prefix}.branch`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={labelStyle}>Branch *</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger className={inputStyle}>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="bg-[#09090b] border-white/10 text-white">
+                  {branches.map((b) => (
+                    <SelectItem key={b.value} value={b.value}>
+                      {b.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage className="text-red-400 text-xs" />
+            </FormItem>
+          )}
+        />
+
+        {/* Year */}
+        <FormField
+          control={form.control}
+          name={`${prefix}.year`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={labelStyle}>Year *</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger className={inputStyle}>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="bg-[#09090b] border-white/10 text-white">
+                  {yearOptions.map((y) => (
+                    <SelectItem key={y.value} value={y.value}>
+                      {y.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage className="text-red-400 text-xs" />
+            </FormItem>
+          )}
+        />
+
+        {/* Gender */}
+        <FormField
+          control={form.control}
+          name={`${prefix}.gender`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={labelStyle}>Gender *</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger className={inputStyle}>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="bg-[#09090b] border-white/10 text-white">
+                  {genderOptions.map((g) => (
+                    <SelectItem key={g.value} value={g.value}>
+                      {g.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage className="text-red-400 text-xs" />
+            </FormItem>
+          )}
+        />
+
+        {/* Hostel Status */}
+        <FormField
+          control={form.control}
+          name={`${prefix}.college_hostel_status`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={labelStyle}>Hosteller? *</FormLabel>
+              <FormControl>
+                <div className="flex gap-2 h-12">
+                  {collegeHostelStudentOptions.map(({ label, value }) => (
+                    <Button
+                      key={String(value)}
+                      type="button"
+                      onClick={() => field.onChange(value)}
+                      className={`flex-1 h-full rounded-xl font-bold text-xs transition-all border ${
+                        field.value === value
+                          ? "bg-lolo-pink border-lolo-pink text-white"
+                          : "bg-transparent border-white/10 text-neutral-400 hover:text-white"
+                      }`}
+                    >
+                      {label}
+                    </Button>
+                  ))}
+                </div>
+              </FormControl>
+              <FormMessage className="text-red-400 text-xs" />
+            </FormItem>
+          )}
+        />
       </div>
     </div>
   );
