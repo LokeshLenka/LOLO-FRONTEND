@@ -9,8 +9,8 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-lolo-pink/30 selection:text-white relative overflow-hidden flex flex-col items-center justify-center p-4 md:p-8">
       {/* Background Blobs */}
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-lolo-pink/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-lolo-cyan/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-[1500px] h-[500px] bg-lolo-pink/5 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Back Button */}
       <button
