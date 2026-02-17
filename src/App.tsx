@@ -49,6 +49,7 @@ import ApprovalHistoryDetailsPage from "./pages/ExecutiveBodyMember/Users/Approv
 import EventRegistrationsPage from "./pages/ExecutiveBodyMember/EventRegistrations/EventRegistrationsPage";
 import UserEventRegistrationCards from "./pages/User/Events/UserEventRegistrationsPage";
 import { PublicUserSignUp } from "./pages/PublicUsers/PublicUserSignUp";
+import { SuccessEventRegistration } from "./pages/App/Events/SuccessEventRegistration";
 
 // --- Helper Components ---
 
@@ -62,6 +63,22 @@ function PrivateRoute() {
 // --- Main App Component ---
 function App() {
   const location = useLocation();
+
+  // Wrapper to pass state as props
+  const SuccessWrapper = () => {
+    const location = useLocation();
+    const state = location.state as {
+      eventType?: string;
+      eventName?: string;
+    } | null;
+
+    return (
+      <SuccessEventRegistration
+        eventType={(state?.eventType as any) || "default"}
+        eventName={state?.eventName}
+      />
+    );
+  };
 
   return (
     <AuthProvider>
@@ -106,9 +123,20 @@ function App() {
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/success" element={<SuccessRegistration />} />
           <Route path="/registration-status" element={<RegistrationStatus />} />
+          // Inside your Router
+          <Route
+            path="/success-event-registration"
+            element={
+              // Wrap with a small component to extract location state if needed
+              <SuccessWrapper />
+            }
+          />
           {/* For Public users(not a part of club) */}
           {/* <Route path="/public-user/register" element={<PublicUserSignUp />} /> */}
-          <Route path="/event/:eventuuid/public-user/register" element={<PublicUserSignUp />} />
+          <Route
+            path="/events/:eventuuid/public-user/register"
+            element={<PublicUserSignUp />}
+          />
           {/* Test Route */}
           {/* <Route path="/test/music" element={<MusicProfile />} /> */}
           {/* ================= PROTECTED DASHBOARD ROUTES ================= */}
