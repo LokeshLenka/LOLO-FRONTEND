@@ -44,34 +44,6 @@ import { Timeline } from "@/components/Timeline";
 
 // --- COMPONENT: Floating Music Particles (Background) ---
 // --- COMPONENT: Floating Music Particles (Background) ---
-
-// --- COMPONENT: Sound Wave Divider ---
-const SoundWaveDivider = () => (
-  <div className="w-full h-16 sm:h-24 overflow-hidden leading-[0] transform translate-y-1">
-    <svg
-      data-name="Layer 1"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 1200 120"
-      preserveAspectRatio="none"
-      className="relative block w-[calc(100%+1.3px)] h-full"
-    >
-      <path
-        d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
-        opacity=".25"
-        className="fill-lolo-pink"
-      ></path>
-      <path
-        d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z"
-        opacity=".5"
-        className="fill-lolo-cyan"
-      ></path>
-      <path
-        d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z"
-        className="fill-[#080808]"
-      ></path>
-    </svg>
-  </div>
-);
 const Home: React.FC = () => {
   // Timeline Data
   const timelineData = [
@@ -148,39 +120,33 @@ const Home: React.FC = () => {
       {/* <FloatingMusicParticles /> */}
 
       {/* --- HERO SECTION --- */}
-      <section className="relative h-[100dvh] min-h-[700px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[100dvh] min-h-[700px] flex items-center justify-center overflow-hidden mt-10">
         {/* Layer 1: Interactive Background (Restored) */}
-        <div className="absolute inset-0 !z-10 opacity-70">
+        <div className="absolute inset-0 !z-10 !opacity-70">
           <FloatingLines />
         </div>
 
         {/* Layer 2: Ambient Lighting */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 -z-10 overflow-hidden">
           <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-lolo-pink/20 rounded-full blur-[120px] mix-blend-screen opacity-20 will-change-transform" />
           <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-lolo-cyan/20 rounded-full blur-[120px] mix-blend-screen opacity-20 will-change-transform" />
           <div className="absolute inset-0 bg-[url('/noise.png')] !opacity-100 mix-blend-overlay z-0" />
         </div>
 
         {/* Layer 3: Main Content */}
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-5 flex flex-col items-center justify-center text-center h-full">
-          {/* New Audio Visualizer */}
-          {/* <AudioVisualizer /> */}
-
+        <div className="relative w-full mx-auto z-10 px-5 flex flex-col items-center justify-center text-center h-full">
+          {/* Hero Headline - Typography-Led Design */}
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-6 sm:mb-8"
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center mb-8"
           >
-            <div className="inline-flex h-8 sm:h-9 items-center gap-2 sm:gap-3 px-4 sm:px-5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl shadow-lg shadow-black/20 hover:border-white/20 transition-colors cursor-default">
-              <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lolo-cyan opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-lolo-cyan"></span>
+            <h1 className="text-[clamp(3rem,10vw,8rem)] font-bold tracking-[-0.03em] leading-[0.95] text-white mb-6">
+              <span className="block font-light text-white/60 text-[0.35em] mb-4 tracking-[0.02em]">
+                Living Out Loud Originals
               </span>
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-gray-300">
-                The Future of Campus Music
-              </span>
-            </div>
+            </h1>
           </motion.div>
 
           <motion.div
@@ -189,7 +155,7 @@ const Home: React.FC = () => {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-6xl mx-auto mb-6 sm:mb-8 relative px-2"
           >
-            <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight leading-[1.1] text-white">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.1] text-white">
               <span className="block font-club mb-2 text-white/90">
                 Unleash
               </span>
@@ -247,16 +213,21 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* --- SOUND WAVE DIVIDER --- */}
-      <SoundWaveDivider />
-
       {/* --- SPOTLIGHT / EVENTS SECTION --- */}
       <EventsSection />
 
       {/* --- ABOUT LOLO SECTION --- */}
       <section className="py-24 md:py-32 bg-[#020202] relative z-20">
         <div className="max-w-7xl mx-auto px-5">
-          <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-24">
+          <SectionHeader
+            title={
+              <>
+                About <span className="font-club text-lolo-pink">LOLO</span>
+              </>
+            }
+            subtitle=""
+          />
+          <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-24 bg-white/10 rounded-[2.5rem] px-2 py-4">
             {/* Left: Text Content */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
@@ -265,11 +236,6 @@ const Home: React.FC = () => {
               viewport={{ once: true }}
               className="md:w-1/2"
             >
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8 tracking-tight">
-                About <span className="font-club text-lolo-pink">LoLo</span>{" "}
-                Music
-              </h2>
-
               <div className="space-y-4 sm:space-y-6 text-gray-400 text-base sm:text-lg leading-relaxed font-light">
                 <p>
                   <strong className="text-white">
@@ -381,167 +347,6 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* --- COLLEGE SECTION --- */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden py-16 sm:py-24">
-        {/* Background Image with Overlay */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/images/srkr/image.png" // Ensure this path is correct
-            className="w-full h-full object-cover filter brightness-[0.3] scale-105"
-            alt="SRKR Engineering College Campus"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#030303] via-black/50 to-transparent"></div>
-          {/* Subtle vignette */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#030303_100%)] opacity-80"></div>
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-5 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            {/* Left: Text Content */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="text-left"
-            >
-              {/* Badges */}
-              <div className="flex flex-wrap gap-3 mb-6">
-                <span className="px-3 py-1 rounded-full border border-white/20 bg-white/10 text-[10px] font-bold tracking-widest uppercase backdrop-blur-md">
-                  Est. 1980
-                </span>
-                <span className="px-3 py-1 rounded-full border border-lolo-cyan/30 bg-lolo-cyan/10 text-lolo-cyan text-[10px] font-bold tracking-widest uppercase backdrop-blur-md">
-                  NAAC A+ (3.42 CGPA)
-                </span>
-                <span className="px-3 py-1 rounded-full border border-white/20 bg-white/10 text-[10px] font-bold tracking-widest uppercase backdrop-blur-md">
-                  Autonomous
-                </span>
-              </div>
-
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight text-white drop-shadow-lg font-sans leading-tight">
-                SRKR Engineering <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
-                  College
-                </span>
-              </h2>
-
-              <p className="text-base sm:text-lg text-gray-300 mb-8 leading-relaxed font-light drop-shadow-md border-l-2 border-lolo-pink pl-6">
-                Pioneering technical excellence for{" "}
-                <strong className="text-white">45 years</strong>. Spanning 30
-                acres of green land, we foster a creative, confident, and
-                logical approach to nation-building. From the AICTE IDEA Lab to
-                our Business Incubation Centre, we bridge the gap between
-                academic rigor and entrepreneurial innovation.
-              </p>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-3 gap-6 mb-10 border-t border-white/10 pt-8">
-                <div>
-                  <h4 className="text-3xl font-bold text-white">45</h4>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">
-                    Years of Excellence
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-3xl font-bold text-white">14</h4>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">
-                    Centres of Excellence
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-3xl font-bold text-white">Top 49</h4>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">
-                    IDEA Labs in India
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-4">
-                <a
-                  href="https://srkrec.edu.in"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button className="bg-white text-black border-none rounded-full px-8 py-6 text-base font-bold hover:scale-105 transition-all ease-in-out shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-                    Visit Official Website
-                  </Button>
-                </a>
-                <div className="flex items-center gap-3 px-6 py-2 rounded-full border border-white/10 bg-black/20 backdrop-blur-sm">
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/en/e/eb/All_India_Council_for_Technical_Education_logo.png"
-                    className="h-8 opacity-80 grayscale hover:grayscale-0 transition-all"
-                    alt="AICTE"
-                  />
-                  <div className="w-px h-8 bg-white/10"></div>
-                  <span className="text-xs text-gray-400 font-medium">
-                    UGC Approved
-                    <br />
-                    JNTUK Affiliated
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Right: Glass Card with Highlights */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative hidden lg:block"
-            >
-              {/* Corrected Gradient Glow - using theme variables */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-lolo-pink/20 to-lolo-cyan/20 opacity-50 blur-2xl rounded-[2.5rem]"></div>
-
-              <div className="relative p-10 rounded-[2.5rem] bg-neutral-900/60 backdrop-blur-xl border border-white/10 shadow-2xl">
-                <h3 className="text-2xl font-bold text-white mb-6">
-                  Why We Thrive Here
-                </h3>
-
-                <ul className="space-y-6">
-                  {[
-                    {
-                      title: "Research Hub",
-                      desc: "Recognized as SIRO by Ministry of Science & Technology.",
-                      icon: "🔬",
-                    },
-                    {
-                      title: "Innovation",
-                      desc: "MSME Business Incubation Centre & i-Hub for Startups.",
-                      icon: "💡",
-                    },
-                    {
-                      title: "Global Reach",
-                      desc: "Collaborations with German Varsities & Indo-European Synchronization.",
-                      icon: "🌍",
-                    },
-                    {
-                      title: "Vibrant Campus",
-                      desc: "Home to 20+ active clubs including Coding, Cine, and Music.",
-                      icon: "🎭",
-                    },
-                  ].map((item, i) => (
-                    <li key={i} className="flex gap-4 items-start">
-                      <span className="flex-shrink-0 w-10 h-10 rounded-full bg-lolo-cyan/10 border border-lolo-cyan/20 flex items-center justify-center text-lg text-lolo-cyan">
-                        {item.icon}
-                      </span>
-                      <div>
-                        <h4 className="text-white font-bold text-sm">
-                          {item.title}
-                        </h4>
-                        <p className="text-gray-400 text-sm leading-snug">
-                          {item.desc}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
       {/* --- WHY LOLO (FEATURES GRID) --- */}
       <section className="py-16 sm:py-24 md:py-32 bg-[#050505] relative z-20">
         <div className="max-w-7xl mx-auto px-5">
@@ -590,13 +395,13 @@ const Home: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className="group p-8 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] bg-white/[0.02] border border-white/[0.05] backdrop-blur-sm hover:backdrop-blur-xl hover:bg-white/[0.05] transition-all duration-500 relative overflow-hidden flex flex-col"
+                className={`group p-8 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] bg-gray-950 border-2 ${feature.border} backdrop-blur-sm hover:backdrop-blur-xl hover:bg-white/[0.05] transition-all duration-500 relative overflow-hidden flex flex-col`}
               >
                 {/* Gradient Glow Blob */}
                 <div
                   className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[80px] opacity-20 group-hover:opacity-40 transition-opacity duration-500 ${feature.color.replace(
                     "text-",
-                    "bg-"
+                    "bg-",
                   )}`}
                 />
                 <div className="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-5 mb-6 sm:mb-8">
@@ -647,7 +452,7 @@ const Home: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="group relative overflow-hidden rounded-[2.5rem] bg-[#0A0A0A] border border-white/5 flex flex-col h-full hover:border-lolo-pink/50 transition-all duration-500 hover:shadow-[0_0_50px_-12px_rgba(236,72,153,0.3)]"
+              className="group relative overflow-hidden rounded-[2.5rem] bg-lolo-pink/5 border border-white/5 flex flex-col h-full hover:border-lolo-pink/50 transition-all duration-500 hover:shadow-[0_0_50px_-12px_rgba(236,72,153,0.3)]"
             >
               {/* Card Background Texture */}
               <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
@@ -689,7 +494,7 @@ const Home: React.FC = () => {
                       >
                         {tag}
                       </span>
-                    )
+                    ),
                   )}
                 </div>
               </div>
