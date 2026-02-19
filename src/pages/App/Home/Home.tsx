@@ -12,38 +12,10 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { Button } from "@heroui/button";
-import EventsSection from "@/components/EventsSection";
 import SectionHeader from "@/components/HomeSectionHeader";
 import FloatingLines from "@/components/FloatingLines";
-import AnimatedRanks from "@/components/AnimatedRanks";
 import { Timeline } from "@/components/Timeline";
 
-// --- COMPONENT: Rhythmic Audio Visualizer (Hero) ---
-// const AudioVisualizer = () => {
-//   return (
-//     <div className="flex items-end justify-center gap-1 h-16 sm:h-24 mb-6 opacity-60">
-//       {[...Array(12)].map((_, i) => (
-//         <motion.div
-//           key={i}
-//           className="w-2 sm:w-3 bg-gradient-to-t from-lolo-pink to-lolo-cyan rounded-full"
-//           animate={{
-//             height: ["20%", "80%", "40%", "100%", "30%"],
-//           }}
-//           transition={{
-//             duration: 1.2,
-//             repeat: Infinity,
-//             repeatType: "reverse",
-//             ease: "easeInOut",
-//             delay: i * 0.1, // Stagger effect
-//           }}
-//         />
-//       ))}
-//     </div>
-//   );
-// };
-
-// --- COMPONENT: Floating Music Particles (Background) ---
-// --- COMPONENT: Floating Music Particles (Background) ---
 const Home: React.FC = () => {
   // Timeline Data
   const timelineData = [
@@ -116,37 +88,40 @@ const Home: React.FC = () => {
 
   return (
     <div className="bg-[#030303] text-white w-full selection:bg-lolo-pink selection:text-white overflow-x-hidden font-poppins">
-      {/* Floating Music Elements (Background) */}
-      {/* <FloatingMusicParticles /> */}
-
       {/* --- HERO SECTION --- */}
-      <section className="relative h-[100dvh] min-h-[700px] flex items-center justify-center overflow-hidden mt-10">
+      <section className="relative h-[100dvh] min-h-[700px] flex items-center justify-center overflow-hidden">
         {/* Layer 1: Interactive Background (Restored) */}
-        <div className="absolute inset-0 !z-10 !opacity-70">
+        <div className="absolute inset-0 !z-10 opacity-70">
           <FloatingLines />
         </div>
 
         {/* Layer 2: Ambient Lighting */}
-        <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
           <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-lolo-pink/20 rounded-full blur-[120px] mix-blend-screen opacity-20 will-change-transform" />
           <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-lolo-cyan/20 rounded-full blur-[120px] mix-blend-screen opacity-20 will-change-transform" />
           <div className="absolute inset-0 bg-[url('/noise.png')] !opacity-100 mix-blend-overlay z-0" />
         </div>
 
         {/* Layer 3: Main Content */}
-        <div className="relative w-full mx-auto z-10 px-5 flex flex-col items-center justify-center text-center h-full">
-          {/* Hero Headline - Typography-Led Design */}
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-5 flex flex-col items-center justify-center text-center h-full">
+          {/* New Audio Visualizer */}
+          {/* <AudioVisualizer /> */}
+
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-center mb-8"
+            transition={{ duration: 0.5 }}
+            className="mb-6 sm:mb-8"
           >
-            <h1 className="text-[clamp(3rem,10vw,8rem)] font-bold tracking-[-0.03em] leading-[0.95] text-white mb-6">
-              <span className="block font-light text-white/60 text-[0.35em] mb-4 tracking-[0.02em]">
-                Living Out Loud Originals
+            <div className="inline-flex h-8 sm:h-9 items-center gap-2 sm:gap-3 px-4 sm:px-5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl shadow-lg shadow-black/20 hover:border-white/20 transition-colors cursor-default">
+              <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lolo-cyan opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-lolo-cyan"></span>
               </span>
-            </h1>
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-gray-300">
+                The Future of Campus Music
+              </span>
+            </div>
           </motion.div>
 
           <motion.div
@@ -155,7 +130,7 @@ const Home: React.FC = () => {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-6xl mx-auto mb-6 sm:mb-8 relative px-2"
           >
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.1] text-white">
+            <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight leading-[1.1] text-white">
               <span className="block font-club mb-2 text-white/90">
                 Unleash
               </span>
@@ -200,34 +175,13 @@ const Home: React.FC = () => {
               </Button>
             </Link>
           </motion.div>
-
-          {/* Scroll Indicator */}
-          {/* <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.5, duration: 1 }}
-            className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-50 hidden md:block"
-          >
-            <ChevronDown className="text-white/50" />
-          </motion.div> */}
         </div>
       </section>
-
-      {/* --- SPOTLIGHT / EVENTS SECTION --- */}
-      <EventsSection />
 
       {/* --- ABOUT LOLO SECTION --- */}
       <section className="py-24 md:py-32 bg-[#020202] relative z-20">
         <div className="max-w-7xl mx-auto px-5">
-          <SectionHeader
-            title={
-              <>
-                About <span className="font-club text-lolo-pink">LOLO</span>
-              </>
-            }
-            subtitle=""
-          />
-          <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-24 bg-white/10 rounded-[2.5rem] px-2 py-4">
+          <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-24">
             {/* Left: Text Content */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
@@ -236,6 +190,11 @@ const Home: React.FC = () => {
               viewport={{ once: true }}
               className="md:w-1/2"
             >
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8 tracking-tight">
+                About <span className="font-club text-lolo-pink">LoLo</span>{" "}
+                Music
+              </h2>
+
               <div className="space-y-4 sm:space-y-6 text-gray-400 text-base sm:text-lg leading-relaxed font-light">
                 <p>
                   <strong className="text-white">
@@ -350,18 +309,6 @@ const Home: React.FC = () => {
       {/* --- WHY LOLO (FEATURES GRID) --- */}
       <section className="py-16 sm:py-24 md:py-32 bg-[#050505] relative z-20">
         <div className="max-w-7xl mx-auto px-5">
-          <SectionHeader
-            title={
-              <>
-                Why{" "}
-                <span className="font-club text-lolo-pink text-4xl md:text-6xl ml-2 align-middle px-2">
-                  SRKR LOLO?
-                </span>
-              </>
-            }
-            subtitle="We are redefining how campus talent is discovered, celebrated, and amplified."
-          />
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {[
               {
@@ -395,7 +342,7 @@ const Home: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className={`group p-8 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] bg-gray-950 border-2 ${feature.border} backdrop-blur-sm hover:backdrop-blur-xl hover:bg-white/[0.05] transition-all duration-500 relative overflow-hidden flex flex-col`}
+                className="group p-8 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] bg-white/[0.02] border border-white/[0.05] backdrop-blur-sm hover:backdrop-blur-xl hover:bg-white/[0.05] transition-all duration-500 relative overflow-hidden flex flex-col"
               >
                 {/* Gradient Glow Blob */}
                 <div
@@ -452,7 +399,7 @@ const Home: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="group relative overflow-hidden rounded-[2.5rem] bg-lolo-pink/5 border border-white/5 flex flex-col h-full hover:border-lolo-pink/50 transition-all duration-500 hover:shadow-[0_0_50px_-12px_rgba(236,72,153,0.3)]"
+              className="group relative overflow-hidden rounded-[2.5rem] bg-[#0A0A0A] border border-white/5 flex flex-col h-full hover:border-lolo-pink/50 transition-all duration-500 hover:shadow-[0_0_50px_-12px_rgba(236,72,153,0.3)]"
             >
               {/* Card Background Texture */}
               <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
@@ -569,26 +516,6 @@ const Home: React.FC = () => {
             </Link>
           </div>
         </div>
-      </section>
-
-      {/* --- CREDIT SYSTEM --- */}
-      <section className="py-16 sm:py-24 md:py-32 bg-[#050505] border-y border-white/5 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[800px] h-[400px] bg-lolo-pink/5 blur-[120px] rounded-full pointer-events-none" />
-        <SectionHeader
-          title={
-            <>
-              Rise Through The{" "}
-              <span className="font-club text-lolo-pink text-4xl md:text-6xl ml-2 align-middle px-2">
-                Ranks
-              </span>
-            </>
-          }
-          subtitle="Earn credits, unlock perks, and build your legacy."
-        />
-
-        {/* title="Rise Through The Ranks" */}
-
-        <AnimatedRanks />
       </section>
 
       {/* --- TIMELINE SECTION --- */}
