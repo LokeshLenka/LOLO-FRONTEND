@@ -6,11 +6,11 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative bg-[#020202] text-white border-t border-white/5 overflow-hidden pt-20">
+    <footer className="w-full relative bg-[#020202] text-white border-t border-white/5 overflow-hidden pt-20">
       {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 bg-lolo-pink/5 blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-lolo-pink/5 blur-[100px] pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto px-6 z-10">
+      <div className="relative mx-auto px-12 z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 mb-20">
           {/* Brand & Newsletter Column (Span 5) */}
           <div className="lg:col-span-5 space-y-8">
@@ -157,10 +157,10 @@ const Footer = () => {
         <div className="border-t border-white/10 py-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
           <p>&copy; {currentYear} SRKR LOLO. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <Link to="/privacy" className="hover:text-white transition-colors">
+            <Link to="/privacy-policy" className="hover:text-white transition-colors">
               Privacy Policy
             </Link>
-            <Link to="/terms" className="hover:text-white transition-colors">
+            <Link to="/terms-of-service" className="hover:text-white transition-colors">
               Terms of Service
             </Link>
             <span className="flex items-center gap-1 text-gray-600">

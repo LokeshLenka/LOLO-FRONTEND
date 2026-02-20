@@ -114,16 +114,6 @@ export default function LegalPageLayout({
             </div>
           </section>
         </div>
-        <div className="z-40 fixed right-10 bottom-24">
-          <a
-            href="#top"
-            className="text-sm text-neutral-400 hover:text-white transition"
-          >
-            <div className="bg-white p-3 rounded-full">
-              <ChevronUpCircle className="text-black" />
-            </div>
-          </a>
-        </div>
 
         {/* Footer note */}
         <footer className="mt-14 text-sm text-neutral-500">
