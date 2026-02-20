@@ -106,7 +106,7 @@ function App() {
             <Route path="contact" element={<ContactUs />} />
             <Route path="faq" element={<FAQ />} />
 
-            <Route path="terms&conditions" element={<TermsOfServicePage />} />
+            <Route path="terms-of-service" element={<TermsOfServicePage />} />
             <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
 
             {/* Technical Pages */}
