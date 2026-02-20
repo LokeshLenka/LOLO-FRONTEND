@@ -49,7 +49,6 @@ import EventRegistrationsPage from "./pages/ExecutiveBodyMember/EventRegistratio
 import UserEventRegistrationCards from "./pages/User/Events/UserEventRegistrationsPage";
 import { PublicUserSignUp } from "./pages/PublicUsers/PublicUserSignUp";
 import { SuccessEventRegistration } from "./pages/App/Events/SuccessEventRegistration";
-import Homev1 from "./pages/App/Home/Homev1";
 import Home from "./pages/App/Home/Home";
 import TermsOfServicePage from "./pages/OtherPages/TermsOfService";
 import PrivacyPolicyPage from "./pages/OtherPages/PrivacyPolicy";
@@ -92,7 +91,7 @@ function App() {
         <Routes location={location} key={location.pathname}>
           {/* ================= PUBLIC ROUTES ================= */}
           <Route path="/" element={<MainLayout />}>
-            <Route index element={<Homev1 />} />
+            <Route index element={<Home />} />
             <Route path="home" element={<Home />} />
 
             {/* Feature Pages */}
