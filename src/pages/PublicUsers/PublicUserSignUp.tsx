@@ -130,9 +130,9 @@ export const PublicUserSignUp: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [eventFee, setEventFee] = useState<number | null>(null);
   const [eventName, setEventName] = useState<string>("");
-  const [paymentAccessToken, setPaymentAccessToken] = useState<string | null>(
-    null,
-  );
+  // const [paymentAccessToken, setPaymentAccessToken] = useState<string | null>(
+  //   null,
+  // );
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -463,25 +463,6 @@ export const PublicUserSignUp: React.FC = () => {
                   </h3>
                   <PublicUserStep form={form} prefix="" />
                 </div>
-                <Button
-                  type="submit"
-                  disabled={isProcessing || !isFeeLoaded}
-                  className="w-full h-16 ..."
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        Confirm Registration{" "}
-                        <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                      </>
-                    )}
-                  </span>
-                </Button>
               </form>
             </Form>
           </div>
@@ -528,9 +509,9 @@ export const PublicUserSignUp: React.FC = () => {
                 )}
 
                 <Button
-                  onClick={form.handleSubmit(handleRegistration)}
+                  type="submit"
                   disabled={isProcessing || !isFeeLoaded}
-                  className="w-full h-16 bg-white text-black hover:bg-lolo-pink hover:text-white font-bold rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(236,72,153,0.4)] transition-all active:scale-[0.98] text-lg relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-16 ..."
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     {isProcessing ? (
@@ -545,7 +526,6 @@ export const PublicUserSignUp: React.FC = () => {
                       </>
                     )}
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
                 </Button>
 
                 <p className="text-[10px] text-neutral-500 text-center mt-6 flex items-center justify-center gap-1.5">

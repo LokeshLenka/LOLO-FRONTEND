@@ -1,4 +1,3 @@
-import { ChevronUpCircle } from "lucide-react";
 import { useMemo } from "react";
 
 type LegalSection = {
