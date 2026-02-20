@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import axios from "axios";
+import { toast } from "sonner";
+import { useNavigate, useParams } from "react-router-dom";
+
 import { Button } from "@/components/ui/button/button";
 import { Form } from "@/components/ui/form";
+import { PublicUserStep } from "./PublicUserStep";
+
 import {
   ArrowLeft,
   Loader2,
@@ -12,10 +18,13 @@ import {
   CreditCard,
   AlertCircle,
 } from "lucide-react";
-import axios from "axios";
-import { toast } from "sonner";
-import { useNavigate, useParams } from "react-router-dom";
-import { PublicUserStep } from "./PublicUserStep";
+
+// --- Razorpay global type ---
+declare global {
+  interface Window {
+    Razorpay?: any;
+  }
+}
 
 // --- Schemas ---
 const formSchema = z.object({
@@ -38,20 +47,93 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
+type EventResponse = {
+  name?: string;
+  fee?: number | string | null;
+  amount?: number | string | null; // if your API uses amount
+};
+
+type PublicUserDto = {
+  id?: number;
+  uuid?: string;
+  name?: string;
+  email?: string;
+  phone_no?: string;
+  reg_num?: string;
+};
+
+type CreateRegistrationResponse = {
+  uuid?: string;
+  data?: { uuid?: string };
+};
+
+type CreateOrderResponse = {
+  order_id: string;
+  amount: number; // paise
+  currency: string;
+  key: string;
+  public_registration_uuid?: string;
+  payer_name?: string;
+  access_token: string;
+  event_name?: string;
+  payment_uuid?: string; // optional if your backend returns it
+};
+
+async function loadRazorpayScript(): Promise<boolean> {
+  if (window.Razorpay) return true;
+
+  return await new Promise((resolve) => {
+    const existing = document.querySelector<HTMLScriptElement>(
+      'script[src="https://checkout.razorpay.com/v1/checkout.js"]',
+    );
+    if (existing) return resolve(true);
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
+function unwrap<T>(res: any): T {
+  return (res?.data?.data ?? res?.data) as T;
+}
+
+function toNumberFee(val: unknown): number {
+  if (val === undefined || val === null) return 0;
+  if (typeof val === "number") return Number.isFinite(val) ? val : 0;
+  if (typeof val === "string") {
+    if (val.trim().toLowerCase() === "free") return 0;
+    const n = Number.parseFloat(val);
+    return Number.isFinite(n) ? n : 0;
+  }
+  return 0;
+}
+
 export const PublicUserSignUp: React.FC = () => {
   const navigate = useNavigate();
   const params = useParams();
 
-  // Robust check: try 'eventuuid' or fallback
-  const eventId = params.eventuuid;
+  const eventId = params.eventuuid; // your route param
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+
+  const api = useMemo(() => {
+    return axios.create({
+      baseURL: API_BASE_URL,
+      headers: { "Content-Type": "application/json" },
+    });
+  }, [API_BASE_URL]);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [eventFee, setEventFee] = useState<number | null>(null);
   const [eventName, setEventName] = useState<string>("");
+  const [paymentAccessToken, setPaymentAccessToken] = useState<string | null>(
+    null,
+  );
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-  // Initialize Form
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -66,197 +148,272 @@ export const PublicUserSignUp: React.FC = () => {
     },
   });
 
-  // --- Robust Data Fetching ---
+  const isFeeLoaded = eventFee !== null;
+  const currentFee = eventFee ?? 0;
+
+  // --- Fetch event details ---
   useEffect(() => {
     let isMounted = true;
 
     if (!eventId) {
-      console.error("Event ID missing in URL");
       toast.error("Invalid Event Link");
+      setEventFee(0);
       return;
     }
 
-    const fetchEventDetails = async () => {
+    (async () => {
       try {
-        console.log(`Fetching event details for ID: ${eventId}`);
-        const res = await axios.get(`${API_BASE_URL}/events/${eventId}`);
+        const res = await api.get(`/events/${eventId}`);
+        const data = unwrap<EventResponse>(res);
 
         if (!isMounted) return;
 
-        const data = res.data.data || res.data;
-        let fee = data.fee;
-
-        if (fee === undefined || fee === null) {
-          fee = 0;
-        } else if (typeof fee === "string") {
-          if (fee.toLowerCase() === "free") fee = 0;
-          else fee = parseFloat(fee);
-        }
-
-        if (isNaN(Number(fee))) fee = 0;
-
-        setEventFee(Number(fee));
+        const fee = toNumberFee(data.fee ?? data.amount);
+        setEventFee(fee);
         setEventName(data.name || "Event");
-      } catch (error) {
-        console.error("Failed to fetch event details:", error);
+      } catch (e) {
+        if (!isMounted) return;
         toast.error("Failed to load event details. Please refresh.");
-        if (isMounted) setEventFee(0);
+        setEventFee(0);
       }
-    };
-
-    fetchEventDetails();
+    })();
 
     return () => {
       isMounted = false;
     };
-  }, [eventId, API_BASE_URL]);
+  }, [api, eventId]);
 
-  const isFeeLoaded = eventFee !== null;
-  const currentFee = eventFee ?? 0;
+  // --- Helpers: user resolve/create ---
+  const resolvePublicUserId = async (
+    normalizedRegNum: string,
+    data: FormData,
+  ) => {
+    // 1) Try fetch existing
+    try {
+      const checkRes = await api.get(
+        `/public-user/reg-num/${normalizedRegNum}`,
+      );
+      const userData = unwrap<PublicUserDto>(checkRes);
 
-  // --- Registration Logic ---
+      if (userData?.id) return userData.id;
+    } catch (err: any) {
+      // ignore 404; throw others
+      if (err?.response?.status !== 404) throw err;
+    }
+
+    // 2) Create user
+    const userPayload = {
+      reg_num: normalizedRegNum,
+      name: data.full_name,
+      email: data.email,
+      gender: data.gender,
+      year: data.year,
+      branch: data.branch,
+      phone_no: data.phone_no,
+      college_hostel_status: data.college_hostel_status ? 1 : 0,
+    };
+
+    await api.post(`/public-user`, userPayload);
+
+    // 3) Re-fetch to get numeric id (avoid sending uuid where integer expected)
+    const refetchRes = await api.get(
+      `/public-user/reg-num/${normalizedRegNum}`,
+    );
+    const userData = unwrap<PublicUserDto>(refetchRes);
+
+    if (!userData?.id) {
+      throw new Error("Could not resolve Public User ID. Please try again.");
+    }
+
+    return userData.id;
+  };
+
+  // --- Step: create registration ---
+  const createPublicRegistration = async (
+    publicUserId: number,
+    normalizedRegNum: string,
+  ) => {
+    if (!eventId) throw new Error("Event ID missing");
+
+    const payload = {
+      public_user_id: publicUserId,
+      reg_num: normalizedRegNum,
+    };
+
+    const regRes = await api.post<CreateRegistrationResponse>(
+      `/public/event/${eventId}/registration`,
+      payload,
+    );
+
+    const regData = unwrap<CreateRegistrationResponse>(regRes);
+
+    const uuid = regData?.uuid ?? regData?.data?.uuid;
+    if (!uuid) {
+      throw new Error("Registration created but UUID not returned by server.");
+    }
+
+    return uuid;
+  };
+
+  // --- Step: create order (backend should also store pending order/payment row) ---
+  const createRazorpayOrder = async (publicRegistrationUuid: string) => {
+    const res = await api.post<CreateOrderResponse>(`/payment/create/order`, {
+      public_registration_uuid: publicRegistrationUuid,
+    });
+
+    const order = unwrap<CreateOrderResponse>(res);
+
+    if (!order.access_token)
+      throw new Error("access_token missing from backend");
+    sessionStorage.setItem(`rp_token_${order.order_id}`, order.access_token);
+
+    if (!order?.order_id)
+      throw new Error("Order ID missing from create-order response.");
+    if (!order?.key)
+      throw new Error("Razorpay key missing from backend response.");
+    if (!order?.amount || order.amount < 100) {
+      throw new Error("Order amount invalid (must be at least 100 paise).");
+    }
+
+    return order;
+  };
+
+  // --- Step: open checkout + confirm payment ---
+  const openRazorpayCheckout = async (opts: {
+    order: CreateOrderResponse;
+    publicRegistrationUuid: string;
+    prefill: { name: string; email: string; contact: string };
+  }) => {
+    const ok = await loadRazorpayScript();
+    if (!ok) throw new Error("Failed to load Razorpay checkout script.");
+
+    const { order, publicRegistrationUuid, prefill } = opts;
+
+    const token = sessionStorage.getItem(`rp_token_${order.order_id}`);
+    if (!token) throw new Error("Payment token missing. Please retry payment.");
+
+    return await new Promise<void>((resolve, reject) => {
+      const rzp = new window.Razorpay({
+        key: order.key,
+        amount: order.amount, // paise
+        currency: order.currency,
+        name: order.event_name || eventName || "Event",
+        order_id: order.order_id, // IMPORTANT for signature + order binding
+        prefill,
+        config: {
+          display: {
+            // Put UPI first in the list
+            sequence: ["upi", "card", "netbanking"],
+            // Keep default methods visible (don’t replace everything with custom blocks)
+            preferences: { show_default_blocks: true },
+          },
+        },
+        handler: async (response: any) => {
+          try {
+            // Send success payload to backend for signature verification + mark SUCCESS.
+            await api.post(`/payment/store/payment`, {
+              public_registration_uuid: publicRegistrationUuid,
+              razorpay_order_id: order.order_id,
+              razorpay_payment_id: response?.razorpay_payment_id,
+              razorpay_signature: response?.razorpay_signature,
+              gateway_response: response, // optional for logging
+              access_token: token,
+            });
+
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        },
+      });
+
+      rzp.on("payment.failed", (resp: any) => {
+        reject(
+          new Error(
+            resp?.error?.description ||
+              resp?.error?.reason ||
+              "Payment failed. Please try again.",
+          ),
+        );
+      });
+
+      rzp.open();
+    });
+  };
+
+  // --- Main action ---
   const handleRegistration = async (data: FormData) => {
-    if (!eventId) return;
+    if (!eventId) {
+      toast.error("Invalid Event Link");
+      return;
+    }
+
+    if (!isFeeLoaded) {
+      toast.error("Please wait, loading event fee...");
+      return;
+    }
+
+    if (isProcessing) return;
     setIsProcessing(true);
-    const toastId = toast.loading("Processing registration...");
+    const toastId = toast.loading("Processing...");
 
     try {
       const normalizedRegNum = data.reg_num.toUpperCase().trim();
-      let numericUserId = null;
 
-      // 1. Check if user exists
-      try {
-        console.log(
-          `Checking for existing user with Reg Num: ${normalizedRegNum}`,
-        );
+      // A) Resolve user
+      const publicUserId = await resolvePublicUserId(normalizedRegNum, data);
 
-        const checkRes = await axios.get(
-          `${API_BASE_URL}/public-user/reg-num/${normalizedRegNum}`,
-        );
-
-        const userData = checkRes.data.data || checkRes.data;
-
-        if (userData) {
-          // Prefer ID (numeric) if available, else UUID
-          numericUserId = userData.id || userData.uuid;
-          console.log(
-            `User Check (${normalizedRegNum}): Found ID`,
-            numericUserId,
-          );
-        }
-      } catch (error: any) {
-        if (error.response?.status !== 404) {
-          console.warn(`Warning checking user ${normalizedRegNum}:`, error);
-        }
-      }
-
-      // 2. Create User if not found
-      if (!numericUserId) {
-        const userPayload = {
-          reg_num: normalizedRegNum,
-          name: data.full_name,
-          email: data.email,
-          gender: data.gender,
-          year: data.year,
-          branch: data.branch,
-          phone_no: data.phone_no,
-          college_hostel_status: data.college_hostel_status ? 1 : 0,
-        };
-
-        try {
-          await axios.post(`${API_BASE_URL}/public-user`, userPayload);
-
-          // Delay to allow DB propagation
-          await new Promise((resolve) => setTimeout(resolve, 800));
-
-          console.log(`User created for ${normalizedRegNum}, fetching ID...`);
-
-          // Re-fetch to get ID
-          const refetchRes = await axios.get(
-            `${API_BASE_URL}/public-user/reg-num/${normalizedRegNum}`,
-          );
-          console.log(
-            `Re-fetch after creation for ${normalizedRegNum}:`,
-            refetchRes.data,
-          );
-
-          const userData = refetchRes.data.data || refetchRes.data;
-          numericUserId = userData.id || userData.uuid;
-        } catch (createError: any) {
-          // Handle Duplicate Entry race condition gracefully
-          if (
-            createError.response?.status === 409 ||
-            createError.response?.data?.message
-              ?.toLowerCase()
-              .includes("duplicate") ||
-            createError.response?.data?.message
-              ?.toLowerCase()
-              .includes("already taken")
-          ) {
-            console.log("User likely exists (duplicate error), re-fetching...");
-            const refetchRes = await axios.get(
-              `${API_BASE_URL}/public-user/reg-num/${normalizedRegNum}`,
-            );
-            const userData = refetchRes.data.data || refetchRes.data;
-            numericUserId = userData.id || userData.uuid;
-          } else {
-            // Throw real errors (validation errors on user creation)
-            console.error("User Creation Failed:", createError.response?.data);
-            throw createError;
-          }
-        }
-      }
-
-      if (!numericUserId) {
-        throw new Error(
-          `Could not resolve User ID for ${normalizedRegNum}. Please try again.`,
-        );
-      }
-
-      // 3. Create Event Registration
-      const registrationPayload = {
-        public_user_id: numericUserId,
-        // event_id: eventId,
-        reg_num: normalizedRegNum,
-        // is_paid: "not_paid",
-        // payment_status: "pending",
-        // registration_status: "pending",
-      };
-
-      await axios.post(
-        `${API_BASE_URL}/public/event/${eventId}/registration`,
-        registrationPayload,
+      // B) Create registration
+      const publicRegistrationUuid = await createPublicRegistration(
+        publicUserId,
+        normalizedRegNum,
       );
 
-      toast.success("Registration Successful!", { id: toastId });
-      setTimeout(() => {
+      // C) If free event -> finish
+      if (currentFee <= 0) {
+        toast.success("Registration Successful!", { id: toastId });
         navigate("/success-event-registration", {
-          state: {
-            eventType: "default", // You can derive this from event data if available
-            eventName: eventName,
-          },
+          state: { eventType: "default", eventName: eventName || "Event" },
         });
-      }, 1000);
+        return;
+      }
+
+      // D) Create Razorpay order (and backend stores order/payment row as pending)
+      const order = await createRazorpayOrder(publicRegistrationUuid);
+
+      // E) Open Razorpay + confirm success with backend
+      await openRazorpayCheckout({
+        order,
+        publicRegistrationUuid,
+        prefill: {
+          name: data.full_name,
+          email: data.email,
+          contact: data.phone_no,
+        },
+      });
+
+      toast.success("Payment successful & registration confirmed!", {
+        id: toastId,
+      });
+      navigate("/success-event-registration", {
+        state: { eventType: "default", eventName: eventName || "Event" },
+      });
     } catch (error: any) {
-      console.error("Registration Cycle Error:", error);
+      console.error("Registration/Payment Error:", error);
 
-      let errorMessage = "Registration failed. Please try again.";
+      let errorMessage = "Something went wrong. Please try again.";
 
-      if (error.response) {
-        if (error.response.status === 422 && error.response.data.errors) {
-          const firstErrorField = Object.keys(error.response.data.errors)[0];
-          const firstErrorMsg = error.response.data.errors[firstErrorField][0];
-          errorMessage = `Validation Error: ${firstErrorMsg}`;
-        }
-        // Handle Server Errors
-        else if (error.response.data?.message) {
-          errorMessage = error.response.data.message;
-        }
-      } else if (error.message) {
+      if (error?.response?.status === 422 && error?.response?.data?.errors) {
+        const firstField = Object.keys(error.response.data.errors)[0];
+        errorMessage =
+          error.response.data.errors[firstField]?.[0] || errorMessage;
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
         errorMessage = error.message;
       }
 
-      toast.error(errorMessage, { id: toastId, duration: 5000 });
+      toast.error(errorMessage, { id: toastId, duration: 6000 });
     } finally {
       setIsProcessing(false);
     }
@@ -264,14 +421,13 @@ export const PublicUserSignUp: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#000000] text-white font-sans relative overflow-hidden flex flex-col items-center">
-      {/* Background Blobs */}
       <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-lolo-cyan/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-lolo-pink/5 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Back Button */}
       <button
         className="backdrop-blur-md z-50 absolute top-6 left-6 flex items-center gap-2 text-neutral-400 hover:text-white transition-colors group rounded-full px-4 py-2 border border-white/5 bg-black/20"
         onClick={() => window.history.back()}
+        type="button"
       >
         <ArrowLeft
           size={18}
@@ -293,14 +449,12 @@ export const PublicUserSignUp: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* LEFT COLUMN: Form */}
           <div className="lg:col-span-2 space-y-6">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleRegistration)}
                 className="space-y-8"
               >
-                {/* PRIMARY USER CARD */}
                 <div className="bg-[#09090b] border border-white/10 p-6 md:p-8 rounded-3xl relative overflow-hidden shadow-2xl">
                   <div className="absolute top-0 left-0 w-1.5 h-full bg-lolo-pink"></div>
                   <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
@@ -309,11 +463,29 @@ export const PublicUserSignUp: React.FC = () => {
                   </h3>
                   <PublicUserStep form={form} prefix="" />
                 </div>
+                <Button
+                  type="submit"
+                  disabled={isProcessing || !isFeeLoaded}
+                  className="w-full h-16 ..."
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        Confirm Registration{" "}
+                        <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                      </>
+                    )}
+                  </span>
+                </Button>
               </form>
             </Form>
           </div>
 
-          {/* RIGHT COLUMN: Summary (Sticky) */}
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6">
               <div className="bg-[#09090b]/80 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl relative overflow-hidden">
@@ -378,7 +550,8 @@ export const PublicUserSignUp: React.FC = () => {
 
                 <p className="text-[10px] text-neutral-500 text-center mt-6 flex items-center justify-center gap-1.5">
                   <AlertCircle size={10} />
-                  You will be registered immediately.
+                  You will be registered immediately (payment required only for
+                  paid events).
                 </p>
               </div>
             </div>
