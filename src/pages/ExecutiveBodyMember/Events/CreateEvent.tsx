@@ -130,20 +130,28 @@ const eventSchema = z
     coordinator3: z.string().optional().nullable(),
     alt_txt: z.string().max(255).optional(),
   })
-  .refine((data) => new Date(data.end_date) > new Date(data.start_date), {
+
+  // Start date must be in future
+  .refine((data) => dayjs(data.start_date).isAfter(dayjs()), {
+    message: "Date must be in future",
+    path: ["start_date"],
+  })
+
+  // End > Start
+  .refine((data) => dayjs(data.end_date).isAfter(dayjs(data.start_date)), {
     message: "End date must be after start date",
     path: ["end_date"],
   })
+
+  // Deadline < Start
   .refine(
-    (data) => new Date(data.registration_deadline) < new Date(data.start_date),
+    (data) =>
+      dayjs(data.registration_deadline).isBefore(dayjs(data.start_date)),
     {
       message: "Deadline must be before event starts",
       path: ["registration_deadline"],
     },
   )
-  // ... inside eventSchema definition ...
-
-  // ... inside eventSchema definition ...
 
   .refine(
     (data) => {
@@ -646,17 +654,17 @@ export default function CreateEvent() {
                         <FormLabel>Start Date</FormLabel>
                         <DateTimePicker
                           value={field.value}
-                          onChange={(dateStr) => {
-                            field.onChange(dateStr || "");
-                            // Reset End Date if invalid
-                            const endDate = form.getValues("end_date");
-                            if (
-                              dateStr &&
-                              endDate &&
-                              dayjs(endDate).isBefore(dayjs(dateStr))
-                            ) {
-                              form.setValue("end_date", "");
+                          onChange={(date) => {
+                            if (!date) {
+                              field.onChange("");
+                              return;
                             }
+
+                            const istDate = dayjs(date).format(
+                              "YYYY-MM-DD HH:mm:ss",
+                            );
+
+                            field.onChange(istDate);
                           }}
                           label="Pick start date"
                           minDate={new Date()} // Block past dates globally
@@ -676,9 +684,18 @@ export default function CreateEvent() {
                           <FormLabel>End Date</FormLabel>
                           <DateTimePicker
                             value={field.value}
-                            onChange={(dateStr) =>
-                              field.onChange(dateStr || "")
-                            }
+                            onChange={(date) => {
+                              if (!date) {
+                                field.onChange("");
+                                return;
+                              }
+
+                              const istDate = dayjs(date).format(
+                                "YYYY-MM-DD HH:mm:ss",
+                              );
+
+                              field.onChange(istDate);
+                            }}
                             label="Pick end date"
                             minDate={
                               startDateVal ? new Date(startDateVal) : new Date()
@@ -702,9 +719,18 @@ export default function CreateEvent() {
                           </FormLabel>
                           <DateTimePicker
                             value={field.value}
-                            onChange={(dateStr) =>
-                              field.onChange(dateStr || "")
-                            }
+                            onChange={(date) => {
+                              if (!date) {
+                                field.onChange("");
+                                return;
+                              }
+
+                              const istDate = dayjs(date).format(
+                                "YYYY-MM-DD HH:mm:ss",
+                              );
+
+                              field.onChange(istDate);
+                            }}
                             label="Pick deadline"
                             minDate={new Date()}
                             maxDate={
