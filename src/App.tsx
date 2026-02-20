@@ -39,7 +39,6 @@ import UserProfilePage from "./pages/User/UserProfilePage";
 
 import EBMPendingApprovals from "./pages/ExecutiveBodyMember/EBMPendingApprovals";
 import CreditsPage from "./pages/User/Credits/CreditsPage";
-import Home from "./pages/App/Home/Home";
 import ShowEventRegistrationPage from "./pages/User/Events/ShowEventRegistrationPage";
 import ShowCreditPage from "./pages/User/Credits/ShowCreditsPage";
 import CreateEvent from "./pages/ExecutiveBodyMember/Events/CreateEvent";
@@ -50,6 +49,10 @@ import EventRegistrationsPage from "./pages/ExecutiveBodyMember/EventRegistratio
 import UserEventRegistrationCards from "./pages/User/Events/UserEventRegistrationsPage";
 import { PublicUserSignUp } from "./pages/PublicUsers/PublicUserSignUp";
 import { SuccessEventRegistration } from "./pages/App/Events/SuccessEventRegistration";
+import Homev1 from "./pages/App/Home/Homev1";
+import Home from "./pages/App/Home/Home";
+import TermsOfServicePage from "./pages/OtherPages/TermsOfService";
+import PrivacyPolicyPage from "./pages/OtherPages/PrivacyPolicy";
 
 // --- Helper Components ---
 
@@ -89,7 +92,7 @@ function App() {
         <Routes location={location} key={location.pathname}>
           {/* ================= PUBLIC ROUTES ================= */}
           <Route path="/" element={<MainLayout />}>
-            <Route index element={<Home />} />
+            <Route index element={<Homev1 />} />
             <Route path="home" element={<Home />} />
 
             {/* Feature Pages */}
@@ -103,6 +106,9 @@ function App() {
             <Route path="about" element={<AboutUs />} />
             <Route path="contact" element={<ContactUs />} />
             <Route path="faq" element={<FAQ />} />
+
+            <Route path="terms&conditions" element={<TermsOfServicePage />} />
+            <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
 
             {/* Technical Pages */}
             {/* <Route path="tech-team" element={<TechTeam />} />
