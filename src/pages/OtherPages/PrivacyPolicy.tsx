@@ -33,8 +33,9 @@ export default function PrivacyPolicyPage() {
             <>
               <p>
                 We may collect identity/contact information (name, email,
-                registration ID, department and other student personal academic info), event participation data, and
-                technical logs (IP, device/browser, login timestamps).
+                registration ID, department and other student personal academic
+                info), event participation data, and technical logs (IP,
+                device/browser, login timestamps).
               </p>
               <p>
                 For, we may store Razorpay identifiers such as Payment ID/Order
@@ -64,8 +65,7 @@ export default function PrivacyPolicyPage() {
               <p>
                 We do not sell personal data. We may share personal data with
                 authorized SRKR administrators/organizers and service providers
-                used to operate the Platform (e.g., Amazon Web Services (AWS)
-                for hosting/infrastructure), and Razorpay for payment processing
+                used to operate the Platform and Razorpay for payment processing
                 where applicable.
               </p>
               <p>
