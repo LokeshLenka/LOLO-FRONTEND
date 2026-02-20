@@ -80,14 +80,18 @@ export const MusicStep: React.FC<{ form: any; registrationType: string }> = ({
       <div className="mt-12 text-center text-xs text-neutral-500 relative z-10 font-medium leading-relaxed">
         By continuing, you agree to our <br className="hidden sm:block" />
         <a
-          href="#"
+          href="/terms-of-service"
+          target="_blank"
+          rel="noopener noreferrer"
           className="underline underline-offset-4 hover:text-lolo-pink transition-colors"
         >
-          Terms of Service
-        </a>{" "}
+          Terms of Service{" "}
+        </a>
         and{" "}
         <a
-          href="#"
+          href="/privacy-policy"
+          target="_blank"
+          rel="noopener noreferrer"
           className="underline underline-offset-4 hover:text-lolo-pink transition-colors"
         >
           Privacy Policy
