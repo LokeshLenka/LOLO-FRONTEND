@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button/button";
-import { AlertCircle, RefreshCcw, Home, ArrowLeft, Copy } from "lucide-react";
+import { AlertCircle, Home, ArrowLeft, Copy } from "lucide-react";
 
 type FailedState = {
   eventName?: string;
@@ -23,7 +23,7 @@ export const FailedEventRegistration: React.FC = () => {
   const eventName = state.eventName || "Event";
   const reason =
     state.reason ||
-    "Payment didn’t complete. If money was debited, it’s usually reversed automatically by your bank.";
+    "Payment didn't complete. If money was debited, it's usually reversed automatically by your bank.";
 
   const meta = useMemo(
     () =>
@@ -43,12 +43,6 @@ export const FailedEventRegistration: React.FC = () => {
     } catch {
       toast.error("Copy failed");
     }
-  };
-
-  const handleRetry = () => {
-    // If you have a dedicated retry flow, navigate there and pass state.
-    // Otherwise: go back to registration page.
-    navigate(-1);
   };
 
   return (

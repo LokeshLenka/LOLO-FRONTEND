@@ -16,7 +16,6 @@ import {
   CheckCircle2,
   Users,
   CreditCard,
-  AlertCircle,
 } from "lucide-react";
 
 // --- Razorpay global type ---
@@ -482,7 +481,6 @@ export const PublicUserSignUp: React.FC = () => {
                 className="space-y-8"
               >
                 <div className="bg-[#09090b] border border-white/10 p-6 md:p-8 rounded-3xl relative overflow-hidden shadow-2xl">
-                  {/* <div className="absolute top-0 left-0 w-1.5 h-full bg-lolo-pink"></div> */}
                   <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                     <Users size={20} className="text-lolo-pink" />
                     Participant Details
