@@ -13,7 +13,7 @@ import { Toaster } from "sonner";
 // --- Public Pages ---
 import Events from "./pages/App/Events/Events";
 import EventDetails from "./pages/App/Events/EventDetails";
-import Concerts from "./pages/App/Concerts/Performances";
+// import Concerts from "./pages/App/Concerts/Performances";
 import ConcertDetails from "./pages/App/Concerts/PerformanceDetails";
 import Publication from "./pages/App/Publications/Publications";
 import PublicationDetails from "./pages/App/Publications/PublicationDetails";

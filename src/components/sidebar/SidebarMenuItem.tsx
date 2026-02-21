@@ -207,13 +207,7 @@ export const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
         className={linkClasses}
         style={{ paddingLeft: showContent ? paddingLeft : "12px" }}
       >
-        <span className="flex-shrink-0">
-          {item.icon ? (
-            item.icon
-          ) : (
-            <Circle size={6} className={depth > 0 ? "opacity-50" : ""} />
-          )}
-        </span>
+        <span className="flex-shrink-0">{item.icon}</span>
         {showContent && <span className="truncate text-sm">{item.name}</span>}
       </Link>
     </li>
