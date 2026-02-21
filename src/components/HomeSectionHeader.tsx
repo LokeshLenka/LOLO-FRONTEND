@@ -17,7 +17,7 @@ const SectionHeader: React.FC<{
       className={`px-4 ${alignmentClasses}`}
     >
       {/* Title with improved spacing */}
-      <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-[1.5]">
+      <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-[1.5]">
         {title}
       </h2>
 
