@@ -261,10 +261,10 @@ export const SuccessEventRegistration: React.FC = () => {
         <motion.p className="text-center text-neutral-600 text-xs">
           Having trouble? Contact support at{" "}
           <a
-            href="mailto:support@example.com"
+            href="mailto:bandloloplays0707@gmail.com"
             className="text-neutral-400 underline"
           >
-            support@example.com
+            bandloloplays0707@gmail
           </a>
         </motion.p>
       </div>
