@@ -61,6 +61,9 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({
   const labelStyle =
     "text-[10px] font-bold uppercase text-neutral-500 tracking-wider ml-1 mb-1.5 block";
 
+  const selectItemStyle =
+    "focus:bg-white/10 focus:text-lolo-pink cursor-pointer font-medium";
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -158,7 +161,11 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({
                 </FormControl>
                 <SelectContent className="bg-[#09090b] border-white/10 text-white">
                   {branches.map((b) => (
-                    <SelectItem key={b.value} value={b.value}>
+                    <SelectItem
+                      key={b.value}
+                      value={b.value}
+                      className={selectItemStyle}
+                    >
                       {b.label}
                     </SelectItem>
                   ))}
@@ -184,7 +191,11 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({
                 </FormControl>
                 <SelectContent className="bg-[#09090b] border-white/10 text-white">
                   {yearOptions.map((y) => (
-                    <SelectItem key={y.value} value={y.value}>
+                    <SelectItem
+                      key={y.value}
+                      value={y.value}
+                      className={selectItemStyle}
+                    >
                       {y.label}
                     </SelectItem>
                   ))}
@@ -210,7 +221,11 @@ export const PublicUserStep: React.FC<PublicUserStepProps> = ({
                 </FormControl>
                 <SelectContent className="bg-[#09090b] border-white/10 text-white">
                   {genderOptions.map((g) => (
-                    <SelectItem key={g.value} value={g.value}>
+                    <SelectItem
+                      key={g.value}
+                      value={g.value}
+                      className={selectItemStyle}
+                    >
                       {g.label}
                     </SelectItem>
                   ))}
