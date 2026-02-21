@@ -52,6 +52,7 @@ import { SuccessEventRegistration } from "./pages/App/Events/SuccessEventRegistr
 import Home from "./pages/App/Home/Home";
 import TermsOfServicePage from "./pages/OtherPages/TermsOfService";
 import PrivacyPolicyPage from "./pages/OtherPages/PrivacyPolicy";
+import { FailedEventRegistration } from "./pages/App/Events/FailedEventRegistration";
 
 // --- Helper Components ---
 
@@ -68,18 +69,7 @@ function App() {
 
   // Wrapper to pass state as props
   const SuccessWrapper = () => {
-    const location = useLocation();
-    const state = location.state as {
-      eventType?: string;
-      eventName?: string;
-    } | null;
-
-    return (
-      <SuccessEventRegistration
-        eventType={(state?.eventType as any) || "default"}
-        eventName={state?.eventName}
-      />
-    );
+    return <SuccessEventRegistration />;
   };
 
   return (
@@ -93,22 +83,23 @@ function App() {
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Home />} />
             <Route path="home" element={<Home />} />
-
             {/* Feature Pages */}
             <Route path="events" element={<Events />} />
-            <Route path="concerts" element={<Concerts />} />
+            {/* <Route path="concerts" element={<Concerts />} /> */}
             <Route path="publications" element={<Publication />} />
             <Route path="team" element={<Team />} />
             <Route path="gallery" element={<Gallery />} />
-
             {/* Info Pages */}
             <Route path="about" element={<AboutUs />} />
             <Route path="contact" element={<ContactUs />} />
             <Route path="faq" element={<FAQ />} />
-
             <Route path="terms-of-service" element={<TermsOfServicePage />} />
             <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
-
+            // in your router config
+            <Route
+              path="/failed-event-registration"
+              element={<FailedEventRegistration />}
+            />
             {/* Technical Pages */}
             {/* <Route path="tech-team" element={<TechTeam />} />
             <Route path="api-docs" element={<DeveloperHub />} />
