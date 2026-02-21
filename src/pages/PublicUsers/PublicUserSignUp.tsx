@@ -49,6 +49,7 @@ type FormData = z.infer<typeof formSchema>;
 type EventResponse = {
   name?: string;
   fee?: number | string | null;
+  type?: string | null;
   amount?: number | string | null; // if your API uses amount
 };
 
@@ -63,7 +64,8 @@ type PublicUserDto = {
 
 type CreateRegistrationResponse = {
   uuid?: string;
-  data?: { uuid?: string };
+  ticket_code?: string;
+  data?: { uuid?: string; ticket_code?: string };
 };
 
 type CreateOrderResponse = {
@@ -75,6 +77,7 @@ type CreateOrderResponse = {
   payer_name?: string;
   access_token: string;
   event_name?: string;
+  event_type?: string;
   payment_uuid?: string; // optional if your backend returns it
 };
 
@@ -129,6 +132,8 @@ export const PublicUserSignUp: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [eventFee, setEventFee] = useState<number | null>(null);
   const [eventName, setEventName] = useState<string>("");
+  const [eventType, setEventType] = useState<string>("");
+
   // const [paymentAccessToken, setPaymentAccessToken] = useState<string | null>(
   //   null,
   // );
@@ -170,6 +175,7 @@ export const PublicUserSignUp: React.FC = () => {
         const fee = toNumberFee(data.fee ?? data.amount);
         setEventFee(fee);
         setEventName(data.name || "Event");
+        setEventType(data.type || "default");
       } catch (e) {
         if (!isMounted) return;
         toast.error("Failed to load event details. Please refresh.");
@@ -247,11 +253,13 @@ export const PublicUserSignUp: React.FC = () => {
     const regData = unwrap<CreateRegistrationResponse>(regRes);
 
     const uuid = regData?.uuid ?? regData?.data?.uuid;
+    const ticket_code = regData?.ticket_code ?? regData?.data?.ticket_code;
+
     if (!uuid) {
       throw new Error("Registration created but UUID not returned by server.");
     }
 
-    return uuid;
+    return { uuid, ticket_code };
   };
 
   // --- Step: create order (backend should also store pending order/payment row) ---
@@ -383,16 +391,20 @@ export const PublicUserSignUp: React.FC = () => {
       const publicUserId = await resolvePublicUserId(normalizedRegNum, data);
 
       // B) Create registration
-      const publicRegistrationUuid = await createPublicRegistration(
-        publicUserId,
-        normalizedRegNum,
-      );
+      const { uuid: publicRegistrationUuid, ticket_code: ticketCode } =
+        await createPublicRegistration(publicUserId, normalizedRegNum);
 
       // C) If free event -> finish
       if (currentFee <= 0) {
         toast.success("Registration Successful!", { id: toastId });
         navigate("/success-event-registration", {
-          state: { eventType: "default", eventName: eventName || "Event" },
+          state: {
+            eventType: "default",
+            eventName: eventName || "Event",
+            ticketCode,
+            participantName: data.full_name,
+            regNum: normalizedRegNum,
+          },
         });
         return;
       }
@@ -421,7 +433,13 @@ export const PublicUserSignUp: React.FC = () => {
         id: toastId,
       });
       navigate("/success-event-registration", {
-        state: { eventType: "default", eventName: eventName || "Event" },
+        state: {
+          eventType: eventType || "default",
+          eventName: eventName || "Event",
+          ticketCode, // Pass ticket details
+          participantName: data.full_name,
+          regNum: normalizedRegNum,
+        },
       });
     } catch (error: any) {
       console.error("Registration/Payment Error:", error);
