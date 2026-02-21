@@ -283,11 +283,17 @@ export const PublicUserSignUp: React.FC = () => {
     order: CreateOrderResponse;
     publicRegistrationUuid: string;
     prefill: { name: string; email: string; contact: string };
+
+    onFailure?: (info: {
+      reason: string;
+      orderId?: string;
+      paymentId?: string;
+    }) => void;
   }) => {
     const ok = await loadRazorpayScript();
     if (!ok) throw new Error("Failed to load Razorpay checkout script.");
 
-    const { order, publicRegistrationUuid, prefill } = opts;
+    const { order, publicRegistrationUuid, prefill, onFailure } = opts;
 
     const token = sessionStorage.getItem(`rp_token_${order.order_id}`);
     if (!token) throw new Error("Payment token missing. Please retry payment.");
@@ -300,6 +306,15 @@ export const PublicUserSignUp: React.FC = () => {
         name: order.event_name || eventName || "Event",
         order_id: order.order_id, // IMPORTANT for signature + order binding
         prefill,
+        modal: {
+          ondismiss: () => {
+            onFailure?.({
+              reason: "Payment cancelled (checkout closed).",
+              orderId: order.order_id,
+            });
+            reject(new Error("Payment cancelled (checkout closed)."));
+          },
+        },
         config: {
           display: {
             // Put UPI first in the list
@@ -327,16 +342,21 @@ export const PublicUserSignUp: React.FC = () => {
         },
       });
 
+      // Hard failure from Razorpay
       rzp.on("payment.failed", (resp: any) => {
-        reject(
-          new Error(
-            resp?.error?.description ||
-              resp?.error?.reason ||
-              "Payment failed. Please try again.",
-          ),
-        );
-      });
+        const reason =
+          resp?.error?.description ||
+          resp?.error?.reason ||
+          "Payment failed. Please try again.";
 
+        onFailure?.({
+          reason,
+          orderId: resp?.error?.metadata?.order_id || order.order_id,
+          paymentId: resp?.error?.metadata?.payment_id,
+        });
+
+        reject(new Error(reason));
+      });
       rzp.open();
     });
   };
@@ -389,6 +409,12 @@ export const PublicUserSignUp: React.FC = () => {
           name: data.full_name,
           email: data.email,
           contact: data.phone_no,
+        },
+        onFailure: ({ reason, orderId }) => {
+          toast.error(reason, { duration: 6000 });
+          navigate("/failed-event-registration", {
+            state: { eventName: eventName || "Event", orderId, reason },
+          });
         },
       });
 
@@ -456,7 +482,7 @@ export const PublicUserSignUp: React.FC = () => {
                 className="space-y-8"
               >
                 <div className="bg-[#09090b] border border-white/10 p-6 md:p-8 rounded-3xl relative overflow-hidden shadow-2xl">
-                  <div className="absolute top-0 left-0 w-1.5 h-full bg-lolo-pink"></div>
+                  {/* <div className="absolute top-0 left-0 w-1.5 h-full bg-lolo-pink"></div> */}
                   <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                     <Users size={20} className="text-lolo-pink" />
                     Participant Details
@@ -509,9 +535,9 @@ export const PublicUserSignUp: React.FC = () => {
                 )}
 
                 <Button
-                  type="submit"
+                  onClick={form.handleSubmit(handleRegistration)}
                   disabled={isProcessing || !isFeeLoaded}
-                  className="w-full h-16 ..."
+                  className="w-full h-16 bg-white text-black hover:bg-lolo-pink hover:text-white font-bold rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(236,72,153,0.4)] transition-all active:scale-[0.98] text-lg relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     {isProcessing ? (
@@ -526,10 +552,10 @@ export const PublicUserSignUp: React.FC = () => {
                       </>
                     )}
                   </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
                 </Button>
 
                 <p className="text-[10px] text-neutral-500 text-center mt-6 flex items-center justify-center gap-1.5">
-                  <AlertCircle size={10} />
                   You will be registered immediately (payment required only for
                   paid events).
                 </p>
