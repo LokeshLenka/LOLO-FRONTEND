@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Instagram, Youtube, Heart } from "lucide-react";
+import { Instagram, Youtube, Heart, ArrowRight } from "lucide-react";
 import Lolo_logo_1 from "@/assets/logos/Lolo_logo_1.png";
 
 const Footer = () => {
@@ -34,21 +34,42 @@ const Footer = () => {
             </p>
 
             {/* Newsletter Input */}
-            {/* <div className="max-w-md">
+            {/* Address / Contact (instead of Newsletter) */}
+            <div className="max-w-md">
               <label className="block text-xs font-bold uppercase text-gray-500 mb-3 tracking-wider">
-                Stay in the loop
+                Address
               </label>
-              <div className="flex group">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="w-full bg-white/5 border border-white/10 border-r-0 rounded-l-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 transition-colors"
-                />
-                <button className="bg-white text-black px-5 py-3 rounded-r-lg font-bold text-sm hover:bg-lolo-pink hover:text-white transition-colors flex items-center gap-2">
-                  Join <ArrowRight size={16} />
-                </button>
+
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  SRKR Engineering College
+                  <br />
+                  Bhimavaram, Andhra Pradesh - 534204
+                </p>
+
+                <div className="pt-2 border-t border-white/10 space-y-2">
+                  <p className="text-gray-400 text-sm">
+                    Email:{" "}
+                    <a
+                      href="mailto:bandloloplays0707@gmail.com"
+                      className="text-white/90 hover:text-lolo-cyan transition-colors"
+                    >
+                      bandloloplays0707@gmail.com
+                    </a>
+                  </p>
+
+                  <p className="text-gray-400 text-sm">
+                    Phone:{" "}
+                    <a
+                      href="tel:+918333042318"
+                      className="text-white/90 hover:text-lolo-cyan transition-colors"
+                    >
+                      +91 8333042318
+                    </a>
+                  </p>
+                </div>
               </div>
-            </div> */}
+            </div>
           </div>
 
           {/* Spacer Column (Span 1) */}
@@ -111,6 +132,7 @@ const Footer = () => {
                     { id: 1, label: "About Us", link: "/about" },
                     { id: 2, label: "Contact Us", link: "/contact" },
                     { id: 3, label: "FAQ", link: "/faq" },
+                    { id: 4, label: "Refund Policy", link: "/refund-policy" },
                   ].map((item) => (
                     <li key={item.id}>
                       <Link
@@ -157,13 +179,25 @@ const Footer = () => {
         <div className="border-t border-white/10 py-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
           <p>&copy; {currentYear} SRKR LOLO. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <Link to="/privacy-policy" className="hover:text-white transition-colors">
+            <Link
+              to="/privacy-policy"
+              className="hover:text-white transition-colors"
+            >
               Privacy Policy
             </Link>
-            <Link to="/terms-of-service" className="hover:text-white transition-colors">
+            <Link
+              to="/terms-of-service"
+              className="hover:text-white transition-colors"
+            >
               Terms of Service
             </Link>
-            <span className="flex items-center gap-1 text-gray-600">
+            <Link
+              to="/refund-policy"
+              className="hover:text-white transition-colors"
+            >
+              Refund Policy
+            </Link>
+            {/* <span className="flex items-center gap-1 text-gray-600">
               Made with{" "}
               <Heart size={10} className="fill-red-500 text-red-500" /> by{" "}
               <span className="text-gray-400">
@@ -175,7 +209,7 @@ const Footer = () => {
                   Tech Team
                 </Link>
               </span>
-            </span>
+            </span> */}
           </div>
         </div>
       </div>

@@ -9,6 +9,7 @@ import {
   ArrowRight,
   ChevronDown,
   Loader2,
+  Phone,
 } from "lucide-react";
 
 // ✅ TYPE DEFINITIONS
@@ -213,6 +214,26 @@ const ContactUs = () => {
                     className="text-neutral-500 hover:text-lolo-cyan transition-colors text-sm"
                   >
                     bandloloplays0707@gmail.com
+                  </a>
+                </div>
+              </div>
+              <div className="flex items-start gap-6 group">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-white/10 group-hover:border-lolo-cyan/30 transition-all duration-300">
+                  <Phone className="text-white w-5 h-5 group-hover:scale-110 transition-transform" />
+                </div>
+                <div>
+                  <h3 className="text-white font-bold text-lg mb-1">Call Us</h3>
+                  <a
+                    href="tel:+918333042318"
+                    className="text-neutral-500 hover:text-lolo-cyan transition-colors text-sm mr-4"
+                  >
+                    +91 8333042318
+                  </a>
+                  <a
+                    href="tel:+919133733532"
+                    className="text-neutral-500 hover:text-lolo-cyan transition-colors text-sm"
+                  >
+                    +91 9133733532
                   </a>
                 </div>
               </div>

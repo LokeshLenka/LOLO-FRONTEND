@@ -14,16 +14,15 @@ export default function TermsOfServicePage() {
           content: (
             <>
               <p>
-                SRKR Engineering College is the
-                educational institution. SRKR LOLO (Living Out Loud Originals)
-                is SRKR's official music club.
+                SRKR Engineering College is the educational institution. SRKR
+                LOLO (Living Out Loud Originals) is SRKR's official music club.
               </p>
               <p>
-                This website and related services are
-                maintained by the Club and/or authorized administrators under
-                the Institution's oversight. Throughout these Terms, “we”, “us”,
-                and “our” refer to SRKR and its authorized administrators
-                (including the Club) operating the Platform.
+                This website and related services are maintained by the Club
+                and/or authorized administrators under the Institution's
+                oversight. Throughout these Terms, “we”, “us”, and “our” refer
+                to SRKR and its authorized administrators (including the Club)
+                operating the Platform.
               </p>
               <p>
                 By accessing or using the Platform, you agree to comply with
@@ -83,22 +82,25 @@ export default function TermsOfServicePage() {
           content: (
             <>
               <p>
-                Where payments apply, transactions are processed through
-                Razorpay. SRKR LOLO does not store card details or CVV.
+                Where paid registrations are enabled, payments are processed
+                through our payment partner(s). We do not store your full card
+                details or CVV on our servers.
               </p>
               <p>
-                A payment is treated as successful only after Razorpay confirms
-                it and the Platform completes server-side verification
-                (signature verification and/or webhook validation as
-                applicable).
+                A payment is treated as successful only after confirmation from
+                the payment partner and after the Platform completes server-side
+                verification (for example, signature verification and/or webhook
+                validation as applicable).
               </p>
               <p>
-                Refunds and disputes follow event-specific rules and must be
-                raised within the stated window.
+                Refunds, cancellations, and dispute handling follow (a) the
+                event-specific rules shown on the event page and (b) our Refund
+                & Cancellation Policy available on the Platform.
               </p>
             </>
           ),
         },
+
         {
           id: "credits",
           title: "6. Credits, audits & integrity",

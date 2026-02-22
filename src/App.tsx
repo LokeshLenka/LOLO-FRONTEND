@@ -53,6 +53,7 @@ import Home from "./pages/App/Home/Home";
 import TermsOfServicePage from "./pages/OtherPages/TermsOfService";
 import PrivacyPolicyPage from "./pages/OtherPages/PrivacyPolicy";
 import { FailedEventRegistration } from "./pages/App/Events/FailedEventRegistration";
+import RefundPolicyPage from "./pages/OtherPages/RefundPolicy";
 
 // --- Helper Components ---
 
@@ -95,6 +96,7 @@ function App() {
             <Route path="faq" element={<FAQ />} />
             <Route path="terms-of-service" element={<TermsOfServicePage />} />
             <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="refund-policy" element={<RefundPolicyPage />} />
             // in your router config
             <Route
               path="/failed-event-registration"

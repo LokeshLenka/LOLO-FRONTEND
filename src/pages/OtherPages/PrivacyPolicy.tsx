@@ -65,8 +65,8 @@ export default function PrivacyPolicyPage() {
               <p>
                 We do not sell personal data. We may share personal data with
                 authorized SRKR administrators/organizers and service providers
-                used to operate the Platform and Razorpay for payment processing
-                where applicable.
+                used to operate the Platform and our payment partner(s) for
+                payment processing where applicable.
               </p>
               <p>
                 We may also disclose information where required by law or to

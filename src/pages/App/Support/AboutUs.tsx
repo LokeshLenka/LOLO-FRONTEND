@@ -33,6 +33,25 @@ const AboutUs = () => {
               <strong className="text-white">Music Band & Club</strong> that
               bridges the gap between academic life and creative expression.
             </motion.p>
+            {/* Legal & Ownership (for compliance) */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.15 }}
+              className="max-w-3xl mx-auto mb-10"
+            >
+              <div className="p-6 md:p-7 rounded-[2.0rem] bg-white/[0.02] border border-white/5 backdrop-blur-xl">
+                <p className="text-neutral-400 text-sm leading-relaxed">
+                  <span className="text-white font-bold">Platform owner:</span>{" "}
+                  SRKR Engineering College.
+                </p>
+                <p className="text-neutral-400 text-sm leading-relaxed mt-2">
+                  <span className="text-white font-bold">Operated by:</span>{" "}
+                  SRKR LOLO (official music club) under SRKR oversight.
+                </p>
+              </div>
+            </motion.div>
           </div>
 
           {/* Bento Grid Layout */}

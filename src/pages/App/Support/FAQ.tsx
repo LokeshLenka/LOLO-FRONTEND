@@ -41,6 +41,19 @@ const FAQS = [
     answer:
       "Primarily we focus on SRKR campus events, but we are open to collaborations and inter-college fests. Contact our Management Wing for booking inquiries.",
   },
+  {
+    category: "Payments",
+    question: "How do refunds work for paid event registrations?",
+    answer:
+      "Refund eligibility depends on the event’s cancellation rules shown on the event page. If eligible, refunds are initiated to the original payment method through our payment partner(s). See the Refund & Cancellation Policy page for details.",
+  },
+  {
+    category: "Payments",
+    question:
+      "My amount got debited but registration is not confirmed. What should I do?",
+    answer:
+      "Please contact us from the Contact page with event name, email used, amount, and transaction reference. We’ll verify the payment and initiate a refund or confirm your registration as applicable.",
+  },
 ];
 
 const FAQItem = ({
