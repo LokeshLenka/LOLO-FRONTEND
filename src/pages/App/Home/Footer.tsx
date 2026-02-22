@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Instagram, Youtube, Heart, ArrowRight } from "lucide-react";
+import { Instagram, Youtube } from "lucide-react";
 import Lolo_logo_1 from "@/assets/logos/Lolo_logo_1.png";
 
 const Footer = () => {
