@@ -108,29 +108,12 @@ const Home: React.FC = () => {
           {/* <AudioVisualizer /> */}
 
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-6 sm:mb-8"
-          >
-            <div className="inline-flex h-8 sm:h-9 items-center gap-2 sm:gap-3 px-4 sm:px-5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl shadow-lg shadow-black/20 hover:border-white/20 transition-colors cursor-default">
-              <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lolo-cyan opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-lolo-cyan"></span>
-              </span>
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-gray-300">
-                The Future of Campus Music
-              </span>
-            </div>
-          </motion.div>
-
-          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-6xl mx-auto mb-6 sm:mb-8 relative px-2"
           >
-            <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight leading-[1.1] text-white">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.1] text-white">
               <span className="block font-club mb-2 text-white/90">
                 Unleash
               </span>
