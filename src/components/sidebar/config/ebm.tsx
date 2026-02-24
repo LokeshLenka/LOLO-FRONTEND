@@ -30,14 +30,14 @@ export const getEBMNavItems = (basePath: string) => [
       { name: "Create Event", path: `${basePath}/create-event` },
     ],
   },
-  {
-    icon: <CalendarPlus />,
-    name: "Desk Registrations",
-    subItems: [
-      { name: "Register An Attendee", path: `${basePath}/desk-sale` },
-      // { name: "View Registrations", path: `${basePath}/collections` },
-    ],
-  },
+  // {
+  //   icon: <CalendarPlus />,
+  //   name: "Desk Registrations",
+  //   subItems: [
+  //     { name: "Register An Attendee", path: `${basePath}/desk-sale` },
+  //     // { name: "View Registrations", path: `${basePath}/collections` },
+  //   ],
+  // },
   // {
   //   icon: <UserPlus />,
   //   name: "Member Onboarding",
