@@ -39,12 +39,12 @@ export const getEBMNavItems = (basePath: string) => [
       // { name: "View Registrations", path: `${basePath}/collections` },
     ],
   },
-  {
-    icon: <UserPlus />,
-    name: "Member Onboarding",
-    subItems: [
-      { name: "Register New Member", path: `${basePath}/register-member` },
-      { name: "My Registrations", path: `${basePath}/my-registrations` },
-    ],
-  },
+  // {
+  //   icon: <UserPlus />,
+  //   name: "Member Onboarding",
+  //   subItems: [
+  //     { name: "Register New Member", path: `${basePath}/register-member` },
+  //     { name: "My Registrations", path: `${basePath}/my-registrations` },
+  //   ],
+  // },
 ];
