@@ -26,32 +26,17 @@ export const getEBMNavItems = (basePath: string) => [
     icon: <CalendarPlus />,
     name: "Events",
     subItems: [
-      {
-        name: "Club Events",
-        // 'subItems' here indicates a nested folder structure
-
-        subItems: [
-          { name: "My Club Events", path: `${basePath}/my-events?type!=public` },
-
-          {
-            name: "Club Registrations",
-            path: `${basePath}/event-registrations?type=!public`,
-          },
-        ],
-      },
-      {
-        name: "Public Events",
-        subItems: [
-          { name: "My Public Events", path: `${basePath}/my-events?type=public` },
-
-          {
-            name: "Public Registrations",
-            path: `${basePath}/event-registrations?type=public`,
-          },
-        ],
-      },
-      { name: "Create Event", path: `${basePath}/create-event` },
+      { name: "Event Registrations", path: `${basePath}/event-registrations` },
       { name: "My Events", path: `${basePath}/my-events` },
+      { name: "Create Event", path: `${basePath}/create-event` },
+    ],
+  },
+  {
+    icon: <CalendarPlus />,
+    name: "Desk Registrations",
+    subItems: [
+      { name: "Register An Attendee", path: `${basePath}/desk-sale` },
+      // { name: "View Registrations", path: `${basePath}/collections` },
     ],
   },
   {
