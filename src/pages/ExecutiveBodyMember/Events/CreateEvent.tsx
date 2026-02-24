@@ -17,6 +17,7 @@ import {
   Banknote,
   LayoutTemplate,
   Image as ImageIcon,
+  QrCode, // <-- Added QrCode icon
 } from "lucide-react";
 import clsx from "clsx";
 import dayjs from "dayjs";
@@ -90,7 +91,8 @@ const COORDINATOR_FIELDS = [
   "coordinator2",
   "coordinator3",
 ] as const;
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_QR_SIZE = 2 * 1024 * 1024; // 2MB <-- New Constant
 const ACCEPTED_IMAGE_TYPES = [
   "image/jpeg",
   "image/jpg",
@@ -130,19 +132,16 @@ const eventSchema = z
     coordinator3: z.string().optional().nullable(),
     alt_txt: z.string().max(255).optional(),
   })
-
   // Start date must be in future
   .refine((data) => dayjs(data.start_date).isAfter(dayjs()), {
     message: "Date must be in future",
     path: ["start_date"],
   })
-
   // End > Start
   .refine((data) => dayjs(data.end_date).isAfter(dayjs(data.start_date)), {
     message: "End date must be after start date",
     path: ["end_date"],
   })
-
   // Deadline < Start
   .refine(
     (data) =>
@@ -152,7 +151,6 @@ const eventSchema = z
       path: ["registration_deadline"],
     },
   )
-
   .refine(
     (data) => {
       // 1. Gather all coordinator values
@@ -161,16 +159,13 @@ const eventSchema = z
         data.coordinator2,
         data.coordinator3,
       ];
-
       // 2. Filter for ONLY valid IDs (non-null, non-empty, not " ", not "None")
       const validIds = rawValues.filter((v) => {
         // Check if value exists and is not a whitespace-only string
         return v !== null && v !== undefined && v.trim().length > 0;
       });
-
       // 3. Rule: At least one coordinator is required
       if (validIds.length === 0) return false;
-
       // 4. Rule: All selected valid IDs must be unique
       const uniqueIds = new Set(validIds);
       return uniqueIds.size === validIds.length;
@@ -188,6 +183,12 @@ export default function CreateEvent() {
   const [images, setImages] = useState<
     { file: File; preview: string; id: string }[]
   >([]);
+  // --- NEW QR CODE STATE ---
+  const [qrImage, setQrImage] = useState<{
+    file: File;
+    preview: string;
+  } | null>(null);
+
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [ebmMembers, setEbmMembers] = useState<EbmMember[]>([]);
 
@@ -219,11 +220,13 @@ export default function CreateEvent() {
   const showRegistrationPlace =
     registrationMode === "offline" || registrationMode === "hybrid";
 
-  // Effect: Cleanup Image Previews
-  useEffect(
-    () => () => images.forEach((img) => URL.revokeObjectURL(img.preview)),
-    [images],
-  );
+  // Effect: Cleanup Image Previews (Including QR)
+  useEffect(() => {
+    return () => {
+      images.forEach((img) => URL.revokeObjectURL(img.preview));
+      if (qrImage) URL.revokeObjectURL(qrImage.preview);
+    };
+  }, [images, qrImage]);
 
   // Effect: Fetch Coordinators on mount
   useEffect(() => {
@@ -239,6 +242,7 @@ export default function CreateEvent() {
     if (registrationMode === "online") setValue("registration_place", "");
   }, [registrationMode, setValue]);
 
+  // --- HANDLERS FOR MULTIPLE IMAGES ---
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
@@ -283,6 +287,27 @@ export default function CreateEvent() {
 
   const handleDragEnd = () => setDraggedIndex(null);
 
+  // --- HANDLERS FOR QR IMAGE ---
+  const handleQrUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+        return toast.error(`${file.name} is not a valid image`);
+      }
+      if (file.size > MAX_QR_SIZE) {
+        return toast.error("QR Code image must be 2MB or less");
+      }
+      setQrImage({
+        file,
+        preview: URL.createObjectURL(file),
+      });
+      toast.success("QR Code added");
+    }
+  };
+
+  const removeQrImage = () => setQrImage(null);
+
+  // --- FORM SUBMIT ---
   const onSubmit: SubmitHandler<EventFormSchema> = async (data) => {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
@@ -293,12 +318,17 @@ export default function CreateEvent() {
         value === "none" ||
         value === " "
       ) {
-        return; // Do not append anything for this key
+        return;
       }
       formData.append(key, String(value));
     });
     formData.append("status", "upcoming");
     images.forEach((imgObj) => formData.append("images[]", imgObj.file));
+
+    // Append the QR Code if it exists
+    if (qrImage) {
+      formData.append("qr_code", qrImage.file);
+    }
 
     try {
       const response = await axios.post(`${API_BASE_URL}/ebm/event`, formData, {
@@ -308,10 +338,10 @@ export default function CreateEvent() {
         toast.success("Event created!");
         reset();
         setImages([]);
+        setQrImage(null); // Reset QR on success
       }
     } catch (error: any) {
       if (error.response) {
-        // THIS is what you need to see
         console.log("Server Validation Errors:", error.response.data.errors);
       }
       if (error.response?.status === 422) {
@@ -347,7 +377,11 @@ export default function CreateEvent() {
               variant="ghost"
               size="default"
               type="button"
-              onClick={() => reset()}
+              onClick={() => {
+                reset();
+                setImages([]);
+                setQrImage(null);
+              }}
               className="text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400"
             >
               <X className="h-4 w-4 sm:hidden" />{" "}
@@ -443,11 +477,8 @@ export default function CreateEvent() {
                                   value={type.key}
                                   className={clsx(
                                     "cursor-pointer transition-colors py-2.5 px-3 text-sm font-medium",
-                                    // Hover
                                     "hover:bg-zinc-50 dark:hover:bg-zinc-900",
-                                    // Focus
                                     "focus:bg-zinc-50 dark:focus:bg-zinc-900",
-                                    // Selected
                                     "data-[state=checked]:bg-zinc-100 dark:data-[state=checked]:bg-zinc-800",
                                     "data-[state=checked]:text-cyan-600 dark:data-[state=checked]:text-cyan-400",
                                     "data-[state=checked]:font-semibold",
@@ -485,11 +516,7 @@ export default function CreateEvent() {
                                   value={mode.key}
                                   className={clsx(
                                     "cursor-pointer transition-colors py-2.5 px-3 text-sm font-medium",
-                                    // Hover
                                     "hover:bg-zinc-50 dark:hover:bg-zinc-900",
-                                    // Focus
-                                    // "focus:bg-zinc-50 dark:focus:bg-zinc-900",
-                                    // Selected
                                     "data-[state=checked]:bg-zinc-100 dark:data-[state=checked]:bg-zinc-800",
                                     "data-[state=checked]:text-cyan-600 dark:data-[state=checked]:text-cyan-400",
                                     "data-[state=checked]:font-semibold",
@@ -533,8 +560,7 @@ export default function CreateEvent() {
               <Card className="bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 shadow-sm">
                 <CardHeader className="!px-2 sm:!px-6">
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <ImageIcon className="w-5 h-5 text-cyan-500" /> Visual
-                    Assets
+                    <ImageIcon className="w-5 h-5 text-cyan-500" /> Visual Assets
                   </CardTitle>
                   <CardDescription>
                     Drag to reorder. First image is cover.
@@ -578,14 +604,11 @@ export default function CreateEvent() {
                     </div>
                   </div>
 
-                  {/* RESPONSIVE IMAGE LIST */}
                   {images.length > 0 && (
                     <div className="space-y-2 mt-4 bg-zinc-50 dark:bg-white/5 p-2 sm:p-3 rounded-xl border border-zinc-100 dark:border-zinc-800">
                       <p className="text-xs font-semibold text-cyan-500 flex items-center gap-2 mb-2">
-                        <Star size={12} fill="currentColor" /> First one is
-                        cover
+                        <Star size={12} fill="currentColor" /> First one is cover
                       </p>
-                      {/* GRID LAYOUT: 1 column mobile, 2 columns tablet+ */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {images.map((img, index) => (
                           <div
@@ -634,6 +657,67 @@ export default function CreateEvent() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* --- NEW PAYMENT QR CODE SECTION --- */}
+              <Card className="bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 shadow-sm">
+                <CardHeader className="!px-2 sm:!px-6">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <QrCode className="w-5 h-5 text-cyan-500" /> Payment QR Code
+                  </CardTitle>
+                  <CardDescription>
+                    Upload a single QR code image for event payments.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 !px-2 sm:!px-6">
+                  {!qrImage ? (
+                    <div className="border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-4 sm:p-8 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors text-center cursor-pointer relative min-h-[100px] flex items-center justify-center">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleQrUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                      />
+                      <div className="flex flex-col items-center justify-center gap-2 text-zinc-500">
+                        <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-full">
+                          <UploadCloud className="h-6 w-6 text-cyan-500" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-zinc-900 dark:text-zinc-100 text-sm sm:text-base">
+                            Click or drag QR image
+                          </p>
+                          <p className="text-xs text-zinc-400">Max 2MB (Single file)</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-4 p-3 bg-zinc-50 dark:bg-white/5 rounded-xl border border-zinc-100 dark:border-zinc-800">
+                      <div className="w-16 h-16 rounded-md overflow-hidden bg-white dark:bg-zinc-800 flex-shrink-0 border border-zinc-200 dark:border-zinc-700 p-1">
+                        <img
+                          src={qrImage.preview}
+                          alt="QR Code preview"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate text-zinc-700 dark:text-zinc-300">
+                          {qrImage.file.name}
+                        </p>
+                        <p className="text-xs text-zinc-500">
+                          {(qrImage.file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeQrImage}
+                        className="p-2 hover:bg-red-500/10 hover:text-red-500 rounded-md text-zinc-400 transition-colors flex-shrink-0"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
             </div>
 
             {/* --- COLUMN 2 (SCHEDULE & DETAILS) --- */}
@@ -645,7 +729,6 @@ export default function CreateEvent() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 !px-2 sm:!px-6">
-                  {/* --- START DATE FIELD --- */}
                   <FormField
                     control={form.control}
                     name="start_date"
@@ -659,21 +742,18 @@ export default function CreateEvent() {
                               field.onChange("");
                               return;
                             }
-
                             const istDate = dayjs(date).format(
                               "YYYY-MM-DD HH:mm:ss",
                             );
-
                             field.onChange(istDate);
                           }}
                           label="Pick start date"
-                          minDate={new Date()} // Block past dates globally
+                          minDate={new Date()}
                         />
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  {/*  2. UPDATE END DATE FIELD */}
                   <FormField
                     control={form.control}
                     name="end_date"
@@ -689,11 +769,9 @@ export default function CreateEvent() {
                                 field.onChange("");
                                 return;
                               }
-
                               const istDate = dayjs(date).format(
                                 "YYYY-MM-DD HH:mm:ss",
                               );
-
                               field.onChange(istDate);
                             }}
                             label="Pick end date"
@@ -706,7 +784,6 @@ export default function CreateEvent() {
                       );
                     }}
                   />
-                  {/* 3. UPDATE DEADLINE FIELD */}
                   <FormField
                     control={form.control}
                     name="registration_deadline"
@@ -724,11 +801,9 @@ export default function CreateEvent() {
                                 field.onChange("");
                                 return;
                               }
-
                               const istDate = dayjs(date).format(
                                 "YYYY-MM-DD HH:mm:ss",
                               );
-
                               field.onChange(istDate);
                             }}
                             label="Pick deadline"
@@ -844,7 +919,7 @@ export default function CreateEvent() {
                 </CardContent>
               </Card>
 
-              {/* --- COORDINATORS SECTION (UPDATED) --- */}
+              {/* --- COORDINATORS SECTION --- */}
               <Card className="bg-white dark:bg-white/1 border-zinc-200 dark:border-zinc-800 shadow-sm">
                 <CardHeader className="!px-2 sm:!px-6">
                   <CardTitle className="flex items-center gap-2 text-base">
@@ -866,10 +941,8 @@ export default function CreateEvent() {
                             Coordinator {i + 1}
                           </FormLabel>
                           <Select
-                            // CONTROLLED VALUE: Convert null/undefined to "none" for the UI
                             value={field.value || "none"}
                             onValueChange={(value) => {
-                              // STATE UPDATE: Convert "none" back to null for the form data
                               field.onChange(value === "none" ? null : value);
                             }}
                           >
@@ -882,7 +955,6 @@ export default function CreateEvent() {
                             </FormControl>
 
                             <SelectContent className="bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-xl rounded-lg overflow-hidden max-h-60">
-                              {/* "None" Option with explicit value "none" */}
                               <SelectItem
                                 value="none"
                                 className="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors py-2.5 px-3 text-sm font-medium"
@@ -892,7 +964,6 @@ export default function CreateEvent() {
                                 </span>
                               </SelectItem>
 
-                              {/* Member Options */}
                               {ebmMembers.map((member) => (
                                 <SelectItem
                                   key={member.id}
