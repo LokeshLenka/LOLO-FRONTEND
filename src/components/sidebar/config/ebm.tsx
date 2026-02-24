@@ -1,6 +1,5 @@
 import {
   CheckCircle2,
-  UserPlus,
   CalendarPlus,
   LayoutDashboard,
 } from "lucide-react";
