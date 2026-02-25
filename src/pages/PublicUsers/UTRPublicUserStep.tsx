@@ -255,8 +255,8 @@ export const UtrPublicUserStep: React.FC<UtrPublicUserStepProps> = ({
                                             type="button"
                                             onClick={() => field.onChange(value)}
                                             className={`flex-1 h-full rounded-xl font-bold text-xs transition-all border ${field.value === value
-                                                    ? "bg-lolo-pink border-lolo-pink text-white"
-                                                    : "bg-transparent border-white/10 text-neutral-400 hover:text-white"
+                                                ? "bg-lolo-pink border-lolo-pink text-white"
+                                                : "bg-transparent border-white/10 text-neutral-400 hover:text-white"
                                                 }`}
                                         >
                                             {label}
@@ -268,7 +268,14 @@ export const UtrPublicUserStep: React.FC<UtrPublicUserStepProps> = ({
                         </FormItem>
                     )}
                 />
+
             </div>
+
+            {/* Disclaimer Text */}
+            <p className="text-xs sm:text-sm text-neutral-500 text-center leading-relaxed px-2 pt-2 border-t border-white/5">
+                By registering for this event, you declare that the information provided is correct and accept the <span className="text-neutral-400 font-medium">Code of Conduct</span> mentioned in the About Event section.
+            </p>
+
         </div>
     );
 };
