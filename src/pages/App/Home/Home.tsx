@@ -153,7 +153,7 @@ const Home: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto px-4"
           >
-            <Link to="/signup" className="w-full sm:w-auto">
+            <Link to="/events/9abdbf2e-37d1-4adb-ad26-779bc6a3951c" className="w-full sm:w-auto">
               <Button className="w-full sm:w-auto px-8 py-6 sm:py-7 rounded-full bg-white text-black font-bold text-base sm:text-lg hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] transition-all duration-300 border-none group">
                 Join Paatashaala
                 <ArrowRight
