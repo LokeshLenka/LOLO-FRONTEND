@@ -15,7 +15,7 @@ import {
     CheckCircle2,
     Users,
     CreditCard,
-    QrCode
+    // QrCode
 } from "lucide-react";
 
 type EventResponse = {
@@ -295,13 +295,12 @@ export const UtrPublicUserSignUp: React.FC = () => {
                                                     <div className="w-48 h-48 bg-white flex items-center justify-center rounded-xl mb-5 p-2 shadow-[0_0_20px_rgba(236,72,153,0.15)]">
                                                         {qrCodeUrl ? (
                                                             <img
-                                                                src={qrCodeUrl}
+                                                                src="/qr/lolo_paatashaala_qr.png"
                                                                 alt="Payment QR Code"
                                                                 className="w-full h-full object-contain rounded-lg"
                                                             />
                                                         ) : (
                                                             <div className="text-center text-neutral-400">
-                                                                <QrCode className="w-12 h-12 mx-auto mb-2 opacity-30 text-black" />
                                                                 <img
                                                                     src="/qr/lolo_paatashaala_qr.png"
                                                                     alt="Payment QR Code"
