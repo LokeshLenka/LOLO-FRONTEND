@@ -183,10 +183,10 @@ function App() {
                 path="/:username/executive_body_member/event-registrations"
                 element={<EventRegistrationsPage />}
               />
-              <Route
+              {/* <Route
                 path="/:username/executive_body_member/event-registrations/:uuid"
                 element={<ShowUTREventRegistrations />}
-              />
+              /> */}
 
               <Route
                 path="/:username/executive_body_member/register-member"
@@ -208,7 +208,7 @@ function App() {
                 path="/:username/executive_body_member/approvals-history/"
                 element={<ApprovalHistoryDetailsPage />}
               />
-              <Route
+              {/* <Route
                 path="/:username/executive_body_member/desk-sale"
                 element={<EbmDeskSale />}
               />
@@ -219,7 +219,7 @@ function App() {
               <Route
                 path="/:username/executive_body_member/ticket-success"
                 element={<EbmTicketSuccess />}
-              />
+              /> */}
               {/* Management Head (MH) Routes */}
               {/* <Route path="/:username/mh/dashboard" element={<MHDashboard />} /> */}
               {/* <Route path="/:username/mh/approvals" element={<MHApprovals />} /> */}
