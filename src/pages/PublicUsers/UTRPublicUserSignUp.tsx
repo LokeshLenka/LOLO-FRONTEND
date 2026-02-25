@@ -302,7 +302,11 @@ export const UtrPublicUserSignUp: React.FC = () => {
                                                         ) : (
                                                             <div className="text-center text-neutral-400">
                                                                 <QrCode className="w-12 h-12 mx-auto mb-2 opacity-30 text-black" />
-                                                                <span className="text-xs text-neutral-500 font-medium">Scan to Pay</span>
+                                                                <img
+                                                                    src="/qr/lolo_paatashaala_qr.png"
+                                                                    alt="Payment QR Code"
+                                                                    className="w-full h-full object-contain rounded-lg"
+                                                                />
                                                             </div>
                                                         )}
                                                     </div>
@@ -357,7 +361,7 @@ export const UtrPublicUserSignUp: React.FC = () => {
                                                 {isProcessing ? (
                                                     <><Loader2 className="h-5 w-5 animate-spin" /> Processing...</>
                                                 ) : (
-                                                    <><CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" /> {currentFee > 0 ? "Submit For Verification" : "Complete Registration"}</>
+                                                    <><CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" /> {currentFee > 0 ? "Confirm Registration" : "Complete Registration"}</>
                                                 )}
                                             </span>
                                         </Button>
