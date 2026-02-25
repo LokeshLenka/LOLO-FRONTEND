@@ -27,7 +27,7 @@ import NotFound from "./pages/OtherPages/NotFound";
 
 // --- Auth & Registration Pages ---
 import Login from "./pages/App/Authentication/Login";
-import SignUp from "./pages/App/Authentication/SignUp";
+// import SignUp from "./pages/App/Authentication/SignUp";
 import AdminLogin from "./pages/Admin/AdminLogin";
 import SuccessRegistration from "./pages/App/Authentication/SuccessRegistration";
 import RegistrationStatus from "./pages/App/Authentication/RegistrationStatus";
@@ -47,13 +47,18 @@ import ApplicantDetailsPage from "./pages/ExecutiveBodyMember/Users/ApplicationD
 import ApprovalHistoryDetailsPage from "./pages/ExecutiveBodyMember/Users/ApprovalHistoryDetailsPage";
 import EventRegistrationsPage from "./pages/ExecutiveBodyMember/EventRegistrations/EventRegistrationsPage";
 import UserEventRegistrationCards from "./pages/User/Events/UserEventRegistrationsPage";
-import { PublicUserSignUp } from "./pages/PublicUsers/PublicUserSignUp";
-import { SuccessEventRegistration } from "./pages/App/Events/SuccessEventRegistration";
 import Home from "./pages/App/Home/Home";
 import TermsOfServicePage from "./pages/OtherPages/TermsOfService";
 import PrivacyPolicyPage from "./pages/OtherPages/PrivacyPolicy";
 import { FailedEventRegistration } from "./pages/App/Events/FailedEventRegistration";
 import RefundPolicyPage from "./pages/OtherPages/RefundPolicy";
+import EbmDeskSale from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmDeskSale";
+import EbmCollectionsList from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmCollectionsList";
+import EbmTicketSuccess from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmTicketSuccess";
+import { UtrPublicUserSignUp } from "./pages/PublicUsers/UTRPublicUserSignUp";
+import SuccessURTEventRegistration from "./pages/PublicUsers/SuccessURTEventRegistration";
+import ShowUTREventRegistrations from "./pages/ExecutiveBodyMember/EventRegistrations/ShowUTREventRegistrations";
+import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
 
 // --- Helper Components ---
 
@@ -70,7 +75,7 @@ function App() {
 
   // Wrapper to pass state as props
   const SuccessWrapper = () => {
-    return <SuccessEventRegistration />;
+    return <SuccessURTEventRegistration />;
   };
 
   return (
@@ -97,11 +102,7 @@ function App() {
             <Route path="terms-of-service" element={<TermsOfServicePage />} />
             <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="refund-policy" element={<RefundPolicyPage />} />
-            // in your router config
-            <Route
-              path="/failed-event-registration"
-              element={<FailedEventRegistration />}
-            />
+
             {/* Technical Pages */}
             {/* <Route path="tech-team" element={<TechTeam />} />
             <Route path="api-docs" element={<DeveloperHub />} />
@@ -116,12 +117,19 @@ function App() {
           {/* ----------------------------------------------------------------- */}
           {/* Auth & Status Pages */}
           {/* ----------------------------------------------------------------- */}
-          <Route path="/signup" element={<SignUp />} />
+          <Route path="/signup" element={<SignupsClosed />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/success" element={<SuccessRegistration />} />
           <Route path="/registration-status" element={<RegistrationStatus />} />
-          // Inside your Router
+
+          {/* For Public users(not a part of club) */}
+          {/* <Route path="/public-user/register" element={<PublicUserSignUp />} /> */}
+          <Route
+            path="/events/:eventuuid/public-user/register"
+            element={<UtrPublicUserSignUp />}
+          />
+
           <Route
             path="/success-event-registration"
             element={
@@ -129,12 +137,12 @@ function App() {
               <SuccessWrapper />
             }
           />
-          {/* For Public users(not a part of club) */}
-          {/* <Route path="/public-user/register" element={<PublicUserSignUp />} /> */}
+
           <Route
-            path="/events/:eventuuid/public-user/register"
-            element={<PublicUserSignUp />}
+            path="/failed-event-registration"
+            element={<FailedEventRegistration />}
           />
+
           {/* Test Route */}
           {/* <Route path="/test/music" element={<MusicProfile />} /> */}
           {/* ================= PROTECTED DASHBOARD ROUTES ================= */}
@@ -176,13 +184,18 @@ function App() {
                 element={<EventRegistrationsPage />}
               />
               <Route
+                path="/:username/executive_body_member/event-registrations/:uuid"
+                element={<ShowUTREventRegistrations />}
+              />
+
+              <Route
                 path="/:username/executive_body_member/register-member"
-                // element={}
+              // element={}
               />
               <Route
                 path="/:username/executive_body_member/my-registrations"
-                // element={<MyRegistrations />}
-              />{" "}
+              // element={<MyRegistrations />}
+              />
               <Route
                 path="/:username/executive_body_member/pending-approvals/view-application/user/:uuid"
                 element={<ApplicantDetailsPage />}
@@ -194,6 +207,18 @@ function App() {
               <Route
                 path="/:username/executive_body_member/approvals-history/"
                 element={<ApprovalHistoryDetailsPage />}
+              />
+              <Route
+                path="/:username/executive_body_member/desk-sale"
+                element={<EbmDeskSale />}
+              />
+              <Route
+                path="/:username/executive_body_member/collections"
+                element={<EbmCollectionsList />}
+              />
+              <Route
+                path="/:username/executive_body_member/ticket-success"
+                element={<EbmTicketSuccess />}
               />
               {/* Management Head (MH) Routes */}
               {/* <Route path="/:username/mh/dashboard" element={<MHDashboard />} /> */}

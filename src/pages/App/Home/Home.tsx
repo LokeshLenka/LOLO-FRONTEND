@@ -108,6 +108,17 @@ const Home: React.FC = () => {
           {/* <AudioVisualizer /> */}
 
           <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="max-w-7xl mx-auto mb-8 sm:mb-10 px-4"
+          >
+            <p className="text-xl sm:text-3xl text-transparent bg-clip-text bg-gradient-to-b from-gray-600 via-white to-gray-400 font-light leading-relaxed uppercase">
+              Living Out Loud originals
+            </p>
+          </motion.div>
+
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -129,9 +140,9 @@ const Home: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="max-w-2xl mx-auto mb-8 sm:mb-10 px-4"
           >
-            <p className="text-base sm:text-xl md:text-2xl text-white/80 font-light leading-relaxed">
-              Blending cultures and hearts, turning campus energy into music
-              that lives beyond the stage.
+            <p className="text-base sm:text-xl md:text-2xl leading-relaxed">
+              <span className="">  Blending cultures and hearts, turning campus energy into music
+                that lives beyond the stage.</span>
             </p>
           </motion.div>
 
@@ -144,7 +155,7 @@ const Home: React.FC = () => {
           >
             <Link to="/signup" className="w-full sm:w-auto">
               <Button className="w-full sm:w-auto px-8 py-6 sm:py-7 rounded-full bg-white text-black font-bold text-base sm:text-lg hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] transition-all duration-300 border-none group">
-                Join the Community
+                Join Paatashaala
                 <ArrowRight
                   size={20}
                   className="ml-2 group-hover:translate-x-1 transition-transform"
@@ -154,7 +165,7 @@ const Home: React.FC = () => {
 
             <Link to="/events" className="w-full sm:w-auto">
               <Button className="w-full sm:w-auto px-8 py-6 sm:py-7 rounded-full bg-transparent text-white font-medium text-base sm:text-lg border border-white/20 hover:bg-white/10 hover:border-white/40 transition-all duration-300 backdrop-blur-sm">
-                Explore Events
+                Explore All Events
               </Button>
             </Link>
           </motion.div>
