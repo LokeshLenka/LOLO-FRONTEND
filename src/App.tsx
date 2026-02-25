@@ -52,12 +52,12 @@ import TermsOfServicePage from "./pages/OtherPages/TermsOfService";
 import PrivacyPolicyPage from "./pages/OtherPages/PrivacyPolicy";
 import { FailedEventRegistration } from "./pages/App/Events/FailedEventRegistration";
 import RefundPolicyPage from "./pages/OtherPages/RefundPolicy";
-import EbmDeskSale from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmDeskSale";
-import EbmCollectionsList from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmCollectionsList";
-import EbmTicketSuccess from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmTicketSuccess";
+// import EbmDeskSale from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmDeskSale";
+// import EbmCollectionsList from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmCollectionsList";
+// import EbmTicketSuccess from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmTicketSuccess";
 import { UtrPublicUserSignUp } from "./pages/PublicUsers/UTRPublicUserSignUp";
 import SuccessURTEventRegistration from "./pages/PublicUsers/SuccessURTEventRegistration";
-import ShowUTREventRegistrations from "./pages/ExecutiveBodyMember/EventRegistrations/ShowUTREventRegistrations";
+// import ShowUTREventRegistrations from "./pages/ExecutiveBodyMember/EventRegistrations/ShowUTREventRegistrations";
 import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
 
 // --- Helper Components ---
