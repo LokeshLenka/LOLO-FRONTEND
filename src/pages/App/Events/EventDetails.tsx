@@ -296,7 +296,7 @@ const EventDetails: React.FC = () => {
       setIsRegistering(false);
       return;
     }
-    
+
     const deadline = new Date(event.registration_deadline);
     if (deadline < new Date()) {
       toast.error("The registration deadline for this event has passed.");
@@ -333,6 +333,17 @@ const EventDetails: React.FC = () => {
 
   const startDate = new Date(event.start_date);
   const endDate = new Date(event.end_date);
+
+  const deadline = new Date(event.registration_deadline);
+  const isExpired = deadline < new Date();
+  const isRegistrationOpen =
+    !isExpired && event.status !== "completed" && event.status !== "cancelled";
+
+  const currentParticipants = event.current_participants ?? 0;
+  const seatsRemaining = Math.max(
+    0,
+    event.max_participants - currentParticipants,
+  );
 
   const isSameDay = startDate.toDateString() === endDate.toDateString();
 
@@ -698,32 +709,40 @@ const EventDetails: React.FC = () => {
 
       {/* Mobile Sticky Footer */}
       <AnimatePresence mode="wait">
-        <motion.div
-          key="mobile-footer"
-          initial={{ y: "100%", opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: "100%", opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="lg:hidden fixed bottom-0 left-0 right-0 px-4 py-4 bg-[#030303]/90 backdrop-blur-xl border-t border-white/10 z-50 flex items-center justify-between gap-4 safe-area-bottom"
-        >
-          <div className="flex flex-col">
-            <span className="text-[10px] text-neutral-400 uppercase font-bold tracking-wider">
-              Total Fee
-            </span>
-            <span className="text-xl font-bold text-white">
-              {event.fee > 0 ? `₹${event.fee}` : "Free"}
-            </span>
-          </div>
-          <Button
-            size="lg"
-            className="flex-1 font-bold bg-white text-black hover:bg-lolo-pink hover:text-white shadow-lg h-12 rounded-full"
-            onPress={handleRegistration}
-            disabled={isRegistering}
+        {isRegistrationOpen && (
+          <motion.div
+            key="mobile-footer"
+            initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "100%", opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="lg:hidden fixed bottom-0 left-0 right-0 px-4 py-4 bg-[#030303]/90 backdrop-blur-xl border-t border-white/10 z-50 flex items-center justify-between gap-4 safe-area-bottom"
           >
-            {isRegistering ? "Processing..." : "Register Now"}{" "}
-            <Ticket size={18} className="ml-2" />
-          </Button>
-        </motion.div>
+            <div className="flex flex-col">
+              <span className="text-[10px] text-neutral-400 uppercase font-bold tracking-wider">
+                Total Fee
+              </span>
+              <span className="text-xl font-bold text-white">
+                {event.fee > 0 ? `₹${event.fee}` : "Free"}
+              </span>
+            </div>
+            <Button
+              size="lg"
+              className="flex-1 font-bold bg-white text-black hover:bg-lolo-pink hover:text-white disabled:bg-neutral-700 disabled:text-neutral-400 disabled:cursor-not-allowed shadow-lg h-12 rounded-full transition-all"
+              onPress={handleRegistration}
+              disabled={isRegistering || seatsRemaining === 0}
+            >
+              {isRegistering
+                ? "Processing..."
+                : seatsRemaining === 0
+                  ? "Registration Full"
+                  : "Register Now"}
+              {seatsRemaining > 0 && !isRegistering && (
+                <Ticket size={18} className="ml-2" />
+              )}
+            </Button>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <AnimatePresence>
