@@ -296,6 +296,13 @@ const EventDetails: React.FC = () => {
       setIsRegistering(false);
       return;
     }
+    
+    const deadline = new Date(event.registration_deadline);
+    if (deadline < new Date()) {
+      toast.error("The registration deadline for this event has passed.");
+      setIsRegistering(false);
+      return;
+    }
 
     if (
       event.registration_mode.toLowerCase() === "online" &&
