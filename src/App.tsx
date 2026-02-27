@@ -59,6 +59,7 @@ import { UtrPublicUserSignUp } from "./pages/PublicUsers/UTRPublicUserSignUp";
 import SuccessURTEventRegistration from "./pages/PublicUsers/SuccessURTEventRegistration";
 // import ShowUTREventRegistrations from "./pages/ExecutiveBodyMember/EventRegistrations/ShowUTREventRegistrations";
 import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
+import Homev1 from "./pages/App/Home/Homev1";
 
 // --- Helper Components ---
 
@@ -89,6 +90,7 @@ function App() {
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Home />} />
             <Route path="home" element={<Home />} />
+            <Route path="homev1" element={<Homev1 />} />
             {/* Feature Pages */}
             <Route path="events" element={<Events />} />
             {/* <Route path="concerts" element={<Concerts />} /> */}
@@ -122,14 +124,12 @@ function App() {
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/success" element={<SuccessRegistration />} />
           <Route path="/registration-status" element={<RegistrationStatus />} />
-
           {/* For Public users(not a part of club) */}
           {/* <Route path="/public-user/register" element={<PublicUserSignUp />} /> */}
           <Route
             path="/events/:eventuuid/public-user/register"
             element={<UtrPublicUserSignUp />}
           />
-
           <Route
             path="/success-event-registration"
             element={
@@ -137,12 +137,10 @@ function App() {
               <SuccessWrapper />
             }
           />
-
           <Route
             path="/failed-event-registration"
             element={<FailedEventRegistration />}
           />
-
           {/* Test Route */}
           {/* <Route path="/test/music" element={<MusicProfile />} /> */}
           {/* ================= PROTECTED DASHBOARD ROUTES ================= */}
@@ -190,11 +188,11 @@ function App() {
 
               <Route
                 path="/:username/executive_body_member/register-member"
-              // element={}
+                // element={}
               />
               <Route
                 path="/:username/executive_body_member/my-registrations"
-              // element={<MyRegistrations />}
+                // element={<MyRegistrations />}
               />
               <Route
                 path="/:username/executive_body_member/pending-approvals/view-application/user/:uuid"
