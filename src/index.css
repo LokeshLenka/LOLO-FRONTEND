@@ -1170,6 +1170,33 @@ span.flatpickr-weekday,
       opacity: 1;
     }
   }
+
+  @keyframes scan {
+    0% {
+      top: 0;
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      top: 100%;
+      opacity: 0;
+    }
+  }
+  @keyframes burst {
+    0% {
+      transform: scale(0);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(3) translateY(-50px);
+      opacity: 0;
+    }
+  }
 }
 
 @keyframes marquee {
@@ -1197,4 +1224,22 @@ span.flatpickr-weekday,
 
 .dark .scrollbar-track-gray-800::-webkit-scrollbar-track {
   background: #1f2937;
+}
+
+/* Lightweight CSS Confetti (No JS Canvas Required) */
+.css-confetti-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background-color: transparent;
+  box-shadow:
+    -50px -150px 0 2px #fff,
+    50px -100px 0 2px #fff,
+    -100px -50px 0 2px #fff,
+    100px -150px 0 2px #fff,
+    0px -200px 0 2px #fff;
+  animation: burst 0.6s ease-out forwards;
+  pointer-events: none;
 }

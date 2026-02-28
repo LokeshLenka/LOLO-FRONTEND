@@ -60,6 +60,7 @@ import SuccessURTEventRegistration from "./pages/PublicUsers/SuccessURTEventRegi
 // import ShowUTREventRegistrations from "./pages/ExecutiveBodyMember/EventRegistrations/ShowUTREventRegistrations";
 import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
 import Homev1 from "./pages/App/Home/Homev1";
+import TicketVerifier from "./pages/User/TicketVerifier";
 
 // --- Helper Components ---
 
@@ -141,6 +142,7 @@ function App() {
             path="/failed-event-registration"
             element={<FailedEventRegistration />}
           />
+          <Route path="/verify-ticket" element={<TicketVerifier />} />
           {/* Test Route */}
           {/* <Route path="/test/music" element={<MusicProfile />} /> */}
           {/* ================= PROTECTED DASHBOARD ROUTES ================= */}
