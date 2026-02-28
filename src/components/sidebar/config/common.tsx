@@ -36,6 +36,6 @@ export const getCommonNavItems = (basePath: string) => [
   {
     icon: <Ticket />,
     name: "Verify Ticket",
-    path: `${basePath}/verify-ticket`,
+    path: `/verify-ticket`,
   },
 ];
