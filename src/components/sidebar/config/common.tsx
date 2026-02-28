@@ -4,6 +4,7 @@ import {
   CircleStar,
   CircleUser,
   Home,
+  Ticket,
 } from "lucide-react";
 
 export const getCommonNavItems = (basePath: string) => [
@@ -31,5 +32,10 @@ export const getCommonNavItems = (basePath: string) => [
     icon: <CircleUser />,
     name: "My Profile",
     path: `${basePath}/profile`,
+  },
+  {
+    icon: <Ticket />,
+    name: "Verify Ticket",
+    path: `${basePath}/verify-ticket`,
   },
 ];
