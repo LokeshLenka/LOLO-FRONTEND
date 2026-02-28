@@ -142,7 +142,7 @@ function App() {
             path="/failed-event-registration"
             element={<FailedEventRegistration />}
           />
-          <Route path="/verify-ticket" element={<TicketVerifier />} />
+          <Route path=":username/verify-ticket" element={<TicketVerifier />} />
           {/* Test Route */}
           {/* <Route path="/test/music" element={<MusicProfile />} /> */}
           {/* ================= PROTECTED DASHBOARD ROUTES ================= */}
