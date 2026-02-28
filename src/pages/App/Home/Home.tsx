@@ -170,7 +170,9 @@ const Home: React.FC = () => {
             </Link>
 
             <a href="https://lyrics.srkrlolo.in/" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto px-8 py-6 sm:py-7 rounded-full bg-transparent text-white font-medium text-base sm:text-lg border border-white/20 hover:bg-white/10 hover:border-white/40 transition-all duration-300 backdrop-blur-sm"></Button>
+              <Button className="w-full sm:w-auto px-8 py-6 sm:py-7 rounded-full bg-transparent text-white font-medium text-base sm:text-lg border border-white/20 hover:bg-white/10 hover:border-white/40 transition-all duration-300 backdrop-blur-sm">
+              Lyrics
+              </Button>
             </a>
           </motion.div>
         </div>
