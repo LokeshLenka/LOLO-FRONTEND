@@ -38,6 +38,7 @@
     "@tsparticles/shape-emoji": "^3.9.1",
     "@tsparticles/slim": "^3.9.1",
     "@types/next": "^9.0.0",
+    "@yudiel/react-qr-scanner": "^2.5.1",
     "antd": "^6.2.2",
     "axios": "^1.13.2",
     "class-variance-authority": "^0.7.1",
