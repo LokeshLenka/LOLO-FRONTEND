@@ -1,6 +1,16 @@
 {
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "http://40.192.15.113/api/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { 
+      "source": "/api/:path*", 
+      "destination": "https://api.srkrlolo.in/api/:path*" 
+    },
+    { 
+      "source": "/storage/:path*", 
+      "destination": "https://api.srkrlolo.in/storage/:path*" 
+    },
+    { 
+      "source": "/((?!api|storage).* )", 
+      "destination": "/index.html" 
+    }
   ]
 }
