@@ -418,7 +418,9 @@ const EventDetails: React.FC = () => {
       <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src={"/images/events/paatashaala.jpeg"}
+            src={
+              event.images[0]?.url || "https://via.placeholder.com/1920x1080"
+            }
             alt={event.name}
             className="w-full h-full object-cover opacity-50"
           />

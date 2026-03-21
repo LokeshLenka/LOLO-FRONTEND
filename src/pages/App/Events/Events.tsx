@@ -451,7 +451,10 @@ const Event: React.FC = () => {
                       </div>
 
                       <img
-                        src={"/images/events/paatashaala.jpeg"}
+                        src={
+                          heroEvent.cover_image ||
+                          "https://via.placeholder.com/800x600"
+                        }
                         alt={heroEvent.name}
                         className="absolute inset-0 block w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
@@ -583,7 +586,10 @@ const Event: React.FC = () => {
                           </div>
 
                           <img
-                            src={"/images/events/paatashaala.jpeg"}
+                            src={
+                              event.cover_image ||
+                              "https://via.placeholder.com/800x600"
+                            }
                             alt={event.name}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
                           />
