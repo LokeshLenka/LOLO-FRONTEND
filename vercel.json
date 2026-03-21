@@ -9,7 +9,7 @@
       "destination": "https://api.srkrlolo.in/storage/:path*" 
     },
     { 
-      "source": "/((?!api|storage).* )", 
+      "source": "/((?!api|storage).*)", 
       "destination": "/index.html" 
     }
   ]
