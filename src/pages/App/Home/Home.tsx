@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   ArrowRight,
   Music,
@@ -11,540 +10,1042 @@ import {
   Headphones,
   CalendarDays,
 } from "lucide-react";
-import { Button } from "@heroui/button";
-import SectionHeader from "@/components/HomeSectionHeader";
-import FloatingLines from "@/components/FloatingLines";
-import { Timeline } from "@/components/Timeline";
+
+// Win2000-style helper components
+const Win2kPanel: React.FC<{
+  children: React.ReactNode;
+  title?: string;
+  style?: React.CSSProperties;
+  className?: string;
+}> = ({ children, title, style, className }) => (
+  <div
+    className={className}
+    style={{
+      background: "#d4d0c8",
+      border: "2px solid",
+      borderColor: "#ffffff #808080 #808080 #ffffff",
+      fontFamily: "Tahoma, Arial, sans-serif",
+      ...style,
+    }}
+  >
+    {title && (
+      <div
+        style={{
+          background: "linear-gradient(to right, #0a246a, #a6caf0)",
+          padding: "3px 6px",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          marginBottom: "0",
+        }}
+      >
+        <span style={{ color: "white", fontWeight: "bold", fontSize: "11px" }}>
+          {title}
+        </span>
+      </div>
+    )}
+    <div style={{ padding: title ? "8px" : "0" }}>{children}</div>
+  </div>
+);
+
+const Win2kButton: React.FC<{
+  children: React.ReactNode;
+  onClick?: () => void;
+  style?: React.CSSProperties;
+  primary?: boolean;
+}> = ({ children, onClick, style, primary }) => {
+  const [pressed, setPressed] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onMouseLeave={() => setPressed(false)}
+      style={{
+        background: "#d4d0c8",
+        border: "2px solid",
+        borderColor: pressed
+          ? "#808080 #ffffff #ffffff #808080"
+          : "#ffffff #808080 #808080 #ffffff",
+        padding: "4px 16px",
+        fontFamily: "Tahoma, Arial, sans-serif",
+        fontSize: "12px",
+        cursor: "pointer",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px",
+        color: primary ? "#000080" : "#000",
+        fontWeight: primary ? "bold" : "normal",
+        ...style,
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const Win2kProgressBar: React.FC<{ value: number; label: string }> = ({
+  value,
+  label,
+}) => (
+  <div style={{ marginBottom: "8px" }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        fontSize: "11px",
+        fontFamily: "Tahoma, Arial, sans-serif",
+        marginBottom: "2px",
+        color: "#000",
+      }}
+    >
+      <span>{label}</span>
+      <span>{value}%</span>
+    </div>
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid",
+        borderColor: "#808080 #ffffff #ffffff #808080",
+        height: "14px",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          width: `${value}%`,
+          height: "100%",
+          background: "#0a246a",
+          backgroundImage:
+            "repeating-linear-gradient(90deg, #0a246a 0px, #0a246a 12px, #1a56c8 12px, #1a56c8 14px)",
+        }}
+      />
+    </div>
+  </div>
+);
+
+const MarqueeText: React.FC<{ text: string }> = ({ text }) => {
+  const [pos, setPos] = useState(100);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPos((p) => {
+        if (p < -150) return 100;
+        return p - 0.3;
+      });
+    }, 16);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div
+      style={{
+        overflow: "hidden",
+        background: "#000080",
+        padding: "2px 4px",
+        borderTop: "1px solid #808080",
+      }}
+    >
+      <span
+        style={{
+          display: "inline-block",
+          transform: `translateX(${pos}%)`,
+          color: "#ffff00",
+          fontSize: "11px",
+          fontFamily: "Tahoma, Arial, sans-serif",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {text}
+      </span>
+    </div>
+  );
+};
 
 const Home: React.FC = () => {
-  // Timeline Data
+  const [activeTab, setActiveTab] = useState(0);
+
   const timelineData = [
     {
       title: "Formation",
-      content: (
-        <div>
-          <p className="text-neutral-400 text-sm sm:text-base md:text-lg font-normal mb-8 leading-relaxed">
-            SRKR LOLO began as a collective of passionate musicians and students
-            wanting to bridge the gap between academic life and creative
-            expression.
-          </p>
-        </div>
-      ),
+      content:
+        "SRKR LOLO began as a collective of passionate musicians and students wanting to bridge the gap between academic life and creative expression.",
     },
     {
       title: "Dec 2, 2024",
-      content: (
-        <div>
-          <p className="text-neutral-400 text-sm sm:text-base md:text-lg font-normal mb-8 leading-relaxed">
-            The college administration officially recognized SRKR LOLO as a
-            legit Music Band & Club. This marked the beginning of a structured
-            era with Faculty Coordinators and a dedicated student body.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white/5 py-5 px-5 rounded-xl border border-white/10 hover:border-white/20 transition-colors">
-              <h4 className="text-white font-bold mb-1">Music Wing</h4>
-              <p className="text-xs text-gray-500 uppercase tracking-wider">
-                Concerts & Production
-              </p>
-            </div>
-            <div className="bg-white/5 py-5 px-5 rounded-xl border border-white/10 hover:border-white/20 transition-colors">
-              <h4 className="text-white font-bold mb-1">Management Wing</h4>
-              <p className="text-xs text-gray-500 uppercase tracking-wider">
-                Events & Operations
-              </p>
-            </div>
-          </div>
-        </div>
-      ),
+      content:
+        "The college administration officially recognized SRKR LOLO as a legit Music Band & Club. This marked the beginning of a structured era with Faculty Coordinators and a dedicated student body.",
     },
     {
       title: "The Present",
-      content: (
-        <div>
-          <p className="text-neutral-400 text-sm sm:text-base md:text-lg font-normal mb-4 leading-relaxed">
-            We are now a fully functional ecosystem producing music for short
-            films, hosting workshops, and performing at major college events
-            like Hackathons.
-          </p>
-          <ul className="grid grid-cols-1 gap-2">
-            {[
-              "Short Film Scores",
-              "Live Concerts",
-              "Interactive Workshops",
-            ].map((item) => (
-              <li
-                key={item}
-                className="flex items-center text-gray-400 text-sm"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-lolo-pink mr-3"></span>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ),
+      content:
+        "We are now a fully functional ecosystem producing music for short films, hosting workshops, and performing at major college events like Hackathons.",
+    },
+  ];
+
+  const features = [
+    {
+      icon: Headphones,
+      title: "Contemporary Fusion",
+      desc: "Seamlessly blending genres for a refreshingly experimental sound that breaks traditional boundaries.",
+      progress: 85,
+    },
+    {
+      icon: Disc3,
+      title: "Immersive Soundscapes",
+      desc: "Experience energetic rhythms and melodic storytelling crafted by the best talent.",
+      progress: 72,
+    },
+    {
+      icon: Award,
+      title: "Resonant Community",
+      desc: "More than just music — it's about connecting audiences across generations and backgrounds.",
+      progress: 91,
     },
   ];
 
   return (
-    <div className="bg-[#030303] text-white w-full selection:bg-lolo-pink selection:text-white overflow-x-hidden font-poppins">
-      {/* --- HERO SECTION --- */}
-      <section className="relative h-[100dvh] min-h-[700px] flex items-center justify-center overflow-hidden">
-        {/* Layer 1: Interactive Background (Restored) */}
-        <div className="absolute inset-0 !z-10 opacity-70">
-          <FloatingLines />
-        </div>
-
-        {/* Layer 2: Ambient Lighting */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-lolo-pink/20 rounded-full blur-[120px] mix-blend-screen opacity-20 will-change-transform" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-lolo-cyan/20 rounded-full blur-[120px] mix-blend-screen opacity-20 will-change-transform" />
-          <div className="absolute inset-0 bg-[url('/noise.png')] !opacity-100 mix-blend-overlay z-0" />
-        </div>
-
-        {/* Layer 3: Main Content */}
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-5 flex flex-col items-center justify-center text-center h-full">
-          {/* New Audio Visualizer */}
-          {/* <AudioVisualizer /> */}
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="max-w-7xl mx-auto mb-8 sm:mb-10 px-4"
+    <div
+      style={{
+        background: "#008080",
+        minHeight: "100vh",
+        paddingTop: "120px",
+        fontFamily: "Tahoma, Arial, sans-serif",
+      }}
+    >
+      {/* Desktop icons row */}
+      <div
+        style={{
+          display: "flex",
+          gap: "24px",
+          padding: "16px 16px 0",
+          flexWrap: "wrap",
+        }}
+      >
+        {[
+          { icon: "🎵", label: "Music" },
+          { icon: "📅", label: "Events" },
+          { icon: "👥", label: "Team" },
+          { icon: "📖", label: "Publications" },
+          { icon: "🖼️", label: "Gallery" },
+          { icon: "❓", label: "FAQ" },
+        ].map((item, i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "2px",
+              cursor: "pointer",
+              width: "64px",
+            }}
           >
-            <p className="text-xl sm:text-3xl text-transparent bg-clip-text bg-gradient-to-b from-gray-600 via-white to-gray-400 font-light leading-relaxed uppercase">
-              Living Out Loud originals
-            </p>
-          </motion.div>
+            <div
+              style={{
+                fontSize: "28px",
+                filter: "drop-shadow(1px 1px 0 #000)",
+              }}
+            >
+              {item.icon}
+            </div>
+            <span
+              style={{
+                color: "#fff",
+                fontSize: "11px",
+                textAlign: "center",
+                textShadow: "1px 1px 1px #000",
+                background: "transparent",
+              }}
+            >
+              {item.label}
+            </span>
+          </div>
+        ))}
+      </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-6xl mx-auto mb-6 sm:mb-8 relative px-2"
+      <div
+        style={{
+          padding: "16px",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+          gap: "12px",
+          alignItems: "start",
+        }}
+      >
+        {/* === HERO WINDOW === */}
+        <div
+          style={{
+            gridColumn: "1 / -1",
+            background: "#d4d0c8",
+            border: "2px solid",
+            borderColor: "#ffffff #808080 #808080 #ffffff",
+            boxShadow: "2px 2px 0 #000",
+          }}
+        >
+          {/* Title bar */}
+          <div
+            style={{
+              background: "linear-gradient(to right, #0a246a, #a6caf0)",
+              padding: "4px 8px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
           >
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.1] text-white">
-              <span className="block font-club mb-2 text-white/90">
-                Unleash
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "6px" }}
+            >
+              <span style={{ fontSize: "14px" }}>🎸</span>
+              <span
+                style={{
+                  color: "white",
+                  fontWeight: "bold",
+                  fontSize: "12px",
+                }}
+              >
+                SRKR LOLO Music Club - Welcome
               </span>
-              <span className="font-club text-transparent bg-clip-text bg-gradient-to-r from-lolo-pink via-white to-lolo-cyan animate-gradient-x pb-6 block drop-shadow-2xl">
-                Your Rhythm
-              </span>
-            </h1>
-          </motion.div>
+            </div>
+            <div style={{ display: "flex", gap: "2px" }}>
+              {["_", "□", "✕"].map((c, i) => (
+                <button
+                  key={i}
+                  style={{
+                    background: "#d4d0c8",
+                    border: "1px solid",
+                    borderColor: "#ffffff #808080 #808080 #ffffff",
+                    color: "#000",
+                    width: "18px",
+                    height: "16px",
+                    fontSize: "9px",
+                    cursor: "pointer",
+                    fontFamily: "Arial",
+                    lineHeight: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="max-w-2xl mx-auto mb-8 sm:mb-10 px-4"
+          {/* Content */}
+          <div
+            style={{
+              padding: "16px",
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "16px",
+              alignItems: "center",
+              background: "#d4d0c8",
+            }}
           >
-            <p className="text-base sm:text-xl md:text-2xl leading-relaxed">
-              <span className="">
-                {" "}
+            <div style={{ flex: "1 1 300px" }}>
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: "#000080",
+                  textTransform: "uppercase",
+                  letterSpacing: "2px",
+                  marginBottom: "4px",
+                  fontWeight: "bold",
+                }}
+              >
+                Living Out Loud Originals
+              </p>
+              <h1
+                style={{
+                  fontSize: "clamp(28px, 5vw, 48px)",
+                  fontWeight: "bold",
+                  color: "#000080",
+                  lineHeight: 1.2,
+                  marginBottom: "8px",
+                  textShadow: "2px 2px 0 #a6caf0",
+                  fontFamily: "Arial Black, Arial, sans-serif",
+                }}
+              >
+                Unleash Your Rhythm
+              </h1>
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "#444",
+                  marginBottom: "16px",
+                  maxWidth: "420px",
+                  lineHeight: "1.6",
+                }}
+              >
                 Blending cultures and hearts, turning campus energy into music
                 that lives beyond the stage.
-              </span>
-            </p>
-          </motion.div>
+              </p>
 
-          {/* Reverted Buttons for Club/Community Context */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto px-4"
-          >
-            <Link
-              to="/events/9abdbf2e-37d1-4adb-ad26-779bc6a3951c"
-              className="w-full sm:w-auto"
-            >
-              <Button className="w-full sm:w-auto px-8 py-6 sm:py-7 rounded-full bg-white text-black font-bold text-base sm:text-lg hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] transition-all duration-300 border-none group">
-                Join Paatashaala
-                <ArrowRight
-                  size={20}
-                  className="ml-2 group-hover:translate-x-1 transition-transform"
-                />
-              </Button>
-            </Link>
-
-            <a href="https://lyrics.srkrlolo.in/" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto px-8 py-6 sm:py-7 rounded-full bg-transparent text-white font-medium text-base sm:text-lg border border-white/20 hover:bg-white/10 hover:border-white/40 transition-all duration-300 backdrop-blur-sm">
-              Lyrics
-              </Button>
-            </a>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* --- ABOUT LOLO SECTION --- */}
-      <section className="py-24 md:py-32 bg-[#020202] relative z-20">
-        <div className="max-w-7xl mx-auto px-5">
-          <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-24">
-            {/* Left: Text Content */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              viewport={{ once: true }}
-              className="md:w-1/2"
-            >
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8 tracking-tight">
-                About <span className="font-club text-lolo-pink">LoLo</span>{" "}
-                Music
-              </h2>
-
-              <div className="space-y-4 sm:space-y-6 text-gray-400 text-base sm:text-lg leading-relaxed font-light">
-                <p>
-                  <strong className="text-white">
-                    Living Out Loud Originals (LOLO)
-                  </strong>{" "}
-                  is SRKR's premier contemporary fusion band and music club.
-                  Born from a passion for blending Indian Classical rhythms with
-                  modern Rock and Pop beats, we exist to create an infectious,
-                  genre-transcending sound that makes you say{" "}
-                  <span className="text-white font-medium italic">"YoYo"</span>!
-                </p>
-                <p>
-                  More than just a band, we are a movement. We provide a
-                  platform for students to de-stress, build confidence, and find
-                  their unique musical identity.
-                </p>
-              </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 sm:mt-10">
-                {/* Artists Section */}
-                <div className="flex items-center space-x-4 px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.05] backdrop-blur-sm">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lolo-pink/10 flex items-center justify-center flex-shrink-0">
-                    {/* Changed Music -> Mic2 to represent the Artist/Performer */}
-                    <Mic2 size={20} className="text-lolo-pink" />
-                  </div>
-                  <div>
-                    <div className="text-lg sm:text-xl font-bold text-white">
-                      10+
-                    </div>
-                    <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">
-                      Artists
-                    </div>
-                  </div>
-                </div>
-
-                {/* Events Section */}
-                <div className="flex items-center space-x-4 px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.05] backdrop-blur-sm">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lolo-cyan/10 flex items-center justify-center flex-shrink-0">
-                    {/* Changed Mic2 -> CalendarDays to represent the Event/Date */}
-                    <CalendarDays size={20} className="text-lolo-cyan" />
-                  </div>
-                  <div>
-                    <div className="text-lg sm:text-xl font-bold text-white">
-                      15+
-                    </div>
-                    <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">
-                      Events
-                    </div>
-                  </div>
-                </div>
-
-                {/* Productions Section */}
-                <div className="flex items-center space-x-4 px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/[0.05] backdrop-blur-sm">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-lolo-red/10 flex items-center justify-center flex-shrink-0">
-                    {/* Changed Play -> Clapperboard to represent Production/Studio Work */}
-                    <Users size={20} className="text-lolo-red" />
-                  </div>
-                  <div>
-                    <div className="text-lg sm:text-xl font-bold text-white">
-                      25+
-                    </div>
-                    <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">
-                      Team Memebers
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Right: Visual */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="md:w-1/2 w-full mt-10 md:mt-0"
-            >
-              <div className="relative rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden group border border-white/5 shadow-2xl">
-                {/* <video
-                  autoPlay={true}
-                  loop={true}
-                  muted={true}
-                  playsInline={true}
-                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                <Link
+                  to="/events/9abdbf2e-37d1-4adb-ad26-779bc6a3951c"
+                  style={{ textDecoration: "none" }}
                 >
-                  <source src="/ee.mp4" type="video/mp4" />
-                </video> */}
-
-                <img src="/cover.jpg"></img>
-
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-
-                <div className="absolute bottom-6 left-6 right-6 sm:bottom-10 sm:left-10 sm:right-10">
-                  <blockquote className="text-xl sm:text-3xl font-club text-white leading-relaxed mb-4 drop-shadow-lg">
-                    "To grow together, <br /> we must{" "}
-                    <span className="text-lolo-pink">play together</span>."
-                  </blockquote>
-                  <div className="flex items-center gap-3">
-                    <div className="h-0.5 w-8 sm:w-12 bg-lolo-pink"></div>
-                    <span className="text-xs sm:text-sm font-bold tracking-widest uppercase text-gray-400">
-                      Our Philosophy
-                    </span>
-                  </div>
-                </div>
+                  <Win2kButton primary>
+                    <span>▶</span> Join Paatashaala
+                  </Win2kButton>
+                </Link>
+                <a
+                  href="https://lyrics.srkrlolo.in/"
+                  style={{ textDecoration: "none" }}
+                >
+                  <Win2kButton>
+                    <span>♪</span> Lyrics
+                  </Win2kButton>
+                </a>
               </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+            </div>
 
-      {/* --- WHY LOLO (FEATURES GRID) --- */}
-      <section className="py-16 sm:py-24 md:py-32 bg-[#050505] relative z-20">
-        <div className="max-w-7xl mx-auto px-5">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {[
-              {
-                icon: Headphones,
-                color: "text-lolo-pink",
-                bg: "bg-lolo-pink/10",
-                border: "border-lolo-pink/20",
-                title: "Contemporary Fusion",
-                desc: "Seamlessly blending genres for a refreshingly experimental sound that breaks traditional boundaries.",
-              },
-              {
-                icon: Disc3,
-                color: "text-lolo-cyan",
-                bg: "bg-lolo-cyan/10",
-                border: "border-lolo-cyan/20",
-                title: "Immersive Soundscapes",
-                desc: "Experience energetic rhythms and melodic storytelling crafted by the best talent.",
-              },
-              {
-                icon: Award,
-                color: "text-lolo-red",
-                bg: "bg-lolo-red/10",
-                border: "border-lolo-red/20",
-                title: "Resonant Community",
-                desc: "More than just music—it's about connecting audiences across generations and backgrounds.",
-              },
-            ].map((feature, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className="group p-8 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] bg-white/[0.02] border border-white/[0.05] backdrop-blur-sm hover:backdrop-blur-xl hover:bg-white/[0.05] transition-all duration-500 relative overflow-hidden flex flex-col"
-              >
-                {/* Gradient Glow Blob */}
+            {/* Stats box */}
+            <div
+              style={{
+                flex: "0 0 auto",
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+              }}
+            >
+              {[
+                { icon: <Mic2 size={14} />, value: "10+", label: "Artists" },
+                {
+                  icon: <CalendarDays size={14} />,
+                  value: "15+",
+                  label: "Events",
+                },
+                {
+                  icon: <Users size={14} />,
+                  value: "25+",
+                  label: "Team Members",
+                },
+              ].map((stat, i) => (
                 <div
-                  className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[80px] opacity-20 group-hover:opacity-40 transition-opacity duration-500 ${feature.color.replace(
-                    "text-",
-                    "bg-",
-                  )}`}
-                />
-                <div className="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-5 mb-6 sm:mb-8">
-                  <div
-                    className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl ${feature.bg} flex items-center justify-center mb-4 sm:mb-0 group-hover:scale-110 transition-transform duration-500 border ${feature.border}`}
+                  key={i}
+                  style={{
+                    background: "#fff",
+                    border: "2px solid",
+                    borderColor: "#808080 #ffffff #ffffff #808080",
+                    padding: "6px 12px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    minWidth: "140px",
+                  }}
+                >
+                  <span style={{ color: "#000080" }}>{stat.icon}</span>
+                  <span
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: "bold",
+                      color: "#000080",
+                    }}
                   >
-                    <feature.icon size={28} className={feature.color} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                      {feature.title}
-                    </h3>
-                  </div>
+                    {stat.value}
+                  </span>
+                  <span style={{ fontSize: "11px", color: "#444" }}>
+                    {stat.label}
+                  </span>
                 </div>
-                <p className="text-gray-400 leading-relaxed text-sm sm:text-base font-light">
-                  {feature.desc}
-                </p>
-              </motion.div>
+              ))}
+            </div>
+          </div>
+
+          <MarqueeText
+            text="★ SRKR LOLO Music Club — Unleash Your Rhythm ★ Events | Concerts | Publications | Team | Gallery | FAQ ★ Visit us at srkrlolo.in ★"
+          />
+        </div>
+
+        {/* === ABOUT WINDOW === */}
+        <Win2kPanel
+          title="About LOLO Music — Properties"
+          style={{ boxShadow: "2px 2px 0 #000" }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid",
+              borderColor: "#808080 #fff #fff #808080",
+              padding: "10px",
+              marginBottom: "8px",
+            }}
+          >
+            <img
+              src="/cover.jpg"
+              alt="SRKR LOLO Band"
+              style={{
+                width: "100%",
+                height: "180px",
+                objectFit: "cover",
+                display: "block",
+                filter: "grayscale(20%)",
+              }}
+            />
+          </div>
+          <p
+            style={{ fontSize: "11px", color: "#000", lineHeight: "1.6", marginBottom: "8px" }}
+          >
+            <strong>Living Out Loud Originals (LOLO)</strong> is SRKR&apos;s
+            premier contemporary fusion band and music club. Born from a passion
+            for blending Indian Classical rhythms with modern Rock and Pop beats,
+            we exist to create an infectious, genre-transcending sound that makes
+            you say{" "}
+            <em style={{ color: "#000080" }}>"YoYo"</em>!
+          </p>
+          <p
+            style={{ fontSize: "11px", color: "#444", lineHeight: "1.6" }}
+          >
+            More than just a band, we are a movement. We provide a platform for
+            students to de-stress, build confidence, and find their unique
+            musical identity.
+          </p>
+
+          <blockquote
+            style={{
+              borderLeft: "3px solid #000080",
+              margin: "10px 0 0",
+              paddingLeft: "10px",
+              fontStyle: "italic",
+              fontSize: "12px",
+              color: "#000080",
+            }}
+          >
+            &quot;To grow together, we must play together.&quot;
+            <br />
+            <span
+              style={{
+                fontSize: "10px",
+                color: "#666",
+                fontStyle: "normal",
+              }}
+            >
+              — Our Philosophy
+            </span>
+          </blockquote>
+        </Win2kPanel>
+
+        {/* === WHY LOLO / FEATURES WINDOW === */}
+        <Win2kPanel
+          title="Why LOLO? — System Properties"
+          style={{ boxShadow: "2px 2px 0 #000" }}
+        >
+          {features.map((f, i) => (
+            <div
+              key={i}
+              style={{
+                background: "#fff",
+                border: "1px solid",
+                borderColor: "#808080 #fff #fff #808080",
+                padding: "8px",
+                marginBottom: "6px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  marginBottom: "4px",
+                }}
+              >
+                <div
+                  style={{
+                    background: "#d4d0c8",
+                    border: "1px solid",
+                    borderColor: "#ffffff #808080 #808080 #ffffff",
+                    padding: "3px",
+                    color: "#000080",
+                  }}
+                >
+                  <f.icon size={14} />
+                </div>
+                <strong style={{ fontSize: "12px", color: "#000080" }}>
+                  {f.title}
+                </strong>
+              </div>
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: "#444",
+                  marginBottom: "6px",
+                  lineHeight: "1.5",
+                }}
+              >
+                {f.desc}
+              </p>
+              <Win2kProgressBar value={f.progress} label="Score" />
+            </div>
+          ))}
+        </Win2kPanel>
+
+        {/* === ECOSYSTEM WINDOW === */}
+        <Win2kPanel
+          title="Our Ecosystem — Notepad"
+          style={{ boxShadow: "2px 2px 0 #000" }}
+        >
+          {/* Tab bar */}
+          <div
+            style={{
+              display: "flex",
+              borderBottom: "2px solid #808080",
+              marginBottom: "8px",
+            }}
+          >
+            {["Music & Performance", "Management & Ops"].map((tab, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveTab(i)}
+                style={{
+                  padding: "4px 14px",
+                  fontSize: "11px",
+                  fontFamily: "Tahoma, Arial, sans-serif",
+                  background: activeTab === i ? "#d4d0c8" : "#b0b0a8",
+                  border: "1px solid",
+                  borderColor:
+                    activeTab === i
+                      ? "#ffffff #808080 #d4d0c8 #ffffff"
+                      : "#ffffff #808080 #808080 #ffffff",
+                  marginBottom: activeTab === i ? "-2px" : "0",
+                  cursor: "pointer",
+                  fontWeight: activeTab === i ? "bold" : "normal",
+                  color: activeTab === i ? "#000080" : "#444",
+                  zIndex: activeTab === i ? 1 : 0,
+                  position: "relative",
+                }}
+              >
+                {tab}
+              </button>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* --- OUR ECOSYSTEM --- */}
-      {/* --- OUR ECOSYSTEM (UPDATED VISUALS) --- */}
-      <section className="py-16 sm:py-24 md:py-32 bg-[#080808] relative z-20 overflow-hidden">
-        {/* Ambient Background Glows */}
-        <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-lolo-pink/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] bg-lolo-cyan/5 rounded-full blur-[120px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-5 relative z-10">
-          <SectionHeader
-            title={
-              <>
-                Our{" "}
-                <span className="font-club text-lolo-pink text-4xl md:text-6xl ml-2 align-middle px-2">
-                  Ecosystem
-                </span>
-              </>
-            }
-            subtitle="A unified platform where creativity meets management. Discover your role."
-          />
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Card 1: Music & Performance */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="group relative overflow-hidden rounded-[2.5rem] bg-[#0A0A0A] border border-white/5 flex flex-col h-full hover:border-lolo-pink/50 transition-all duration-500 hover:shadow-[0_0_50px_-12px_rgba(236,72,153,0.3)]"
-            >
-              {/* Card Background Texture */}
-              <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
-
-              {/* Header Gradient */}
-              <div className="h-48 relative overflow-hidden flex items-center justify-center">
-                <div className="absolute inset-0 bg-gradient-to-b from-lolo-pink/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(236,72,153,0.2),transparent_70%)] group-hover:scale-110 transition-transform duration-700" />
-
-                {/* Icon Container */}
-                <div className="relative z-10 w-20 h-20 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center shadow-2xl backdrop-blur-md group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500 group-hover:border-lolo-pink/30">
-                  <Music
-                    size={36}
-                    className="text-lolo-pink drop-shadow-[0_0_15px_rgba(236,72,153,0.5)]"
-                  />
-                </div>
-              </div>
-
-              <div className="p-10 flex-grow flex flex-col relative z-10">
-                <div className="mb-6">
-                  <h3 className="text-3xl font-bold text-white mb-2 group-hover:text-lolo-pink transition-colors duration-300">
+          {activeTab === 0 && (
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "8px",
+                  padding: "8px",
+                  background: "#fff",
+                  border: "1px solid",
+                  borderColor: "#808080 #fff #fff #808080",
+                }}
+              >
+                <Music size={32} style={{ color: "#000080" }} />
+                <div>
+                  <strong style={{ fontSize: "13px", color: "#000080" }}>
                     Music & Performance
-                  </h3>
-                  <div className="h-0.5 w-12 bg-white/10 rounded-full group-hover:w-24 group-hover:bg-lolo-pink transition-all duration-500" />
-                </div>
-
-                <p className="text-gray-400 mb-8 text-lg font-light leading-relaxed flex-grow">
-                  From the recording studio to the main stage. Join a community
-                  of vocalists, instrumentalists, and producers shaping the
-                  campus sound.
-                </p>
-
-                <div className="flex flex-wrap gap-3 mt-auto">
-                  {["Live Concerts", "Film Scoring", "Jam Sessions"].map(
-                    (tag) => (
-                      <span
-                        key={tag}
-                        className="px-4 py-2 rounded-lg bg-white/[0.03] border border-white/[0.08] text-sm text-gray-300 group-hover:border-lolo-pink/20 group-hover:bg-lolo-pink/5 transition-colors cursor-default"
-                      >
-                        {tag}
-                      </span>
-                    ),
-                  )}
+                  </strong>
+                  <p style={{ fontSize: "11px", color: "#444", margin: "2px 0 0" }}>
+                    From the recording studio to the main stage.
+                  </p>
                 </div>
               </div>
-            </motion.div>
-
-            {/* Card 2: Management & Ops */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="group relative overflow-hidden rounded-[2.5rem] bg-[#0A0A0A] border border-white/5 flex flex-col h-full hover:border-lolo-cyan/50 transition-all duration-500 hover:shadow-[0_0_50px_-12px_rgba(34,211,238,0.3)]"
-            >
-              {/* Card Background Texture */}
-              <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
-
-              {/* Header Gradient */}
-              <div className="h-48 relative overflow-hidden flex items-center justify-center">
-                <div className="absolute inset-0 bg-gradient-to-b from-lolo-cyan/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.2),transparent_70%)] group-hover:scale-110 transition-transform duration-700" />
-
-                {/* Icon Container */}
-                <div className="relative z-10 w-20 h-20 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center shadow-2xl backdrop-blur-md group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 group-hover:border-lolo-cyan/30">
-                  <Users
-                    size={36}
-                    className="text-lolo-cyan drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]"
-                  />
-                </div>
-              </div>
-
-              <div className="p-10 flex-grow flex flex-col relative z-10">
-                <div className="mb-6">
-                  <h3 className="text-3xl font-bold text-white mb-2 group-hover:text-lolo-cyan transition-colors duration-300">
-                    Management & Ops
-                  </h3>
-                  <div className="h-0.5 w-12 bg-white/10 rounded-full group-hover:w-24 group-hover:bg-lolo-cyan transition-all duration-500" />
-                </div>
-
-                <p className="text-gray-400 mb-8 text-lg font-light leading-relaxed flex-grow">
-                  The architects of experience. Master the art of event
-                  planning, team leadership, and marketing in a real-world
-                  environment.
-                </p>
-
-                <div className="flex flex-wrap gap-3 mt-auto">
-                  {[
-                    "Event Planning & Organising",
-                    "Team Leadership",
-                    "Marketing",
-                  ].map((tag) => (
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: "#444",
+                  lineHeight: "1.6",
+                  marginBottom: "8px",
+                }}
+              >
+                Join a community of vocalists, instrumentalists, and producers
+                shaping the campus sound.
+              </p>
+              <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                {["Live Concerts", "Film Scoring", "Jam Sessions"].map(
+                  (tag) => (
                     <span
                       key={tag}
-                      className="px-4 py-2 rounded-lg bg-white/[0.03] border border-white/[0.08] text-sm text-gray-300 group-hover:border-lolo-cyan/20 group-hover:bg-lolo-cyan/5 transition-colors cursor-default"
+                      style={{
+                        background: "#d4d0c8",
+                        border: "1px solid",
+                        borderColor: "#ffffff #808080 #808080 #ffffff",
+                        padding: "2px 8px",
+                        fontSize: "10px",
+                        color: "#000080",
+                      }}
                     >
                       {tag}
                     </span>
-                  ))}
+                  )
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 1 && (
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "8px",
+                  padding: "8px",
+                  background: "#fff",
+                  border: "1px solid",
+                  borderColor: "#808080 #fff #fff #808080",
+                }}
+              >
+                <Users size={32} style={{ color: "#000080" }} />
+                <div>
+                  <strong style={{ fontSize: "13px", color: "#000080" }}>
+                    Management & Ops
+                  </strong>
+                  <p style={{ fontSize: "11px", color: "#444", margin: "2px 0 0" }}>
+                    The architects of experience.
+                  </p>
                 </div>
               </div>
-            </motion.div>
-          </div>
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: "#444",
+                  lineHeight: "1.6",
+                  marginBottom: "8px",
+                }}
+              >
+                Master the art of event planning, team leadership, and marketing
+                in a real-world environment.
+              </p>
+              <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                {[
+                  "Event Planning",
+                  "Team Leadership",
+                  "Marketing",
+                ].map((tag) => (
+                  <span
+                    key={tag}
+                    style={{
+                      background: "#d4d0c8",
+                      border: "1px solid",
+                      borderColor: "#ffffff #808080 #808080 #ffffff",
+                      padding: "2px 8px",
+                      fontSize: "10px",
+                      color: "#000080",
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
-          <div className="mt-16 flex justify-center">
-            <Link to="/team" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto px-10 py-6 rounded-full bg-white text-black font-bold text-lg hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all duration-300 ease-in-out border-none group">
-                View Our Team
-                <ArrowRight
-                  size={20}
-                  className="ml-2 group-hover:translate-x-1 transition-transform"
-                />
-              </Button>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: "12px",
+            }}
+          >
+            <Link to="/team" style={{ textDecoration: "none" }}>
+              <Win2kButton primary>
+                View Our Team <ArrowRight size={12} />
+              </Win2kButton>
             </Link>
           </div>
-        </div>
-      </section>
+        </Win2kPanel>
 
-      {/* --- TIMELINE SECTION --- */}
-      <section className="bg-[#030303] relative z-20">
-        <Timeline data={timelineData} />
-      </section>
+        {/* === TIMELINE WINDOW === */}
+        <div
+          style={{
+            gridColumn: "1 / -1",
+            background: "#d4d0c8",
+            border: "2px solid",
+            borderColor: "#ffffff #808080 #808080 #ffffff",
+            boxShadow: "2px 2px 0 #000",
+          }}
+        >
+          <div
+            style={{
+              background: "linear-gradient(to right, #0a246a, #a6caf0)",
+              padding: "4px 8px",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <span style={{ fontSize: "14px" }}>📋</span>
+            <span
+              style={{
+                color: "white",
+                fontWeight: "bold",
+                fontSize: "12px",
+              }}
+            >
+              Our Story — Timeline.txt
+            </span>
+          </div>
 
-      {/* --- FOOTER CTA --- */}
-      <section className="py-16 sm:py-24 md:py-32 bg-black relative flex items-center justify-center z-20 overflow-hidden border-t border-white/10 px-5">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(236,72,153,0.15),transparent_70%)] pointer-events-none" />
-        <div className="relative z-10 text-center max-w-4xl mx-auto">
-          <SectionHeader
-            title={
-              <>
-                Join the{" "}
-                <span className="font-club text-lolo-pink text-4xl md:text-6xl ml-2 align-middle px-2">
-                  Family
-                </span>
-              </>
-            }
-            subtitle="Your musical journey starts here. Join us and make some noise!"
-          />
-          <Link to="/signup">
-            <Button className="w-full sm:w-auto px-10 sm:px-14 py-6 sm:py-8 rounded-full border text-white text-lg sm:text-xl font-bold hover:shadow-[0_0_60px_rgba(236,72,153,0.5)] transition-all duration-500 hover:scale-105 active:scale-95 shadow-2xl">
-              Get Started Now
-            </Button>
-          </Link>
+          <div
+            style={{
+              padding: "12px",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: "10px",
+            }}
+          >
+            {timelineData.map((item, i) => (
+              <div
+                key={i}
+                style={{
+                  background: "#fff",
+                  border: "2px solid",
+                  borderColor: "#808080 #ffffff #ffffff #808080",
+                  padding: "10px",
+                }}
+              >
+                <div
+                  style={{
+                    background: "#000080",
+                    color: "#fff",
+                    padding: "2px 8px",
+                    fontSize: "11px",
+                    fontWeight: "bold",
+                    marginBottom: "6px",
+                    display: "inline-block",
+                  }}
+                >
+                  {item.title}
+                </div>
+                <p
+                  style={{
+                    fontSize: "11px",
+                    color: "#000",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  {item.content}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-      </section>
+
+        {/* === JOIN CTA WINDOW === */}
+        <div
+          style={{
+            gridColumn: "1 / -1",
+            background: "#d4d0c8",
+            border: "2px solid",
+            borderColor: "#ffffff #808080 #808080 #ffffff",
+            boxShadow: "2px 2px 0 #000",
+          }}
+        >
+          <div
+            style={{
+              background: "linear-gradient(to right, #0a246a, #a6caf0)",
+              padding: "4px 8px",
+            }}
+          >
+            <span
+              style={{
+                color: "white",
+                fontWeight: "bold",
+                fontSize: "12px",
+              }}
+            >
+              Join the Family — Registration Wizard
+            </span>
+          </div>
+
+          <div
+            style={{
+              padding: "24px",
+              textAlign: "center",
+              background: "#d4d0c8",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "32px",
+                marginBottom: "8px",
+              }}
+            >
+              🎸
+            </div>
+            <h2
+              style={{
+                fontSize: "20px",
+                fontWeight: "bold",
+                color: "#000080",
+                marginBottom: "8px",
+                fontFamily: "Arial Black, Arial, sans-serif",
+              }}
+            >
+              Join the SRKR LOLO Family!
+            </h2>
+            <p
+              style={{
+                fontSize: "12px",
+                color: "#444",
+                marginBottom: "16px",
+              }}
+            >
+              Your musical journey starts here. Join us and make some noise!
+            </p>
+
+            <div
+              style={{
+                background: "#fff",
+                border: "2px solid",
+                borderColor: "#808080 #ffffff #ffffff #808080",
+                padding: "12px",
+                maxWidth: "400px",
+                margin: "0 auto 16px",
+                textAlign: "left",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: "#000080",
+                  fontWeight: "bold",
+                  marginBottom: "4px",
+                }}
+              >
+                Setup Wizard - Step 1 of 3
+              </p>
+              <Win2kProgressBar value={33} label="Registration Progress" />
+              <p style={{ fontSize: "11px", color: "#444", marginTop: "6px" }}>
+                Welcome to SRKR LOLO Music Club setup. Click &apos;Get
+                Started&apos; to begin your journey.
+              </p>
+            </div>
+
+            <Link to="/signup" style={{ textDecoration: "none" }}>
+              <Win2kButton primary style={{ padding: "8px 24px", fontSize: "13px" }}>
+                Get Started Now <ArrowRight size={14} />
+              </Win2kButton>
+            </Link>
+          </div>
+
+          {/* Status bar */}
+          <div
+            style={{
+              background: "#d4d0c8",
+              borderTop: "1px solid #808080",
+              padding: "2px 8px",
+              display: "flex",
+              gap: "16px",
+              alignItems: "center",
+            }}
+          >
+            {[
+              "Ready",
+              "10+ Artists",
+              "15+ Events",
+              "25+ Members",
+            ].map((item, i) => (
+              <span
+                key={i}
+                style={{
+                  fontSize: "11px",
+                  color: "#000",
+                  fontFamily: "Tahoma, Arial, sans-serif",
+                  borderRight: "1px solid #808080",
+                  paddingRight: "12px",
+                }}
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Taskbar */}
+      <div
+        style={{
+          position: "sticky",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: "#d4d0c8",
+          borderTop: "2px solid #ffffff",
+          padding: "3px 6px",
+          display: "flex",
+          alignItems: "center",
+          gap: "4px",
+          zIndex: 100,
+        }}
+      >
+        <button
+          style={{
+            background: "#d4d0c8",
+            border: "2px solid",
+            borderColor: "#ffffff #808080 #808080 #ffffff",
+            padding: "2px 10px",
+            fontWeight: "bold",
+            fontSize: "12px",
+            fontFamily: "Tahoma, Arial, sans-serif",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <span style={{ fontSize: "14px" }}>🪟</span>
+          Start
+        </button>
+
+        <div
+          style={{
+            height: "20px",
+            width: "1px",
+            background: "#808080",
+            margin: "0 4px",
+          }}
+        />
+
+        {["SRKR LOLO - Welcome", "Events", "Publications"].map((w, i) => (
+          <button
+            key={i}
+            style={{
+              background: "#d4d0c8",
+              border: "1px solid",
+              borderColor: i === 0 ? "#808080 #ffffff #ffffff #808080" : "#ffffff #808080 #808080 #ffffff",
+              padding: "2px 10px",
+              fontSize: "11px",
+              fontFamily: "Tahoma, Arial, sans-serif",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              fontWeight: i === 0 ? "bold" : "normal",
+            }}
+          >
+            <Music size={11} />
+            {w}
+          </button>
+        ))}
+
+        <div style={{ flex: 1 }} />
+
+        {/* Clock */}
+        <div
+          style={{
+            background: "#d4d0c8",
+            border: "1px solid",
+            borderColor: "#808080 #ffffff #ffffff #808080",
+            padding: "2px 8px",
+            fontSize: "11px",
+            fontFamily: "Tahoma, Arial, sans-serif",
+          }}
+        >
+          {new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </div>
+      </div>
     </div>
   );
 };

@@ -16,7 +16,7 @@ const MainLayout: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col text-white">
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#008080", fontFamily: "Tahoma, Arial, sans-serif", color: "#000" }}>
       {/* Pass the scrolled state to Header */}
       <Header scrolled={scrolled} />
       <main className={`flex-1`}>

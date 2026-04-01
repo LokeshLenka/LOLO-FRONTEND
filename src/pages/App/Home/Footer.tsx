@@ -6,219 +6,410 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full relative bg-[#020202] text-white border-t border-white/5 overflow-hidden pt-20">
-      {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-lolo-pink/5 blur-[100px] pointer-events-none" />
+    <footer
+      style={{
+        background: "#d4d0c8",
+        borderTop: "2px solid #ffffff",
+        fontFamily: "Tahoma, Arial, sans-serif",
+      }}
+    >
+      {/* Windows 2000-style section panel */}
+      <div
+        style={{
+          background: "#d4d0c8",
+          padding: "12px 16px",
+          borderBottom: "1px solid #808080",
+        }}
+      >
+        {/* Title bar for footer */}
+        <div
+          style={{
+            background: "linear-gradient(to right, #0a246a, #a6caf0)",
+            padding: "3px 8px",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            marginBottom: "12px",
+          }}
+        >
+          <img
+            src={Lolo_logo_1}
+            alt="LoLo Logo"
+            style={{ height: "14px", width: "14px", objectFit: "contain" }}
+          />
+          <span
+            style={{ color: "white", fontWeight: "bold", fontSize: "11px" }}
+          >
+            SRKR LOLO Music Club — Footer.exe
+          </span>
+        </div>
 
-      <div className="relative mx-auto px-12 z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 mb-20">
-          {/* Brand & Newsletter Column (Span 5) */}
-          <div className="lg:col-span-5 space-y-8">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md">
+        {/* Grid of link panels */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: "10px",
+            marginBottom: "12px",
+          }}
+        >
+          {/* Brand panel */}
+          <div
+            style={{
+              background: "#d4d0c8",
+              border: "2px solid",
+              borderColor: "#ffffff #808080 #808080 #ffffff",
+              padding: "8px",
+              gridColumn: "span 2",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "8px",
+              }}
+            >
+              <div
+                style={{
+                  background: "#d4d0c8",
+                  border: "1px solid",
+                  borderColor: "#ffffff #808080 #808080 #ffffff",
+                  padding: "4px",
+                }}
+              >
                 <img
                   src={Lolo_logo_1}
                   alt="LoLo Logo"
-                  className="h-6 w-6 object-contain"
+                  style={{ height: "20px", width: "20px", objectFit: "contain" }}
                 />
               </div>
-              <span className="text-2xl font-bold tracking-tight">
+              <span
+                style={{ fontWeight: "bold", fontSize: "14px", color: "#000080" }}
+              >
                 SRKR LOLO
               </span>
             </div>
 
-            <p className="text-gray-400 leading-relaxed max-w-md font-light">
+            <p
+              style={{
+                fontSize: "11px",
+                color: "#444",
+                lineHeight: "1.6",
+                marginBottom: "10px",
+              }}
+            >
               Empowering the next generation of campus artists. We provide the
               stage, the studio, and the community you need to amplify your
               sound.
             </p>
 
-            {/* Newsletter Input */}
-            {/* Address / Contact (instead of Newsletter) */}
-            <div className="max-w-md">
-              <label className="block text-xs font-bold uppercase text-gray-500 mb-3 tracking-wider">
-                Address
-              </label>
-
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
-                <p className="text-gray-400 text-sm leading-relaxed">
-                  SRKR Engineering College
-                  <br />
-                  Bhimavaram, Andhra Pradesh - 534204
-                </p>
-
-                <div className="pt-2 border-t border-white/10 space-y-2">
-                  <p className="text-gray-400 text-sm">
-                    Email:{" "}
-                    <a
-                      href="mailto:bandloloplays0707@gmail.com"
-                      className="text-white/90 hover:text-lolo-cyan transition-colors"
-                    >
-                      bandloloplays0707@gmail.com
-                    </a>
-                  </p>
-
-                  <p className="text-gray-400 text-sm">
-                    Phone:{" "}
-                    <a
-                      href="tel:+918333042318"
-                      className="text-white/90 hover:text-lolo-cyan transition-colors"
-                    >
-                      +91 8333042318
-                    </a>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Spacer Column (Span 1) */}
-          <div className="hidden lg:block lg:col-span-1" />
-
-          {/* Links Grid (Span 6) */}
-          <div className="lg:col-span-6 grid grid-cols-2 md:grid-cols-3 gap-8">
-            {/* Column 1 */}
-            <div>
-              <h4 className="font-bold text-white mb-6">Platform</h4>
-              <ul className="space-y-4 text-sm text-gray-400">
-                {[
-                  { id: 1, label: "Home", link: "/home" },
-                  { id: 2, label: "Events", link: "/events" },
-                  { id: 3, label: "Publications", link: "/publications" },
-                ].map((item) => (
-                  <li key={item.id}>
-                    <Link
-                      to={item.link}
-                      className="hover:text-lolo-pink transition-colors block hover:translate-x-1 transform duration-300 ease-in-out"
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Column 2 */}
-            <div>
-              <h4 className="font-bold text-white mb-6">Community</h4>
-              <ul className="space-y-4 text-sm text-gray-400">
-                {[
-                  { id: 1, label: "Team", link: "/team" },
-                  {
-                    id: 2,
-                    label: "Registration Status",
-                    link: "/registration-status",
-                  },
-                  { id: 3, label: "Join the Club", link: "/signup" },
-                ].map((item) => (
-                  <li key={item.id}>
-                    <Link
-                      to={item.link}
-                      className="hover:text-lolo-cyan transition-colors block hover:translate-x-1 transform duration-300 ease-in-out"
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Column 3 */}
-            <div>
-              <h4 className="font-bold text-white mb-6">Support</h4>
-              <div className="flex gap-3">
-                <ul className="space-y-4 text-sm text-gray-400">
-                  {[
-                    { id: 1, label: "About Us", link: "/about" },
-                    { id: 2, label: "Contact Us", link: "/contact" },
-                    { id: 3, label: "FAQ", link: "/faq" },
-                    { id: 4, label: "Refund Policy", link: "/refund-policy" },
-                  ].map((item) => (
-                    <li key={item.id}>
-                      <Link
-                        to={item.link}
-                        className="hover:text-lolo-pink transition-colors block hover:translate-x-1 transform duration-300 ease-in-out"
-                      >
-                        {item.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Column 4 */}
-            <div>
-              <h4 className="font-bold text-white mb-6">Socials</h4>
-              <div className="flex gap-3">
-                {[
-                  // { icon: Twitter, href: "#" },
-                  {
-                    icon: Instagram,
-                    href: "https://www.instagram.com/lolo.band.official/",
-                  },
-                  {
-                    icon: Youtube,
-                    href: "https://www.youtube.com/@LoLoBandOfficial",
-                  },
-                ].map((social, idx) => (
-                  <a
-                    key={idx}
-                    href={social.href}
-                    className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:bg-white hover:text-black hover:scale-110 transition-all duration-300"
-                  >
-                    <social.icon size={18} />
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="border-t border-white/10 py-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-          <p>&copy; {currentYear} SRKR LOLO. All rights reserved.</p>
-          <div className="flex items-center gap-6">
-            <Link
-              to="/privacy-policy"
-              className="hover:text-white transition-colors"
+            {/* Address box */}
+            <div
+              style={{
+                background: "#fff",
+                border: "1px solid",
+                borderColor: "#808080 #fff #fff #808080",
+                padding: "8px",
+                fontSize: "11px",
+                color: "#000",
+                lineHeight: "1.8",
+              }}
             >
-              Privacy Policy
-            </Link>
-            <Link
-              to="/terms-of-service"
-              className="hover:text-white transition-colors"
+              <div
+                style={{
+                  fontWeight: "bold",
+                  color: "#000080",
+                  marginBottom: "4px",
+                  fontSize: "10px",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                }}
+              >
+                Contact / Address
+              </div>
+              SRKR Engineering College
+              <br />
+              Bhimavaram, Andhra Pradesh - 534204
+              <br />
+              <a
+                href="mailto:bandloloplays0707@gmail.com"
+                style={{ color: "#000080", textDecoration: "underline" }}
+              >
+                bandloloplays0707@gmail.com
+              </a>
+              <br />
+              <a
+                href="tel:+918333042318"
+                style={{ color: "#000080", textDecoration: "underline" }}
+              >
+                +91 8333042318
+              </a>
+            </div>
+
+            {/* Social icons */}
+            <div
+              style={{
+                display: "flex",
+                gap: "4px",
+                marginTop: "8px",
+              }}
             >
-              Terms of Service
-            </Link>
-            <Link
-              to="/refund-policy"
-              className="hover:text-white transition-colors"
-            >
-              Refund Policy
-            </Link>
-            {/* <span className="flex items-center gap-1 text-gray-600">
-              Made with{" "}
-              <Heart size={10} className="fill-red-500 text-red-500" /> by{" "}
-              <span className="text-gray-400">
-                <Link
-                  to="/tech-team"
-                  className="hover:text-white transition-colors"
+              {[
+                {
+                  icon: Instagram,
+                  href: "https://www.instagram.com/lolo.band.official/",
+                  label: "Instagram",
+                },
+                {
+                  icon: Youtube,
+                  href: "https://www.youtube.com/@LoLoBandOfficial",
+                  label: "YouTube",
+                },
+              ].map((social, idx) => (
+                <a
+                  key={idx}
+                  href={social.href}
+                  aria-label={social.label}
+                  style={{
+                    background: "#d4d0c8",
+                    border: "2px solid",
+                    borderColor: "#ffffff #808080 #808080 #ffffff",
+                    padding: "4px 6px",
+                    color: "#000080",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
-                  {" "}
-                  Tech Team
-                </Link>
-              </span>
-            </span> */}
+                  <social.icon size={14} />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Platform links */}
+          <div
+            style={{
+              background: "#d4d0c8",
+              border: "2px solid",
+              borderColor: "#ffffff #808080 #808080 #ffffff",
+              padding: "8px",
+            }}
+          >
+            <div
+              style={{
+                background: "#000080",
+                color: "#fff",
+                padding: "2px 6px",
+                fontSize: "11px",
+                fontWeight: "bold",
+                marginBottom: "8px",
+              }}
+            >
+              Platform
+            </div>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              {[
+                { label: "Home", link: "/home" },
+                { label: "Events", link: "/events" },
+                { label: "Publications", link: "/publications" },
+              ].map((item) => (
+                <li key={item.label} style={{ marginBottom: "4px" }}>
+                  <Link
+                    to={item.link}
+                    style={{
+                      fontSize: "11px",
+                      color: "#000080",
+                      textDecoration: "underline",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: "8px",
+                        height: "8px",
+                        background: "#000080",
+                        marginRight: "4px",
+                      }}
+                    />
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Community links */}
+          <div
+            style={{
+              background: "#d4d0c8",
+              border: "2px solid",
+              borderColor: "#ffffff #808080 #808080 #ffffff",
+              padding: "8px",
+            }}
+          >
+            <div
+              style={{
+                background: "#000080",
+                color: "#fff",
+                padding: "2px 6px",
+                fontSize: "11px",
+                fontWeight: "bold",
+                marginBottom: "8px",
+              }}
+            >
+              Community
+            </div>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              {[
+                { label: "Team", link: "/team" },
+                { label: "Registration Status", link: "/registration-status" },
+                { label: "Join the Club", link: "/signup" },
+              ].map((item) => (
+                <li key={item.label} style={{ marginBottom: "4px" }}>
+                  <Link
+                    to={item.link}
+                    style={{
+                      fontSize: "11px",
+                      color: "#000080",
+                      textDecoration: "underline",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: "8px",
+                        height: "8px",
+                        background: "#000080",
+                        marginRight: "4px",
+                      }}
+                    />
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Support links */}
+          <div
+            style={{
+              background: "#d4d0c8",
+              border: "2px solid",
+              borderColor: "#ffffff #808080 #808080 #ffffff",
+              padding: "8px",
+            }}
+          >
+            <div
+              style={{
+                background: "#000080",
+                color: "#fff",
+                padding: "2px 6px",
+                fontSize: "11px",
+                fontWeight: "bold",
+                marginBottom: "8px",
+              }}
+            >
+              Support
+            </div>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              {[
+                { label: "About Us", link: "/about" },
+                { label: "Contact Us", link: "/contact" },
+                { label: "FAQ", link: "/faq" },
+                { label: "Refund Policy", link: "/refund-policy" },
+              ].map((item) => (
+                <li key={item.label} style={{ marginBottom: "4px" }}>
+                  <Link
+                    to={item.link}
+                    style={{
+                      fontSize: "11px",
+                      color: "#000080",
+                      textDecoration: "underline",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: "8px",
+                        height: "8px",
+                        background: "#000080",
+                        marginRight: "4px",
+                      }}
+                    />
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
 
-      {/* HIGHLIGHT EYE-CATCHING ELEMENT: Big Text at Bottom */}
-      <div className="w-full overflow-hidden leading-none select-none opacity-10 pointer-events-none">
-        <h1 className="text-[12vw] sm:text-[13vw] font-bold text-center tracking-tighter text-white whitespace-nowrap translate-y-[15%]">
-          SRKR LOLO MUSIC
-        </h1>
+      {/* Status bar / bottom bar */}
+      <div
+        style={{
+          background: "#d4d0c8",
+          borderTop: "1px solid #808080",
+          padding: "3px 12px",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "8px",
+          alignItems: "center",
+          justifyContent: "space-between",
+          fontSize: "11px",
+          color: "#000",
+        }}
+      >
+        <div
+          style={{
+            border: "1px solid",
+            borderColor: "#808080 #fff #fff #808080",
+            padding: "1px 8px",
+          }}
+        >
+          &copy; {currentYear} SRKR LOLO. All rights reserved.
+        </div>
+        <div style={{ display: "flex", gap: "8px" }}>
+          {[
+            { label: "Privacy Policy", link: "/privacy-policy" },
+            { label: "Terms of Service", link: "/terms-of-service" },
+            { label: "Refund Policy", link: "/refund-policy" },
+          ].map((item, i) => (
+            <Link
+              key={i}
+              to={item.link}
+              style={{
+                color: "#000080",
+                textDecoration: "underline",
+                fontSize: "11px",
+              }}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+        <div
+          style={{
+            border: "1px solid",
+            borderColor: "#808080 #fff #fff #808080",
+            padding: "1px 8px",
+            color: "#000080",
+          }}
+        >
+          srkrlolo.in
+        </div>
       </div>
     </footer>
   );
