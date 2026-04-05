@@ -37,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
     <motion.header
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
       className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${
         scrolled ? "backdrop-blur-xl" : "backdrop-blur-sm"
       } ${
@@ -71,44 +71,21 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
               <motion.div key={item.path} whileHover={{ y: -2 }}>
                 <Link
                   to={item.path}
-                  className="text-sm font-medium transition-all duration-300 px-4 py-2 rounded-lg relative group"
-                  style={{
-                    color: location.pathname === item.path ? "#FF00FF" : "rgba(255, 255, 255, 0.8)",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (location.pathname !== item.path) {
-                      (e.currentTarget as HTMLElement).style.color = "white";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (location.pathname !== item.path) {
-                      (e.currentTarget as HTMLElement).style.color = "rgba(255, 255, 255, 0.8)";
-                    }
-                  }}
+                  className={`text-sm font-medium transition-all duration-300 px-4 py-2 rounded-lg relative group ${
+                    location.pathname === item.path
+                      ? "text-neon-pink"
+                      : "text-white/80 hover:text-white"
+                  }`}
                 >
                   {item.label}
                   {location.pathname === item.path && (
                     <motion.div
                       layoutId="navUnderline"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
-                      style={{
-                        background: "linear-gradient(to right, #00D9FF, #FF00FF)",
-                      }}
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan to-neon-pink rounded-full"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
-                  <div
-                    className="absolute inset-0 rounded-lg transition-all duration-300 -z-10 group-hover:opacity-100"
-                    style={{
-                      background: "linear-gradient(to right, rgba(0,217,255,0), rgba(255,0,255,0))",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = "linear-gradient(to right, rgba(0,217,255,0.1), rgba(255,0,255,0.1))";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = "linear-gradient(to right, rgba(0,217,255,0), rgba(255,0,255,0))";
-                    }}
-                  />
+                  <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-cyan/0 to-neon-pink/0 group-hover:from-cyan/10 group-hover:to-neon-pink/10 transition-all duration-300 -z-10" />
                 </Link>
               </motion.div>
             ))}
@@ -120,24 +97,9 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
             {user ? (
               <motion.div whileHover={{ scale: 1.05 }}>
                 <Link to={`/${user.username}/dashboard`}>
-                  <button
-                    className="ml-4 px-6 py-2 rounded-xl transition-all duration-300 text-white font-medium text-sm group"
-                    style={{
-                      background: "rgba(255, 255, 255, 0.08)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255, 255, 255, 0.2)",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.boxShadow = "0 0 30px rgba(0,217,255,0.3), 0 0 60px rgba(255,0,255,0.3)";
-                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(0, 217, 255, 0.5)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.boxShadow = "none";
-                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(255, 255, 255, 0.2)";
-                    }}
-                  >
+                  <button className="ml-4 px-6 py-2 rounded-xl glassmorphic hover:glow-cyan-pink transition-all duration-300 text-white font-medium text-sm hover:border-cyan/50 group">
                     <span className="flex items-center gap-2">
-                      <User size={16} style={{ color: "white" }} />
+                      <User size={16} className="group-hover:text-neon-pink transition-colors" />
                       Dashboard
                     </span>
                   </button>
@@ -154,18 +116,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }}>
                   <Link to="/signup">
-                    <button
-                      className="px-6 py-2 rounded-xl text-white font-bold transition-all duration-300"
-                      style={{
-                        background: "linear-gradient(to right, #00D9FF, #FF00FF)",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(255,0,255,0.6)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.boxShadow = "none";
-                      }}
-                    >
+                    <button className="px-6 py-2 rounded-xl bg-gradient-to-r from-cyan to-neon-pink text-white font-bold hover:shadow-[0_0_20px_rgba(255,0,255,0.6)] transition-all duration-300">
                       Sign Up
                     </button>
                   </Link>
@@ -205,12 +156,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="absolute top-full left-0 w-full md:hidden flex flex-col z-40"
-            style={{
-              background: "rgba(0, 0, 0, 0.2)",
-              backdropFilter: "blur(10px)",
-              borderTop: "1px solid rgba(255, 255, 255, 0.1)",
-            }}
+            className="absolute top-full left-0 w-full glassmorphic-dark border-t border-white/10 md:hidden flex flex-col z-40 backdrop-blur-xl"
           >
             <div className="px-4 py-6 space-y-2">
               {NAV_ITEMS.map((item, idx) => (
@@ -223,25 +169,11 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
                   <Link
                     to={item.path}
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300"
-                    style={{
-                      background: location.pathname === item.path ? "linear-gradient(to right, rgba(0,217,255,0.2), rgba(255,0,255,0.2))" : "transparent",
-                      color: location.pathname === item.path ? "#FF00FF" : "rgba(255, 255, 255, 0.8)",
-                      fontWeight: location.pathname === item.path ? "bold" : "normal",
-                      border: location.pathname === item.path ? "1px solid rgba(255, 0, 255, 0.3)" : "none",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                      if (location.pathname !== item.path) {
-                        (e.currentTarget as HTMLElement).style.color = "white";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.backgroundColor = location.pathname === item.path ? "linear-gradient(to right, rgba(0,217,255,0.2), rgba(255,0,255,0.2))" : "transparent";
-                      if (location.pathname !== item.path) {
-                        (e.currentTarget as HTMLElement).style.color = "rgba(255, 255, 255, 0.8)";
-                      }
-                    }}
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 ${
+                      location.pathname === item.path
+                        ? "bg-gradient-to-r from-cyan/20 to-neon-pink/20 text-neon-pink font-bold border border-neon-pink/30"
+                        : "text-white/80 hover:bg-white/10 hover:text-white"
+                    }`}
                   >
                     <item.icon size={20} />
                     <span>{item.label}</span>
@@ -265,20 +197,9 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
                     <Link
                       to={`/${user.username}/dashboard`}
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center justify-center space-x-2 w-full text-white font-bold py-3 rounded-lg transition-all"
-                      style={{
-                        background: "rgba(255, 255, 255, 0.08)",
-                        backdropFilter: "blur(10px)",
-                        border: "1px solid rgba(255, 255, 255, 0.2)",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.boxShadow = "0 0 30px rgba(0,217,255,0.3), 0 0 60px rgba(255,0,255,0.3)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.boxShadow = "none";
-                      }}
+                      className="flex items-center justify-center space-x-2 w-full glassmorphic text-white font-bold py-3 rounded-lg transition-all hover:glow-cyan-pink"
                     >
-                      <User size={18} style={{ color: "#FF00FF" }} />
+                      <User size={18} className="text-neon-pink" />
                       <span>Go to Dashboard</span>
                     </Link>
                   </motion.div>
@@ -290,38 +211,14 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
                     transition={{ delay: 0.3 }}
                   >
                     <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                      <button
-                        className="w-full flex items-center justify-center gap-2 text-white font-bold py-3 rounded-lg transition-all"
-                        style={{
-                          background: "rgba(255, 255, 255, 0.08)",
-                          backdropFilter: "blur(10px)",
-                          border: "1px solid rgba(255, 255, 255, 0.2)",
-                        }}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.15)";
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.08)";
-                        }}
-                      >
+                      <button className="w-full flex items-center justify-center gap-2 glassmorphic text-white font-bold py-3 rounded-lg transition-all hover:bg-white/20">
                         <LogIn size={18} />
                         <span>Login</span>
                       </button>
                     </Link>
 
                     <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                      <button
-                        className="w-full text-white font-bold py-3 rounded-lg transition-all"
-                        style={{
-                          background: "linear-gradient(to right, #00D9FF, #FF00FF)",
-                        }}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(255,0,255,0.6)";
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLElement).style.boxShadow = "none";
-                        }}
-                      >
+                      <button className="w-full bg-gradient-to-r from-cyan to-neon-pink text-white font-bold py-3 rounded-lg transition-all hover:shadow-[0_0_20px_rgba(255,0,255,0.6)]">
                         Sign Up
                       </button>
                     </Link>
@@ -334,7 +231,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.header>
+    </header>
   );
 };
 

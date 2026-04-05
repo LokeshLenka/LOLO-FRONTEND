@@ -1,3 +1,4 @@
+import React from "react";
 import { Link } from "react-router-dom";
 import { Instagram, Youtube, Mail, Phone, MapPin, Heart } from "lucide-react";
 import { motion } from "framer-motion";
@@ -6,7 +7,14 @@ import Lolo_logo_1 from "@/assets/logos/Lolo_logo_1.png";
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
-
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.1 },
+    },
+  };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 10 },
@@ -22,15 +30,11 @@ const Footer = () => {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
+      variants={containerVariants}
       className="relative pt-20 pb-8 px-4 md:px-0 border-t border-white/10"
     >
       {/* Gradient overlay background */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: "linear-gradient(to bottom, transparent, rgba(0,217,255,0.05), rgba(255,0,255,0.05))",
-        }}
-      />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan/5 to-neon-pink/5 pointer-events-none" />
 
       <div className="relative z-10">
         <div className="max-w-6xl mx-auto">
