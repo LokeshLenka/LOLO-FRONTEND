@@ -334,7 +334,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+    </motion.header>
   );
 };
 
