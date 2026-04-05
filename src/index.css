@@ -174,15 +174,17 @@
   }
 
   .glow-cyan {
-    @apply shadow-[0_0_30px_rgba(0, 217, 255, 0.5)];
+    box-shadow: 0 0 30px rgba(0, 217, 255, 0.5);
   }
 
   .glow-pink {
-    @apply shadow-[0_0_30px_rgba(255, 0, 255, 0.5)];
+    box-shadow: 0 0 30px rgba(255, 0, 255, 0.5);
   }
 
   .glow-cyan-pink {
-    @apply shadow-[0_0_30px_rgba(0, 217, 255, 0.3), _0_0_60px_rgba(255, 0, 255, 0.3)];
+    box-shadow:
+      0 0 30px rgba(0, 217, 255, 0.3),
+      0 0 60px rgba(255, 0, 255, 0.3);
   }
 }
 

@@ -38,13 +38,11 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${
-        scrolled ? "backdrop-blur-xl" : "backdrop-blur-sm"
-      } ${
-        scrolled
+      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${scrolled ? "backdrop-blur-xl" : "backdrop-blur-sm"
+        } ${scrolled
           ? "bg-white/10 border-b border-white/20"
           : "bg-white/5 border-b border-white/10"
-      }`}
+        }`}
     >
       <div className="w-full mx-auto px-4 lg:px-10 py-4">
         <div className="flex items-center justify-between">
@@ -71,11 +69,10 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
               <motion.div key={item.path} whileHover={{ y: -2 }}>
                 <Link
                   to={item.path}
-                  className={`text-sm font-medium transition-all duration-300 px-4 py-2 rounded-lg relative group ${
-                    location.pathname === item.path
+                  className={`text-sm font-medium transition-all duration-300 px-4 py-2 rounded-lg relative group ${location.pathname === item.path
                       ? "text-neon-pink"
                       : "text-white/80 hover:text-white"
-                  }`}
+                    }`}
                 >
                   {item.label}
                   {location.pathname === item.path && (
@@ -169,11 +166,10 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
                   <Link
                     to={item.path}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 ${
-                      location.pathname === item.path
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 ${location.pathname === item.path
                         ? "bg-gradient-to-r from-cyan/20 to-neon-pink/20 text-neon-pink font-bold border border-neon-pink/30"
                         : "text-white/80 hover:bg-white/10 hover:text-white"
-                    }`}
+                      }`}
                   >
                     <item.icon size={20} />
                     <span>{item.label}</span>
@@ -231,7 +227,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+    </motion.header>
   );
 };
 

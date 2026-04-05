@@ -1,28 +1,16 @@
-import React, { useState, useRef, useEffect } from "react";
-import { motion, useScroll, useTransform, useMotionValue } from "framer-motion";
+import React, { useRef } from "react";
+import { motion } from "framer-motion";
 import { Star, Zap, Music, Users, Calendar, Sparkles } from "lucide-react";
 
 const Home: React.FC = () => {
   const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: containerRef });
-  const y = useTransform(scrollYProgress, [0, 1], [0, -100]);
-  const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
+      transition: { duration: 0.6 },
     },
   };
 
@@ -31,7 +19,7 @@ const Home: React.FC = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
+      transition: { duration: 0.6 },
     },
     hover: {
       y: -10,
@@ -44,7 +32,7 @@ const Home: React.FC = () => {
     visible: {
       opacity: 1,
       x: 0,
-      transition: { duration: 0.5, ease: "easeOut" },
+      transition: { duration: 0.5 },
     },
   };
 
@@ -76,7 +64,15 @@ const Home: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <span className="inline-block px-4 py-2 rounded-full glassmorphic mb-6 text-cyan text-sm font-semibold">
+            <span
+              className="inline-block px-4 py-2 rounded-full mb-6 text-sm font-semibold"
+              style={{
+                background: "rgba(255, 255, 255, 0.08)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+                color: "#00D9FF",
+              }}
+            >
               Welcome to SRKR LOLO
             </span>
           </motion.div>
@@ -86,10 +82,14 @@ const Home: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+            style={{
+              backgroundImage: "linear-gradient(to right, #00D9FF, white, #FF00FF)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
           >
-            <span className="bg-gradient-to-r from-cyan via-white to-neon-pink bg-clip-text text-transparent">
-              Experience Music Like Never Before
-            </span>
+            Experience Music Like Never Before
           </motion.h1>
 
           <motion.p
@@ -110,14 +110,28 @@ const Home: React.FC = () => {
             <motion.button
               whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(255,0,255,0.6)" }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 rounded-xl bg-gradient-to-r from-cyan to-neon-pink text-white font-bold text-lg hover:shadow-lg transition-all duration-300"
+              className="px-8 py-4 rounded-xl text-white font-bold text-lg transition-all duration-300"
+              style={{
+                background: "linear-gradient(to right, #00D9FF, #FF00FF)",
+              }}
             >
               Explore Events
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05, borderColor: "rgba(0,217,255,0.8)" }}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 rounded-xl glassmorphic text-white font-bold text-lg border border-white/30 hover:border-cyan/50 transition-all duration-300"
+              className="px-8 py-4 rounded-xl text-white font-bold text-lg transition-all duration-300"
+              style={{
+                background: "rgba(255, 255, 255, 0.08)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(0, 217, 255, 0.5)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255, 255, 255, 0.3)";
+              }}
             >
               Learn More
             </motion.button>
@@ -133,7 +147,12 @@ const Home: React.FC = () => {
           <div className="flex flex-col items-center gap-2 text-white/60">
             <span className="text-sm">Scroll to explore</span>
             <div className="w-6 h-10 border border-white/30 rounded-full flex items-start justify-center p-2">
-              <motion.div className="w-1 h-2 bg-cyan rounded-full" animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }} />
+              <motion.div
+                className="w-1 h-2 rounded-full"
+                style={{ background: "#00D9FF" }}
+                animate={{ y: [0, 8, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
             </div>
           </div>
         </motion.div>
@@ -155,10 +174,16 @@ const Home: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-cyan to-neon-pink bg-clip-text text-transparent">
-                Why Choose SRKR LOLO?
-              </span>
+            <h2
+              className="text-4xl md:text-5xl font-bold mb-4"
+              style={{
+                backgroundImage: "linear-gradient(to right, #00D9FF, #FF00FF)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              Why Choose SRKR LOLO?
             </h2>
             <p className="text-xl text-white/70 max-w-2xl mx-auto">
               Discover the platform built for music lovers and passionate artists
@@ -190,12 +215,33 @@ const Home: React.FC = () => {
                 whileInView="visible"
                 whileHover="hover"
                 viewport={{ once: true }}
-                className="glassmorphic p-8 rounded-2xl cursor-pointer group relative overflow-hidden"
+                className="p-8 rounded-2xl cursor-pointer group relative overflow-hidden transition-all duration-300"
+                style={{
+                  background: "rgba(255, 255, 255, 0.08)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan/0 to-neon-pink/0 group-hover:from-cyan/10 group-hover:to-neon-pink/10 transition-all duration-300" />
+                <div
+                  className="absolute inset-0 transition-all duration-300"
+                  style={{
+                    background: "linear-gradient(to bottom right, rgba(0,217,255,0), rgba(255,0,255,0))",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "linear-gradient(to bottom right, rgba(0,217,255,0.1), rgba(255,0,255,0.1))";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "linear-gradient(to bottom right, rgba(0,217,255,0), rgba(255,0,255,0))";
+                  }}
+                />
                 <div className="relative z-10">
-                  <div className="mb-4 p-3 rounded-lg bg-gradient-to-br from-cyan/20 to-neon-pink/20 w-fit">
-                    <feature.icon className="w-6 h-6 text-cyan" />
+                  <div
+                    className="mb-4 p-3 rounded-lg w-fit"
+                    style={{
+                      background: "linear-gradient(to bottom right, rgba(0,217,255,0.2), rgba(255,0,255,0.2))",
+                    }}
+                  >
+                    <feature.icon className="w-6 h-6" style={{ color: "#00D9FF" }} />
                   </div>
                   <h3 className="text-xl font-bold mb-2 text-white">{feature.title}</h3>
                   <p className="text-white/70">{feature.description}</p>
@@ -216,10 +262,16 @@ const Home: React.FC = () => {
       >
         <div className="max-w-6xl mx-auto">
           <motion.div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-neon-pink to-cyan bg-clip-text text-transparent">
-                Upcoming Events
-              </span>
+            <h2
+              className="text-4xl md:text-5xl font-bold mb-4"
+              style={{
+                backgroundImage: "linear-gradient(to right, #FF00FF, #00D9FF)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              Upcoming Events
             </h2>
           </motion.div>
 
@@ -232,25 +284,37 @@ const Home: React.FC = () => {
                 whileHover={{ y: -5, boxShadow: "0 0 40px rgba(255,0,255,0.3)" }}
                 transition={{ delay: idx * 0.1 }}
                 viewport={{ once: true }}
-                className="glassmorphic rounded-2xl overflow-hidden group cursor-pointer"
+                className="rounded-2xl overflow-hidden group cursor-pointer"
+                style={{
+                  background: "rgba(255, 255, 255, 0.08)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                }}
               >
-                <div className="h-48 bg-gradient-to-br from-cyan/20 to-neon-pink/20 flex items-center justify-center relative overflow-hidden">
+                <div
+                  className="h-48 flex items-center justify-center relative overflow-hidden"
+                  style={{
+                    background: "linear-gradient(to bottom right, rgba(0,217,255,0.2), rgba(255,0,255,0.2))",
+                  }}
+                >
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    className="absolute w-32 h-32 bg-gradient-to-r from-cyan to-neon-pink rounded-full blur-2xl opacity-30"
+                    className="absolute w-32 h-32 rounded-full blur-2xl opacity-30"
+                    style={{
+                      background: "linear-gradient(to right, #00D9FF, #FF00FF)",
+                    }}
                   />
-                  <Calendar className="w-16 h-16 text-neon-pink relative z-10" />
+                  <Calendar className="w-16 h-16 relative z-10" style={{ color: "#FF00FF" }} />
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-bold mb-2 text-white">Event {event}</h3>
                   <p className="text-white/70 mb-4">Premium music experience with top artists and performers</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-cyan font-semibold">12 Apr, 2025</span>
-                    <motion.button
-                      whileHover={{ x: 5 }}
-                      className="text-neon-pink hover:text-cyan transition-colors"
-                    >
+                    <span className="font-semibold" style={{ color: "#00D9FF" }}>
+                      12 Apr, 2025
+                    </span>
+                    <motion.button whileHover={{ x: 5 }} style={{ color: "#FF00FF" }}>
                       →
                     </motion.button>
                   </div>
@@ -271,10 +335,16 @@ const Home: React.FC = () => {
       >
         <div className="max-w-6xl mx-auto">
           <motion.div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-cyan to-neon-pink bg-clip-text text-transparent">
-                Our Ecosystem
-              </span>
+            <h2
+              className="text-4xl md:text-5xl font-bold mb-4"
+              style={{
+                backgroundImage: "linear-gradient(to right, #00D9FF, #FF00FF)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              Our Ecosystem
             </h2>
           </motion.div>
 
@@ -282,13 +352,23 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="glassmorphic rounded-2xl p-8 md:p-12"
+            className="rounded-2xl p-8 md:p-12"
+            style={{
+              background: "rgba(255, 255, 255, 0.08)",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+            }}
           >
             <div className="grid md:grid-cols-2 gap-8">
               <motion.div variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-gradient-to-br from-cyan/20 to-neon-pink/20">
-                    <Zap className="w-6 h-6 text-cyan" />
+                  <div
+                    className="p-3 rounded-lg"
+                    style={{
+                      background: "linear-gradient(to bottom right, rgba(0,217,255,0.2), rgba(255,0,255,0.2))",
+                    }}
+                  >
+                    <Zap className="w-6 h-6" style={{ color: "#00D9FF" }} />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold mb-2 text-white">Event Management</h3>
@@ -297,10 +377,21 @@ const Home: React.FC = () => {
                 </div>
               </motion.div>
 
-              <motion.div variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} transition={{ delay: 0.1 }}>
+              <motion.div
+                variants={itemVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+              >
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-gradient-to-br from-cyan/20 to-neon-pink/20">
-                    <Star className="w-6 h-6 text-neon-pink" />
+                  <div
+                    className="p-3 rounded-lg"
+                    style={{
+                      background: "linear-gradient(to bottom right, rgba(0,217,255,0.2), rgba(255,0,255,0.2))",
+                    }}
+                  >
+                    <Star className="w-6 h-6" style={{ color: "#FF00FF" }} />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold mb-2 text-white">Artist Network</h3>
@@ -309,10 +400,21 @@ const Home: React.FC = () => {
                 </div>
               </motion.div>
 
-              <motion.div variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} transition={{ delay: 0.2 }}>
+              <motion.div
+                variants={itemVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              >
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-gradient-to-br from-cyan/20 to-neon-pink/20">
-                    <Users className="w-6 h-6 text-cyan" />
+                  <div
+                    className="p-3 rounded-lg"
+                    style={{
+                      background: "linear-gradient(to bottom right, rgba(0,217,255,0.2), rgba(255,0,255,0.2))",
+                    }}
+                  >
+                    <Users className="w-6 h-6" style={{ color: "#00D9FF" }} />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold mb-2 text-white">Community Hub</h3>
@@ -321,10 +423,21 @@ const Home: React.FC = () => {
                 </div>
               </motion.div>
 
-              <motion.div variants={itemVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} transition={{ delay: 0.3 }}>
+              <motion.div
+                variants={itemVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+              >
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-gradient-to-br from-cyan/20 to-neon-pink/20">
-                    <Music className="w-6 h-6 text-neon-pink" />
+                  <div
+                    className="p-3 rounded-lg"
+                    style={{
+                      background: "linear-gradient(to bottom right, rgba(0,217,255,0.2), rgba(255,0,255,0.2))",
+                    }}
+                  >
+                    <Music className="w-6 h-6" style={{ color: "#FF00FF" }} />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold mb-2 text-white">Content Library</h3>
@@ -346,7 +459,14 @@ const Home: React.FC = () => {
         className="py-20 px-4 md:px-0 mb-20"
       >
         <div className="max-w-4xl mx-auto">
-          <motion.div className="glassmorphic rounded-2xl p-12 text-center relative overflow-hidden">
+          <motion.div
+            className="rounded-2xl p-12 text-center relative overflow-hidden"
+            style={{
+              background: "rgba(255, 255, 255, 0.08)",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+            }}
+          >
             <motion.div
               animate={{
                 background: [
@@ -359,10 +479,16 @@ const Home: React.FC = () => {
               className="absolute inset-0"
             />
             <div className="relative z-10">
-              <h2 className="text-4xl font-bold mb-4">
-                <span className="bg-gradient-to-r from-cyan to-neon-pink bg-clip-text text-transparent">
-                  Ready to Join?
-                </span>
+              <h2
+                className="text-4xl font-bold mb-4"
+                style={{
+                  backgroundImage: "linear-gradient(to right, #00D9FF, #FF00FF)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
+                Ready to Join?
               </h2>
               <p className="text-xl text-white/80 mb-8">
                 Be part of India&apos;s most exciting music community
@@ -370,7 +496,10 @@ const Home: React.FC = () => {
               <motion.button
                 whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(255,0,255,0.5)" }}
                 whileTap={{ scale: 0.95 }}
-                className="px-10 py-4 rounded-xl bg-gradient-to-r from-cyan to-neon-pink text-white font-bold text-lg transition-all duration-300"
+                className="px-10 py-4 rounded-xl text-white font-bold text-lg transition-all duration-300"
+                style={{
+                  background: "linear-gradient(to right, #00D9FF, #FF00FF)",
+                }}
               >
                 Get Started Now
               </motion.button>
