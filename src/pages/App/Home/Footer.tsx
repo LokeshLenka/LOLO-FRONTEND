@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { Instagram, Youtube, Mail, Phone, MapPin, Heart } from "lucide-react";
 import { motion } from "framer-motion";
@@ -7,14 +6,7 @@ import Lolo_logo_1 from "@/assets/logos/Lolo_logo_1.png";
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.1 },
-    },
-  };
+
 
   const itemVariants = {
     hidden: { opacity: 0, y: 10 },
@@ -30,7 +22,6 @@ const Footer = () => {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
-      variants={containerVariants}
       className="relative pt-20 pb-8 px-4 md:px-0 border-t border-white/10"
     >
       {/* Gradient overlay background */}
