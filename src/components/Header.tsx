@@ -1,7 +1,8 @@
 // src/components/Header.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, User, CalendarClock, Clapperboard, Home, LogIn } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import NavDropdown from "@/components/NavDropdown";
 import Lolo_logo_1 from "@/assets/logos/Lolo_logo_1.png";
 import { useAuth } from "@/context/AuthContext";
@@ -16,374 +17,220 @@ const NAV_ITEMS = [
   { label: "Publications", path: "/publications", icon: Clapperboard },
 ];
 
-const Header: React.FC<HeaderProps> = ({ scrolled: _scrolled }) => {
+const Header: React.FC<HeaderProps> = ({ scrolled }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = (useAuth && useAuth()) || { user: null };
   const location = useLocation();
 
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMenuOpen]);
+
   return (
-    <header
-      style={{
-        fontFamily: "Tahoma, Arial, sans-serif",
-        background: "#d4d0c8",
-        borderBottom: "2px solid #808080",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 9999,
-      }}
+    <motion.header
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${
+        scrolled ? "backdrop-blur-xl" : "backdrop-blur-sm"
+      } ${
+        scrolled
+          ? "bg-white/10 border-b border-white/20"
+          : "bg-white/5 border-b border-white/10"
+      }`}
     >
-      {/* Win2000 title bar */}
-      <div
-        style={{
-          background: "linear-gradient(to right, #0a246a, #a6caf0)",
-          padding: "3px 6px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <img src={Lolo_logo_1} alt="LoLo Logo" style={{ height: "16px", width: "16px", objectFit: "contain" }} />
-          <span style={{ color: "white", fontWeight: "bold", fontSize: "11px", letterSpacing: "0.3px" }}>
-            SRKR LOLO Music Club - Microsoft Internet Explorer
-          </span>
-        </div>
-        <div style={{ display: "flex", gap: "2px" }}>
-          {["_", "□", "✕"].map((c, i) => (
-            <button
-              key={i}
-              style={{
-                background: "#d4d0c8",
-                border: "1px solid",
-                borderColor: "#ffffff #808080 #808080 #ffffff",
-                color: "#000",
-                width: "16px",
-                height: "14px",
-                fontSize: "8px",
-                cursor: "pointer",
-                fontFamily: "Arial",
-                lineHeight: 1,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Menu bar */}
-      <div
-        style={{
-          background: "#d4d0c8",
-          padding: "2px 4px",
-          borderBottom: "1px solid #808080",
-          display: "flex",
-          alignItems: "center",
-          gap: "0",
-        }}
-      >
-        {["File", "Edit", "View", "Favorites", "Tools", "Help"].map((item) => (
-          <button
-            key={item}
-            style={{
-              background: "transparent",
-              border: "none",
-              padding: "2px 6px",
-              fontSize: "11px",
-              fontFamily: "Tahoma, Arial, sans-serif",
-              cursor: "pointer",
-              color: "#000",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "#0a246a";
-              (e.currentTarget as HTMLElement).style.color = "#fff";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "transparent";
-              (e.currentTarget as HTMLElement).style.color = "#000";
-            }}
+      <div className="w-full mx-auto px-4 lg:px-10 py-4">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400 }}
           >
-            {item}
-          </button>
-        ))}
-      </div>
-
-      {/* Address bar + nav */}
-      <div
-        style={{
-          background: "#d4d0c8",
-          padding: "3px 6px",
-          display: "flex",
-          alignItems: "center",
-          gap: "6px",
-          borderBottom: "1px solid #808080",
-        }}
-      >
-        {/* Back / Forward buttons */}
-        <div style={{ display: "flex", gap: "2px" }}>
-          {["◄", "►", "✕", "⟳"].map((btn, i) => (
-            <button
-              key={i}
-              style={{
-                background: "#d4d0c8",
-                border: "1px solid",
-                borderColor: "#ffffff #808080 #808080 #ffffff",
-                padding: "1px 5px",
-                fontSize: "10px",
-                cursor: "pointer",
-                color: i < 2 ? "#000" : "#666",
-                fontFamily: "Arial",
-                minWidth: "22px",
-              }}
-            >
-              {btn}
-            </button>
-          ))}
-        </div>
-
-        {/* Nav links as tabs */}
-        <div style={{ display: "flex", gap: "2px", marginLeft: "4px" }}>
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              style={{
-                background: location.pathname === item.path ? "#ffffff" : "#d4d0c8",
-                border: "1px solid",
-                borderColor: location.pathname === item.path
-                  ? "#808080 #ffffff #ffffff #808080"
-                  : "#ffffff #808080 #808080 #ffffff",
-                padding: "2px 10px",
-                fontSize: "11px",
-                fontFamily: "Tahoma, Arial, sans-serif",
-                color: location.pathname === item.path ? "#0a246a" : "#000",
-                fontWeight: location.pathname === item.path ? "bold" : "normal",
-                textDecoration: "none",
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-              }}
-            >
-              {item.label}
+            <Link to="/" className="flex items-center space-x-3 z-50 relative">
+              <img
+                src={Lolo_logo_1}
+                alt="LoLo Logo"
+                className="h-10 w-10 md:h-12 md:w-12 object-contain filter drop-shadow-[0_0_8px_rgba(255,0,255,0.6)]"
+              />
+              <span className="hidden md:inline text-lg font-bold tracking-tight text-white drop-shadow-lg">
+                SRKR LOLO
+              </span>
             </Link>
-          ))}
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <NavDropdown />
+          </motion.div>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center space-x-2 lg:space-x-4">
+            {NAV_ITEMS.map((item) => (
+              <motion.div key={item.path} whileHover={{ y: -2 }}>
+                <Link
+                  to={item.path}
+                  className={`text-sm font-medium transition-all duration-300 px-4 py-2 rounded-lg relative group ${
+                    location.pathname === item.path
+                      ? "text-neon-pink"
+                      : "text-white/80 hover:text-white"
+                  }`}
+                >
+                  {item.label}
+                  {location.pathname === item.path && (
+                    <motion.div
+                      layoutId="navUnderline"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan to-neon-pink rounded-full"
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                  <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-cyan/0 to-neon-pink/0 group-hover:from-cyan/10 group-hover:to-neon-pink/10 transition-all duration-300 -z-10" />
+                </Link>
+              </motion.div>
+            ))}
+
+            <div className="ml-2">
+              <NavDropdown />
+            </div>
+
+            {user ? (
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Link to={`/${user.username}/dashboard`}>
+                  <button className="ml-4 px-6 py-2 rounded-xl glassmorphic hover:glow-cyan-pink transition-all duration-300 text-white font-medium text-sm hover:border-cyan/50 group">
+                    <span className="flex items-center gap-2">
+                      <User size={16} className="group-hover:text-neon-pink transition-colors" />
+                      Dashboard
+                    </span>
+                  </button>
+                </Link>
+              </motion.div>
+            ) : (
+              <div className="flex items-center space-x-3 ml-6">
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <Link to="/login">
+                    <button className="text-white/80 hover:text-white px-4 py-2 rounded-lg transition-colors duration-300">
+                      Login
+                    </button>
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <Link to="/signup">
+                    <button className="px-6 py-2 rounded-xl bg-gradient-to-r from-cyan to-neon-pink text-white font-bold hover:shadow-[0_0_20px_rgba(255,0,255,0.6)] transition-all duration-300">
+                      Sign Up
+                    </button>
+                  </Link>
+                </motion.div>
+              </div>
+            )}
+          </nav>
+
+          {/* Mobile controls */}
+          <div className="flex items-center gap-4 md:hidden">
+            {user && (
+              <motion.div whileHover={{ scale: 1.1 }}>
+                <Link to={`/${user.username}/dashboard`} className="text-white">
+                  <User size={20} />
+                </Link>
+              </motion.div>
+            )}
+
+            <motion.button
+              className="text-white z-50 p-2 rounded-lg hover:bg-white/10 transition-colors"
+              onClick={() => setIsMenuOpen((s) => !s)}
+              aria-label="Toggle menu"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </motion.button>
           </div>
         </div>
-
-        {/* Address bar */}
-        <div style={{ display: "flex", alignItems: "center", gap: "4px", flex: 1 }}>
-          <span style={{ fontSize: "11px", fontFamily: "Tahoma, Arial, sans-serif", whiteSpace: "nowrap" }}>Address</span>
-          <div
-            style={{
-              flex: 1,
-              background: "#fff",
-              border: "1px solid",
-              borderColor: "#808080 #ffffff #ffffff #808080",
-              padding: "1px 4px",
-              fontSize: "11px",
-              fontFamily: "Tahoma, Arial, sans-serif",
-              color: "#000080",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            {typeof window !== "undefined" ? window.location.href : "http://srkrlolo.in/"}
-          </div>
-          <button
-            style={{
-              background: "#d4d0c8",
-              border: "1px solid",
-              borderColor: "#ffffff #808080 #808080 #ffffff",
-              padding: "1px 8px",
-              fontSize: "11px",
-              fontFamily: "Tahoma, Arial, sans-serif",
-              cursor: "pointer",
-            }}
-          >
-            Go
-          </button>
-        </div>
-
-        {/* Auth buttons */}
-        <div style={{ display: "flex", gap: "4px" }}>
-          {user ? (
-            <Link to={`/${user.username}/dashboard`}>
-              <button
-                style={{
-                  background: "#d4d0c8",
-                  border: "1px solid",
-                  borderColor: "#ffffff #808080 #808080 #ffffff",
-                  padding: "2px 10px",
-                  fontSize: "11px",
-                  fontFamily: "Tahoma, Arial, sans-serif",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
-              >
-                <User size={12} />
-                Dashboard
-              </button>
-            </Link>
-          ) : (
-            <>
-              <Link to="/login">
-                <button
-                  style={{
-                    background: "#d4d0c8",
-                    border: "1px solid",
-                    borderColor: "#ffffff #808080 #808080 #ffffff",
-                    padding: "2px 10px",
-                    fontSize: "11px",
-                    fontFamily: "Tahoma, Arial, sans-serif",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                  }}
-                >
-                  <LogIn size={12} />
-                  Login
-                </button>
-              </Link>
-              <Link to="/signup">
-                <button
-                  style={{
-                    background: "#d4d0c8",
-                    border: "1px solid",
-                    borderColor: "#ffffff #808080 #808080 #ffffff",
-                    padding: "2px 10px",
-                    fontSize: "11px",
-                    fontFamily: "Tahoma, Arial, sans-serif",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Sign Up
-                </button>
-              </Link>
-            </>
-          )}
-        </div>
-
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden"
-          style={{
-            background: "#d4d0c8",
-            border: "1px solid",
-            borderColor: "#ffffff #808080 #808080 #ffffff",
-            padding: "2px 6px",
-            cursor: "pointer",
-          }}
-          onClick={() => setIsMenuOpen((s) => !s)}
-          aria-label="Toggle menu"
-        >
-          {isMenuOpen ? <X size={14} /> : <Menu size={14} />}
-        </button>
       </div>
 
       {/* Mobile menu */}
-      {isMenuOpen && (
-        <div
-          style={{
-            background: "#d4d0c8",
-            borderBottom: "2px solid #808080",
-            padding: "8px",
-          }}
-          className="md:hidden"
-        >
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={() => setIsMenuOpen(false)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "6px 10px",
-                background: location.pathname === item.path ? "#0a246a" : "transparent",
-                color: location.pathname === item.path ? "#fff" : "#000",
-                fontSize: "12px",
-                fontFamily: "Tahoma, Arial, sans-serif",
-                textDecoration: "none",
-                marginBottom: "2px",
-              }}
-            >
-              <item.icon size={14} />
-              {item.label}
-            </Link>
-          ))}
-          <hr style={{ border: "1px solid #808080", margin: "6px 0" }} />
-          {user ? (
-            <Link to={`/${user.username}/dashboard`} onClick={() => setIsMenuOpen(false)} style={{ textDecoration: "none" }}>
-              <button
-                style={{
-                  width: "100%",
-                  background: "#d4d0c8",
-                  border: "1px solid",
-                  borderColor: "#ffffff #808080 #808080 #ffffff",
-                  padding: "4px 10px",
-                  fontSize: "12px",
-                  fontFamily: "Tahoma, Arial, sans-serif",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                }}
-              >
-                <User size={14} />
-                Dashboard
-              </button>
-            </Link>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <Link to="/login" onClick={() => setIsMenuOpen(false)} style={{ textDecoration: "none" }}>
-                <button
-                  style={{
-                    width: "100%",
-                    background: "#d4d0c8",
-                    border: "1px solid",
-                    borderColor: "#ffffff #808080 #808080 #ffffff",
-                    padding: "4px 10px",
-                    fontSize: "12px",
-                    fontFamily: "Tahoma, Arial, sans-serif",
-                    cursor: "pointer",
-                  }}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="absolute top-full left-0 w-full glassmorphic-dark border-t border-white/10 md:hidden flex flex-col z-40 backdrop-blur-xl"
+          >
+            <div className="px-4 py-6 space-y-2">
+              {NAV_ITEMS.map((item, idx) => (
+                <motion.div
+                  key={item.path}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
                 >
-                  Login
-                </button>
-              </Link>
-              <Link to="/signup" onClick={() => setIsMenuOpen(false)} style={{ textDecoration: "none" }}>
-                <button
-                  style={{
-                    width: "100%",
-                    background: "#d4d0c8",
-                    border: "1px solid",
-                    borderColor: "#ffffff #808080 #808080 #ffffff",
-                    padding: "4px 10px",
-                    fontSize: "12px",
-                    fontFamily: "Tahoma, Arial, sans-serif",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Sign Up
-                </button>
-              </Link>
+                  <Link
+                    to={item.path}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 ${
+                      location.pathname === item.path
+                        ? "bg-gradient-to-r from-cyan/20 to-neon-pink/20 text-neon-pink font-bold border border-neon-pink/30"
+                        : "text-white/80 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    <item.icon size={20} />
+                    <span>{item.label}</span>
+                  </Link>
+                </motion.div>
+              ))}
+
+              <div className="px-2 py-2">
+                <NavDropdown isMobile />
+              </div>
+
+              <div className="h-px bg-white/10 my-4 mx-4" />
+
+              <div className="px-2 space-y-3">
+                {user ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <Link
+                      to={`/${user.username}/dashboard`}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center justify-center space-x-2 w-full glassmorphic text-white font-bold py-3 rounded-lg transition-all hover:glow-cyan-pink"
+                    >
+                      <User size={18} className="text-neon-pink" />
+                      <span>Go to Dashboard</span>
+                    </Link>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    className="flex flex-col gap-3"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                      <button className="w-full flex items-center justify-center gap-2 glassmorphic text-white font-bold py-3 rounded-lg transition-all hover:bg-white/20">
+                        <LogIn size={18} />
+                        <span>Login</span>
+                      </button>
+                    </Link>
+
+                    <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+                      <button className="w-full bg-gradient-to-r from-cyan to-neon-pink text-white font-bold py-3 rounded-lg transition-all hover:shadow-[0_0_20px_rgba(255,0,255,0.6)]">
+                        Sign Up
+                      </button>
+                    </Link>
+                  </motion.div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-      )}
+
+            <div className="pb-6" />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

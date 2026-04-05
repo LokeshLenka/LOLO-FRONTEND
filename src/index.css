@@ -150,6 +150,36 @@
   }
 }
 
+/* Glassmorphism utilities */
+@layer components {
+  .glassmorphic {
+    @apply bg-white/8 backdrop-blur-glass border border-white/20 rounded-2xl;
+  }
+  
+  .glassmorphic-dark {
+    @apply bg-black/20 backdrop-blur-glass border border-white/10 rounded-2xl;
+  }
+  
+  .glass-border-cyan-pink {
+    @apply border-2 border-transparent bg-clip-padding;
+    background-image: linear-gradient(#0a0e27, #0a0e27), linear-gradient(135deg, #00D9FF, #FF00FF);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+  }
+  
+  .glow-cyan {
+    @apply shadow-[0_0_30px_rgba(0,217,255,0.5)];
+  }
+  
+  .glow-pink {
+    @apply shadow-[0_0_30px_rgba(255,0,255,0.5)];
+  }
+  
+  .glow-cyan-pink {
+    @apply shadow-[0_0_30px_rgba(0,217,255,0.3),_0_0_60px_rgba(255,0,255,0.3)];
+  }
+}
+
 /* Custom animations */
 @keyframes pulse-slow {
   0%,
