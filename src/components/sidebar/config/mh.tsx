@@ -1,45 +1,45 @@
 import {
   ShieldCheck,
   Users,
-  UserCog,
-  BarChart3,
   LayoutDashboard,
 } from "lucide-react";
 
 export const getMHNavItems = (basePath: string) => [
   {
     icon: <LayoutDashboard />,
-    name: "Head Dashboard",
+    name: "Overview",
     path: `${basePath}/dashboard`,
   },
   {
     icon: <ShieldCheck />,
-    name: "Approvals",
+    name: "Requests",
     subItems: [
-      { name: "Pending Requests", path: `${basePath}/pending-approvals` },
-      { name: "History", path: `${basePath}/approval-history` },
+      { name: "To Review", path: `${basePath}/pending-approvals` },
+      { name: "Activity Log", path: `${basePath}/approval-history` },
     ],
   },
   {
     icon: <Users />,
-    name: "User Management",
-    subItems: [
-      { name: "All Users", path: `${basePath}/users` },
-      { name: "User Stats", path: `${basePath}/user-stats` },
-    ],
+    name: "Members",
+    path: `${basePath}/users`,
   },
-  {
-    icon: <UserCog />,
-    name: "Promotions",
-    subItems: [
-      { name: "Promote to EBM", path: `${basePath}/promote/ebm` },
-      { name: "Promote to CM", path: `${basePath}/promote/credit-manager` },
-      { name: "Depromote User", path: `${basePath}/depromote` },
-    ],
-  },
-  {
-    icon: <BarChart3 />,
-    name: "Team Profiles",
-    path: `${basePath}/team-profiles`,
-  },
+
+  // subItems: [
+  //   { name: "All Users", path: `${basePath}/users` },
+  //   { name: "User Stats", path: `${basePath}/user-stats` },
+  // ],
+  // {
+  //   icon: <UserCog />,
+  //   name: "Promotions",
+  //   subItems: [
+  //     { name: "Promote to EBM", path: `${basePath}/promote/ebm` },
+  //     { name: "Promote to CM", path: `${basePath}/promote/credit-manager` },
+  //     { name: "Depromote User", path: `${basePath}/depromote` },
+  //   ],
+  // },
+  // {
+  //   icon: <BarChart3 />,
+  //   name: "Team Profiles",
+  //   path: `${basePath}/team-profiles`,
+  // },
 ];
