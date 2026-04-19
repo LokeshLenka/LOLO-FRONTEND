@@ -38,6 +38,7 @@ interface UserDetails {
   username: string | null;
   email: string;
   role: "music" | "management";
+  promoted_role?: string | null;
   is_approved: boolean;
   created_at: string;
   music_profile: MusicProfile | null;
@@ -73,7 +74,7 @@ export function DecisionPanelContent({
     <>
       <CardHeader className="pb-0 pt-5 px-5 flex flex-col items-start gap-1">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-          Admin Decision
+          {user.promoted_role ? user.promoted_role : user.role} Decision
         </h3>
         <p className="text-xs text-gray-500">
           Review the application carefully before taking action.
