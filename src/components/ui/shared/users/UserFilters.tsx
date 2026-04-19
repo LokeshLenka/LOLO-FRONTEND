@@ -1,4 +1,4 @@
-// src/components/membership-head/UserFilters.tsx
+// src/components/shared/users/UserFilters.tsx
 import { useState, useEffect } from "react";
 import { Search, Filter, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -24,15 +24,29 @@ interface UserFiltersProps {
   onResetPage: () => void;
 }
 
+const branches = [
+  { value: "aids", label: "AIDS" },
+  { value: "aiml", label: "AIML" },
+  { value: "cic", label: "CIC" },
+  { value: "civil", label: "CIVIL" },
+  { value: "csbs", label: "CSBS" },
+  { value: "csd", label: "CSD" },
+  { value: "cse", label: "CSE" },
+  { value: "csg", label: "CSG" },
+  { value: "csit", label: "CSIT" },
+  { value: "ece", label: "ECE" },
+  { value: "eee", label: "EEE" },
+  { value: "it", label: "IT" },
+  { value: "mech", label: "MECH" },
+];
+
 export function UserFilters({
   filters,
   setFilters,
   onResetPage,
 }: UserFiltersProps) {
-  // Local state for debouncing the search input
   const [searchValue, setSearchValue] = useState(filters.search || "");
 
-  // Debounce search input (waits 500ms after user stops typing before calling API)
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (filters.search !== searchValue) {
@@ -43,7 +57,6 @@ export function UserFilters({
     return () => clearTimeout(timeout);
   }, [searchValue, filters, setFilters, onResetPage]);
 
-  // Count active filters (excluding search)
   const activeFilterCount = Object.keys(filters).filter(
     (key) =>
       key !== "search" &&
@@ -57,7 +70,7 @@ export function UserFilters({
   };
 
   const clearFilters = () => {
-    setFilters({ search: searchValue }); // Keep search, clear dropdowns
+    setFilters({ search: searchValue });
     onResetPage();
   };
 
@@ -155,8 +168,14 @@ export function UserFilters({
                 </SelectTrigger>
                 <SelectContent className="rounded-none border-zinc-200 dark:border-zinc-800">
                   <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  
+                  {/* Fixed Status Values matching Backend Enums */}
+                  <SelectItem value="pending">Pending Review</SelectItem>
+                  <SelectItem value="ebm_approved">EBM Approved</SelectItem>
+                  <SelectItem value="membership_approved">
+                    Mem. Head Approved
+                  </SelectItem>
+                  <SelectItem value="admin_approved">Fully Approved</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
@@ -170,17 +189,16 @@ export function UserFilters({
                 value={filters.branch || "all"}
                 onValueChange={(val) => handleFilterChange("branch", val)}
               >
-                <SelectTrigger className="rounded-none border-zinc-200 dark:border-zinc-800 focus:ring-0 uppercase">
+                <SelectTrigger className="rounded-none border-zinc-200 dark:border-zinc-800 focus:ring-0">
                   <SelectValue placeholder="All Branches" />
                 </SelectTrigger>
-                <SelectContent className="rounded-none border-zinc-200 dark:border-zinc-800 h-48 overflow-y-auto">
+                <SelectContent className="rounded-none border-zinc-200 dark:border-zinc-800 h-56 overflow-y-auto">
                   <SelectItem value="all">ALL BRANCHES</SelectItem>
-                  <SelectItem value="aids">AIDS</SelectItem>
-                  <SelectItem value="aiml">AIML</SelectItem>
-                  <SelectItem value="cse">CSE</SelectItem>
-                  <SelectItem value="csd">CSD</SelectItem>
-                  <SelectItem value="it">IT</SelectItem>
-                  <SelectItem value="ece">ECE</SelectItem>
+                  {branches.map((branch) => (
+                    <SelectItem key={branch.value} value={branch.value}>
+                      {branch.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
