@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-import { type DashboardStats, type APIResponse } from "@/types/ebm";
+import { type APIResponse } from "@/types/ebm";
+import { type DashboardStats } from "@/types/mh";
 
 export function useMHDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -15,7 +16,7 @@ export function useMHDashboard() {
       setLoading(true);
       // Calls: Route::get('dashboard', [EBMController::class, 'getDashboardStatistics']);
       const response = await axios.get<APIResponse<DashboardStats>>(
-        `${API_BASE_URL}/membership-head/dashboard`
+        `${API_BASE_URL}/membership-head/dashboard`,
       );
       setStats(response.data.data);
       setError(null);
