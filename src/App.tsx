@@ -61,6 +61,12 @@ import SuccessURTEventRegistration from "./pages/PublicUsers/SuccessURTEventRegi
 import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
 import Homev1 from "./pages/App/Home/Homev1";
 import TicketVerifier from "./pages/User/TicketVerifier";
+import MHDashboard from "./pages/MembershipHead/Dashboard/MHDashboard";
+import MHUserManagement from "./pages/MembershipHead/Users/MHUserManagement";
+import MHAppLayout from "./layouts/membership-head/MHAppLayout";
+import { UserStatsCards } from "./components/ui/shared/users/UserStatsCards";
+import PendingApprovals from "./pages/MembershipHead/Approvals/PendingApprovals";
+import MyApprovals from "./pages/MembershipHead/Approvals/MyApprovals";
 
 // --- Helper Components ---
 
@@ -145,8 +151,9 @@ function App() {
           <Route path="/verify-ticket" element={<TicketVerifier />} />
           {/* Test Route */}
           {/* <Route path="/test/music" element={<MusicProfile />} /> */}
+
           {/* ================= PROTECTED DASHBOARD ROUTES ================= */}
-          // Replace your existing routes with these role-specific routes:
+
           <Route element={<PrivateRoute />}>
             <Route element={<AppLayout />}>
               {/* Standard User Dashboard */}
@@ -166,6 +173,7 @@ function App() {
                 element={<ShowCreditPage />}
               />
               <Route path="/:username/profile" element={<UserProfilePage />} />
+
               {/* EBM Routes */}
               <Route
                 path="/:username/executive_body_member/dashboard"
@@ -220,8 +228,30 @@ function App() {
                 path="/:username/executive_body_member/ticket-success"
                 element={<EbmTicketSuccess />}
               /> */}
-              {/* Management Head (MH) Routes */}
-              {/* <Route path="/:username/mh/dashboard" element={<MHDashboard />} /> */}
+            </Route>
+
+            {/* Management Head (MH) Routes */}
+            <Route element={<MHAppLayout />}>
+              <Route
+                path="/:username/membership_head/dashboard"
+                element={<MHDashboard />}
+              />
+              <Route
+                path="/:username/membership_head/pending-approvals"
+                element={<PendingApprovals />}
+              />
+              <Route
+                path="/:username/membership_head/approval-history"
+                element={<MyApprovals />}
+              />
+              <Route
+                path="/:username/membership_head/users"
+                element={<MHUserManagement />}
+              />
+              <Route
+                path="/:username/membership_head/user-stats"
+                element={<UserStatsCards />}
+              />
               {/* <Route path="/:username/mh/approvals" element={<MHApprovals />} /> */}
               {/* Credit Manager (CM) Routes */}
               {/* <Route path="/:username/cm/dashboard" element={<CMDashboard />} /> */}
