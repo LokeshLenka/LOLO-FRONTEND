@@ -11,8 +11,8 @@ import {
   Divider,
   Textarea,
   Tooltip,
-  Breadcrumbs,
-  BreadcrumbItem,
+  // Breadcrumbs,
+  // BreadcrumbItem,
 } from "@heroui/react";
 import {
   Briefcase,
@@ -78,6 +78,7 @@ interface UserDetails {
   role: "music" | "management";
   is_approved: boolean;
   created_at: string;
+  promoted_role: string | null;
   music_profile: MusicProfile | null;
   management_profile: ManagementProfile | null;
   user_approval: UserApproval;
@@ -170,21 +171,6 @@ const BooleanChip = ({
     )}
   </div>
 );
-
-/** Retrieves User Object safely */
-const getUserFromStorage = (): any => {
-  try {
-    const raw = localStorage.getItem("userProfile");
-    return raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    console.error("Error parsing user from storage", e);
-    return null;
-  }
-};
-
-const currentUser = getUserFromStorage();
-
-const promotedRole = currentUser?.promoted_role;
 
 export default function ApplicantDetailsPage() {
   const { uuid } = useParams<{ uuid: string }>();
@@ -335,7 +321,7 @@ export default function ApplicantDetailsPage() {
         {/* Navigation & Title */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <Breadcrumbs
+            {/* <Breadcrumbs
               size="sm"
               variant="light"
               className="pl-0 text-xs sm:text-md"
@@ -344,7 +330,7 @@ export default function ApplicantDetailsPage() {
               <BreadcrumbItem>pending_approvals</BreadcrumbItem>
               <BreadcrumbItem>user</BreadcrumbItem>
               <BreadcrumbItem>{user.uuid}</BreadcrumbItem>
-            </Breadcrumbs>
+            </Breadcrumbs> */}
           </div>
           <Button
             size="sm"
@@ -531,7 +517,7 @@ export default function ApplicantDetailsPage() {
             <Card className="border border-black/5 dark:border-white/5 shadow-md bg-white dark:bg-transparent overflow-visible">
               <CardHeader className="pb-0 pt-5 px-5 flex flex-col items-start gap-1">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                  Admin Decision
+                  {user.promoted_role ? user.promoted_role : user.role} Decision
                 </h3>
                 <p className="text-xs text-gray-500">
                   Review the application carefully before taking action.

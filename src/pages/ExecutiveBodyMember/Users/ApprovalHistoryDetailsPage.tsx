@@ -154,6 +154,11 @@ const StatusBadge = ({ status }: { status: string }) => {
         "bg-green-50 dark:bg-green-500/20 text-green-700 dark:text-green-300",
       icon: CheckCircle2,
     },
+    membership_approved: {
+      label: "Membership Approved",
+      color: "bg-blue-50 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300",
+      icon: ShieldCheck,
+    },
     rejected: {
       label: "Rejected",
       color: "bg-red-50 dark:bg-red-500/20 text-red-700 dark:text-red-300",
@@ -368,7 +373,9 @@ export default function EBMApprovalHistory() {
 
     if (selectedTab === "approved") {
       filtered = filtered.filter(
-        (u) => u.user_approval?.status === "ebm_approved",
+        (u) =>
+          u.user_approval?.status === "ebm_approved" ||
+          u.user_approval?.status === "membership_approved",
       );
     } else if (selectedTab === "rejected") {
       filtered = filtered.filter((u) => u.user_approval?.status === "rejected");
@@ -792,7 +799,9 @@ export default function EBMApprovalHistory() {
               <Input
                 className="w-full sm:max-w-xs h-full outline-none hidden"
                 placeholder="Search by name or reg number..."
-                startContent={<Search size={18} className="text-gray-400 hidden" />}
+                startContent={
+                  <Search size={18} className="text-gray-400 hidden" />
+                }
                 value={searchQuery}
                 onValueChange={setSearchQuery}
                 variant="bordered"
@@ -1016,12 +1025,14 @@ export default function EBMApprovalHistory() {
                         {formatDate(user.user_approval?.ebm_approved_at)}
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          size="sm"
-                          color={user.is_active ? "success" : "secondary"}
-                          variant="dot"
-                        >
-                          {/* {user.is_active ? "Active" : "Inactive"} */}
+                        <Chip size="sm" variant="dot" className="relative">
+                          <span
+                            className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${
+                              user.is_active
+                                ? "bg-green-500"
+                                : "bg-gray-400"
+                            }`}
+                          />
                         </Chip>
                       </TableCell>
                       <TableCell>
