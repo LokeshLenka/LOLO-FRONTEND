@@ -33,7 +33,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { EditUserSheet } from "../../../components/ui/shared/users/EditUserSheet";
 
 // Import Alert Dialog Components
 import {
@@ -47,12 +46,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import { ViewUserSheet } from "../../../components/ui/shared/users/ViewUserSheet";
 import { User as UserIcon } from "lucide-react"; // Renamed to avoid clashing with your User type
-import { UserStatsCards } from "../../../components/ui/shared/users/UserStatsCards";
-import { UserFilters } from "../../../components/ui/shared/users/UserFilters";
-import { ExportMenu } from "../../../components/ui/shared/users/ExportMenu";
+
 import { TablePagination } from "../../../components/pagination/TablePagination";
+import { ViewUserSheet } from "@/components/ui/shared/users/ViewUserSheet";
+import { EditUserSheet } from "@/components/ui/shared/users/EditUserSheet";
+import { UserStatsCards } from "@/components/ui/shared/users/UserStatsCards";
+import { UserFilters } from "@/components/ui/shared/users/UserFilters";
+import { ExportMenu } from "@/components/ui/shared/users/ExportMenu";
 
 const pageVariants: Variants = {
   hidden: { opacity: 0, y: 10 },
@@ -63,7 +64,7 @@ const pageVariants: Variants = {
 type ActionType = "promote-ebm" | "promote-credit-manager" | "demote" | null;
 
 export default function MHUserManagement() {
-  const { user: currentUser } = useAuth();
+  const {user: currentUser } = useAuth();
 
   // Place this right next to your isEditSheetOpen states
   const [viewUserUuid, setViewUserUuid] = useState<string | null>(null);
@@ -82,6 +83,7 @@ export default function MHUserManagement() {
     meta,
     isLoading,
     isError,
+    page,
     setPage,
     promoteUser,
     demoteUser,
@@ -274,11 +276,14 @@ export default function MHUserManagement() {
         <ExportMenu users={users} disabled={isLoading || users.length === 0} />
       </div>
 
-      <Card className="rounded-none shadow-none border-zinc-200 dark:border-zinc-800 bg-background overflow-hidden -py-6">
+      <Card className="rounded-none shadow-none border-zinc-200 dark:border-zinc-800 bg-background overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader className="bg-zinc-50 dark:bg-zinc-900/50">
               <TableRow className="border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
+                <TableHead className="w-[50px] text-zinc-900 dark:text-zinc-100">
+                  #
+                </TableHead>
                 <TableHead className="w-[200px] text-zinc-900 dark:text-zinc-100">
                   Member
                 </TableHead>
@@ -306,7 +311,7 @@ export default function MHUserManagement() {
               {isLoading && users.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={5}
+                    colSpan={8}
                     className="h-24 text-center text-zinc-500"
                   >
                     Loading users...
@@ -315,7 +320,7 @@ export default function MHUserManagement() {
               ) : isError ? (
                 <TableRow>
                   <TableCell
-                    colSpan={5}
+                    colSpan={8}
                     className="h-24 text-center text-zinc-500"
                   >
                     Failed to load users.
@@ -324,18 +329,23 @@ export default function MHUserManagement() {
               ) : users.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={5}
+                    colSpan={8}
                     className="h-24 text-center text-zinc-500"
                   >
                     No users found matching your criteria.
                   </TableCell>
                 </TableRow>
               ) : (
-                users.map((user) => (
+                users.map((user, index) => (
                   <TableRow
                     key={user.uuid}
                     className="border-zinc-200 dark:border-zinc-800"
                   >
+                    <TableCell className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      {/* If your API returns 'from' in meta (like Laravel), you can also use: meta?.from ? meta.from + index : ... */}
+                      {(page - 1) * (meta?.per_page || 10) + index + 1}
+                    </TableCell>
+
                     {/* 1. Member Column (Name + Reg Num) */}
                     <TableCell className="font-medium">
                       <div className="flex flex-col">
