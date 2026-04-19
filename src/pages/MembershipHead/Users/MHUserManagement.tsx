@@ -276,7 +276,7 @@ export default function MHUserManagement() {
         <ExportMenu users={users} disabled={isLoading || users.length === 0} />
       </div>
 
-      <Card className="rounded-none shadow-none border-zinc-200 dark:border-zinc-800 bg-background overflow-hidden">
+      <Card className="rounded-none shadow-none border-zinc-200 dark:border-zinc-800 bg-background overflow-hidden -py-6">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader className="bg-zinc-50 dark:bg-zinc-900/50">
