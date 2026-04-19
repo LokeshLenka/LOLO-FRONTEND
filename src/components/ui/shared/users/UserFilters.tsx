@@ -168,14 +168,24 @@ export function UserFilters({
                 </SelectTrigger>
                 <SelectContent className="rounded-none border-zinc-200 dark:border-zinc-800">
                   <SelectItem value="all">All Statuses</SelectItem>
-                  
-                  {/* Fixed Status Values matching Backend Enums */}
+
+                  {/* Custom Filter: Grabs both Mem. Head and Admin approved */}
+                  <SelectItem
+                    value="approved"
+                    className="font-semibold text-emerald-600 dark:text-emerald-500"
+                  >
+                    All Approved Members
+                  </SelectItem>
+
+                  {/* Exact Status Values matching Backend Enums */}
                   <SelectItem value="pending">Pending Review</SelectItem>
                   <SelectItem value="ebm_approved">EBM Approved</SelectItem>
                   <SelectItem value="membership_approved">
                     Mem. Head Approved
                   </SelectItem>
-                  <SelectItem value="admin_approved">Fully Approved</SelectItem>
+                  <SelectItem value="admin_approved">
+                    Admin Approved
+                  </SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
