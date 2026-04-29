@@ -267,7 +267,7 @@ function App() {
               {/* <Route path="/:username/cm/dashboard" element={<CMDashboard />} /> */}
               {/* <Route path="/:username/cm/credits" element={<CMCreditsPage />} /> */}
             </Route>
-            <Route element={<MHAppLayout />}>
+            {/* <Route element={<MHAppLayout />}>
               <Route
                 path="/:username/credit_manager/dashboard"
                 element={<CMDashboard />}
@@ -287,9 +287,7 @@ function App() {
                 element={<CreditEventRegistrationsPage />}
               />
 
-              {/* /credit-manager/registrations/:registrationUuid
-               */}
-            </Route>
+            </Route> */}
           </Route>
           {/* ================= 404 FALLBACK ================= */}
           <Route path="*" element={<NotFound />} />
