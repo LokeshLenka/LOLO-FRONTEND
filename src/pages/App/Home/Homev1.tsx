@@ -17,7 +17,6 @@ import {
   Headphones,
   CalendarDays,
   ArrowUpRight,
-  Zap,
 } from "lucide-react";
 import { Button } from "@heroui/button";
 
@@ -89,15 +88,15 @@ const TIMELINE_DATA = [
           Faculty Coordinators.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+          <div className="bg-white/5 p-4 rounded-lg border-2 border-white/20">
             <h4 className="text-white text-sm font-bold">Music Wing</h4>
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider">
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider">
               Concerts & Production
             </p>
           </div>
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+          <div className="bg-white/5 p-4 rounded-lg border-2 border-white/20">
             <h4 className="text-white text-sm font-bold">Management Wing</h4>
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider">
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider">
               Ops & Marketing
             </p>
           </div>
@@ -166,123 +165,106 @@ const HeroSection = () => {
     <section
       ref={ref}
       onMouseMove={handleMouseMove}
-      className="relative h-[100dvh] flex flex-col items-center justify-center overflow-hidden bg-[#000000]"
+      className="group relative min-h-[100dvh] pt-24 pb-12 flex flex-col items-center justify-center overflow-hidden bg-[#000000]"
     >
-      {/* 1. Dynamic Background (Neon Noir) */}
-      <div className="absolute inset-0 opacity-40 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-[#EC4899] rounded-full blur-[150px] mix-blend-screen animate-blob opacity-30" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] bg-[#06B6D4] rounded-full blur-[150px] mix-blend-screen animate-blob animation-delay-2000 opacity-30" />
+      {/* 1. 3D Vector Background Image */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <motion.img
+          src="/images/wmremove-transformed.png"
+          alt="Abstract Background"
+          className="w-full h-full object-cover mix-blend-screen"
+          initial={{ opacity: 0, scale: 1.12 }}
+          animate={{ opacity: 0.9, scale: 1.08 }}
+          transition={{
+            duration: 8,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+        />
       </div>
 
-      {/* 2. Noise Texture */}
-      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay pointer-events-none" />
+      {/* 2. Overlays to ensure perfect text contrast */}
+      {/* <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.95)_100%)] pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay pointer-events-none z-0" /> */}
 
-      {/* 3. Spotlight */}
+      {/* 3. Mouse Spotlight */}
       <motion.div
-        className="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        className="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"
         style={{
-          background: useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, rgba(236, 72, 153, 0.08), transparent 80%)`,
+          background: useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, rgba(236, 72, 153, 0.12), transparent 80%)`,
         }}
       />
 
-      {/* 4. Content */}
+      {/* 4. Main Content */}
       <motion.div
         style={{ y: yText, opacity: opacityText }}
-        className="relative z-10 container mx-auto px-4 flex flex-col items-center text-center"
+        className="relative z-20 container mx-auto px-4 flex flex-col items-center text-center mt-4 sm:mt-8"
       >
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-6 flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md"
-        >
-          <Zap size={14} className="text-lolo-pink fill-[#EC4899]" />
-          <span className="text-xs font-bold tracking-widest text-white/90 uppercase">
-            Official SRKR Music Club
-          </span>
-        </motion.div>
+        {/* Typography */}
+        <div className="flex flex-col items-center w-full max-w-[95vw] mx-auto">
+          <h1 className="drop-shadow-2xl text-[11vw] md:text-[8vw] lg:text-[7vw] leading-[1.1] font-black tracking-[0.10rem] sm:tracking-[0.20rem] text-transparent bg-clip-text bg-gradient-to-b from-white via-white/95 to-neutral-400 select-none text-center whitespace-nowrap">
+            <div className="overflow-hidden pt-2 pb-4 px-4 -mx-4 inline-flex">
+              {["LIVING", "OUT", "LOUD"].map((word, i) => (
+                <motion.span
+                  key={`l1-${i}`}
+                  className="inline-block mr-[2vw] sm:mr-[1.5vw] last:mr-0"
+                  initial={{ opacity: 0, y: "100%", rotate: 2 }}
+                  animate={{ opacity: 1, y: "0%", rotate: 0 }}
+                  transition={{
+                    duration: 0.8,
+                    ease: [0.16, 1, 0.3, 1],
+                    delay: i * 0.1,
+                  }}
+                >
+                  {word}
+                </motion.span>
+              ))}
+            </div>
+          </h1>
 
-        {/* Animated Typography (Preserved) */}
-        <div className="flex flex-col items-center w-full max-w-[95vw] mx-auto z-20 relative">
-          {/* Line 1: LIVING OUT (Always one line) */}
-          <h1 className="text-[14vw] sm:text-[10vw] leading-[1.15] sm:leading-[0.95] font-black tracking-[0.10rem] sm:tracking-[0.20rem] text-transparent bg-clip-text bg-gradient-to-b from-white via-white/90 to-white/50 mix-blend-overlay select-none text-center whitespace-nowrap">
-            {["LIVING", "OUT"].map((word, i) => (
+          <h1 className="drop-shadow-2xl text-[11vw] md:text-[8vw] lg:text-[7vw] leading-[1.1] font-black tracking-[0.10rem] sm:tracking-[0.20rem] text-transparent bg-clip-text bg-gradient-to-b from-white via-white/95 to-neutral-400 select-none text-center mt-[-2vw] sm:mt-[-1vw]">
+            <div className="overflow-hidden pt-2 pb-6 px-4 -mx-4 flex items-center justify-center">
               <motion.span
-                key={`l1-${i}`}
-                className="inline-block mr-[2vw] sm:mr-[1.5vw]"
-                initial={{ opacity: 0, y: 100, rotate: 5 }}
-                animate={{ opacity: 1, y: 0, rotate: 0 }}
+                className="inline-block"
+                initial={{ opacity: 0, y: "100%", rotate: 2 }}
+                animate={{ opacity: 1, y: "0%", rotate: 0 }}
                 transition={{
                   duration: 0.8,
                   ease: [0.16, 1, 0.3, 1],
-                  delay: i * 0.1,
+                  delay: 0.3,
                 }}
               >
-                {word}
+                ORIGINALS
               </motion.span>
-            ))}
-          </h1>
-
-          {/* Line 2 & 3 Mobile / Line 2 Desktop */}
-          <h1 className="text-[14vw] sm:text-[10vw] leading-[1.15] sm:leading-[0.95] font-black tracking-[0.10rem] sm:tracking-[0.20rem] text-transparent bg-clip-text bg-gradient-to-b from-white via-white/90 to-white/50 mix-blend-overlay select-none text-center">
-            {/* LOUD: Block on mobile (forces line break), Inline on desktop */}
-            <motion.span
-              className="block sm:inline-block mr-0 sm:mr-[1.5vw]"
-              initial={{ opacity: 0, y: 100, rotate: 5 }}
-              animate={{ opacity: 1, y: 0, rotate: 0 }}
-              transition={{
-                duration: 0.8,
-                ease: [0.16, 1, 0.3, 1],
-                delay: 0.2, // Delays after line 1
-              }}
-            >
-              LOUD
-            </motion.span>
-
-            {/* ORIGINALS: Block on mobile (forces line break), Inline on desktop */}
-            <motion.span
-              className="block sm:inline-block"
-              initial={{ opacity: 0, y: 100, rotate: 5 }}
-              animate={{ opacity: 1, y: 0, rotate: 0 }}
-              transition={{
-                duration: 0.8,
-                ease: [0.16, 1, 0.3, 1],
-                delay: 0.3, // Delays after LOUD
-              }}
-            >
-              ORIGINALS
-            </motion.span>
+            </div>
           </h1>
         </div>
-        {/* Subtitle */}
+
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 1 }}
-          className="mt-8 max-w-xl text-sm md:text-xl text-neutral-400 font-light"
+          transition={{ delay: 0.6, duration: 1 }}
+          className="mt-2 sm:mt-6 max-w-2xl text-base sm:text-xl text-neutral-300 font-normal leading-relaxed drop-shadow-md px-4 sm:px-0"
         >
-          Blending <span className="text-lolo-pink font-medium">cultures</span>{" "}
-          and
-          <span className="text-lolo-cyan font-medium"> hearts </span>
-          , turning campus energy into music that lives beyond the stage.
-          <br />
+          Blending cultures and hearts, turning campus energy into music that
+          lives{" "}
+          <span className="text-white font-semibold">beyond the stage</span>.
         </motion.p>
+
         {/* Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.8 }}
-          className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-10 w-full sm:w-auto px-4 sm:px-0"
+          transition={{ delay: 0.8, duration: 0.8 }}
+          className="flex flex-col sm:flex-row gap-4 mt-8 sm:mt-12 w-full sm:w-auto px-6 sm:px-0 relative z-30"
         >
           <Link to="/signup" className="w-full sm:w-auto">
-            <Button className="w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-10 rounded-full bg-white text-black text-base sm:text-lg font-bold hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all border-none">
+            <Button className="w-full sm:w-auto h-14 px-8 sm:px-10 rounded-full bg-white text-black text-base sm:text-lg font-bold hover:scale-105 hover:shadow-[0_0_30px_rgba(236,72,153,0.4)] transition-all duration-300 border-none">
               Join the Community
             </Button>
           </Link>
-
           <Link to="/events" className="w-full sm:w-auto">
-            <Button className="w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-10 rounded-full bg-transparent text-white text-base sm:text-lg border border-white/20 hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+            <Button className="w-full sm:w-auto h-14 px-8 sm:px-10 rounded-full bg-white/10 text-white text-base sm:text-lg border border-white/20 hover:bg-white/20 hover:border-white/40 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
               Explore Events
             </Button>
           </Link>
@@ -293,7 +275,7 @@ const HeroSection = () => {
 };
 
 const AboutSection = () => (
-  <section className="py-24 bg-[#000000] relative z-20">
+  <section className="py-12 bg-[#000000] relative z-20">
     <div className="container mx-auto px-4 sm:px-6">
       <SectionHeader
         title={
@@ -310,7 +292,7 @@ const AboutSection = () => (
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="lg:col-span-7 bg-[#0A0A0A] border border-white/10 rounded-[2rem] p-8 sm:p-12 relative overflow-hidden group hover:border-white/20 transition-colors"
+          className="lg:col-span-7 bg-[#0A0A0A] border-2 border-white/20 rounded-[2rem] p-8 sm:p-12 relative overflow-hidden group hover:border-white/20 transition-colors"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#EC4899]/5 blur-[80px] rounded-full group-hover:bg-[#EC4899]/10 transition-colors duration-700" />
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-6">
@@ -350,7 +332,7 @@ const AboutSection = () => (
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="lg:col-span-5 relative rounded-[2rem] overflow-hidden min-h-[400px] border border-white/5"
+          className="lg:col-span-5 relative rounded-[2rem] overflow-hidden min-h-[400px] border-2 border-white/20"
         >
           <img
             src="/cover.jpg"
@@ -376,7 +358,7 @@ const AboutSection = () => (
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 + idx * 0.1 }}
-            className="lg:col-span-4 bg-[#0A0A0A] border border-white/10 rounded-[2rem] p-8 hover:border-white/20 transition-colors group flex flex-col gap-4"
+            className="lg:col-span-4 bg-[#0A0A0A] border-2 border-white/20 rounded-[2rem] p-8 hover:border-white/20 transition-colors group flex flex-col gap-4"
           >
             {/* Header: Icon + Title */}
             <div className="flex flex-row items-center gap-5">
@@ -402,7 +384,7 @@ const AboutSection = () => (
 );
 
 const EcosystemSection = () => (
-  <section className="py-32 bg-[#000000] relative z-20 border-t border-white/10">
+  <section className="py-12 bg-[#000000] relative z-20 border-t border-white/10">
     <div className="container mx-auto px-4 sm:px-6">
       <div className="mb-16 md:flex md:justify-between md:items-end">
         <div className="max-w-2xl">
@@ -416,7 +398,7 @@ const EcosystemSection = () => (
           />
         </div>
         <Link to="/team" className="hidden md:inline-block">
-          <Button className="rounded-full bg-white/5 text-white border border-white/10 hover:bg-white/10 transition-all">
+          <Button className="rounded-full bg-white/5 text-white border-2 border-white/20 hover:bg-white/10 transition-all">
             Meet the Team <ArrowRight size={16} className="ml-2" />
           </Button>
         </Link>
@@ -448,7 +430,7 @@ const EcosystemSection = () => (
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="group relative h-[450px] rounded-[2.5rem] overflow-hidden bg-[#000000] border border-white/10 transition-all hover:border-white/30"
+            className="group relative h-[450px] rounded-[2.5rem] overflow-hidden bg-[#000000] border-2 border-white/20 transition-all hover:border-white/30"
           >
             <div className="absolute inset-0 z-0">
               <img
@@ -462,7 +444,7 @@ const EcosystemSection = () => (
             <div className="absolute inset-0 p-10 flex flex-col justify-between z-10">
               <div className="flex justify-between items-start">
                 <div
-                  className={`p-4 rounded-2xl bg-[#000000]/60 border border-white/10 backdrop-blur-md group-hover:scale-110 transition-transform duration-500`}
+                  className={`p-4 rounded-2xl bg-[#000000]/60 border-2 border-white/20 backdrop-blur-md group-hover:scale-110 transition-transform duration-500`}
                 >
                   <card.icon size={32} className={card.color} />
                 </div>
@@ -506,7 +488,7 @@ const Homev1: React.FC = () => {
 
       <EcosystemSection />
 
-      {/* <section className="py-24 bg-[#000000] border-y border-white/5 relative overflow-hidden">
+      {/* <section className="py-12 bg-[#000000] border-y border-white/5 relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[#EC4899]/5 blur-[120px] rounded-full pointer-events-none" />
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <SectionHeader
@@ -524,12 +506,12 @@ const Homev1: React.FC = () => {
         </div>
       </section> */}
 
-      <section className="bg-[#000000] py-24 relative z-20">
+      <section className="bg-[#000000] py-12 relative z-20">
         <Timeline data={TIMELINE_DATA} />
       </section>
 
       {/* UPDATED FOOTER CTA */}
-      <section className="py-40 bg-[#000000] relative flex items-center justify-center z-20 overflow-hidden border-t border-white/10 px-5">
+      <section className="py-12 bg-[#000000] relative flex items-center justify-center z-20 overflow-hidden border-t border-white/10 px-5">
         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-30 pointer-events-none mix-blend-overlay"></div>
         {/* Glow behind the CTA */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-[#EC4899]/10 to-[#06B6D4]/10 blur-[100px] rounded-full pointer-events-none" />
