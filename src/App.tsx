@@ -73,10 +73,10 @@ import { UserStatsCards } from "./components/ui/shared/users/UserStatsCards";
 
 // --- Credit Manager (CM) Components ---
 // import CMDashboard from "./pages/CreditManager/CMDashboard";
-import CreditEventRegistrationsPage from "./pages/CreditManager/CreditEventRegistrationsPage";
-import CMDashboard from "./pages/CreditManager/CMDashboard";
-import EventRegistrationsListPage from "./pages/CreditManager/EventRegistrationsListPage";
-import RegistrationDetailPage from "./pages/CreditManager/RegistrationDetailPage";
+// import CreditEventRegistrationsPage from "./pages/CreditManager/CreditEventRegistrationsPage";
+// import CMDashboard from "./pages/CreditManager/CMDashboard";
+// import EventRegistrationsListPage from "./pages/CreditManager/EventRegistrationsListPage";
+// import RegistrationDetailPage from "./pages/CreditManager/RegistrationDetailPage";
 
 // --- Helper Components ---
 
