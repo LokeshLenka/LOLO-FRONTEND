@@ -5,12 +5,15 @@ import { AnimatePresence } from "framer-motion";
 // --- Layouts & Providers ---
 import MainLayout from "./layouts/MainLayout";
 import AppLayout from "./layouts/AppLayout";
+import MHAppLayout from "./layouts/membership-head/MHAppLayout";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import GlobalLoader from "./components/GlobalLoader";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import { Toaster } from "sonner";
 
 // --- Public Pages ---
+// import Home from "./pages/App/Home/Home";
+import Homev1 from "./pages/App/Home/Homev1";
 import Events from "./pages/App/Events/Events";
 import EventDetails from "./pages/App/Events/EventDetails";
 // import Concerts from "./pages/App/Concerts/Performances";
@@ -23,50 +26,57 @@ import AboutUs from "./pages/App/Support/AboutUs";
 import ContactUs from "./pages/App/Support/ContactUs";
 import FAQ from "./pages/App/Support/FAQ";
 import Gallery from "./pages/App/Gallery/Gallery";
+import TermsOfServicePage from "./pages/OtherPages/TermsOfService";
+import PrivacyPolicyPage from "./pages/OtherPages/PrivacyPolicy";
+import RefundPolicyPage from "./pages/OtherPages/RefundPolicy";
 import NotFound from "./pages/OtherPages/NotFound";
 
 // --- Auth & Registration Pages ---
 import Login from "./pages/App/Authentication/Login";
 // import SignUp from "./pages/App/Authentication/SignUp";
+import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
 import AdminLogin from "./pages/Admin/AdminLogin";
 import SuccessRegistration from "./pages/App/Authentication/SuccessRegistration";
 import RegistrationStatus from "./pages/App/Authentication/RegistrationStatus";
+import { UtrPublicUserSignUp } from "./pages/PublicUsers/UTRPublicUserSignUp";
+import SuccessURTEventRegistration from "./pages/PublicUsers/SuccessURTEventRegistration";
+import { FailedEventRegistration } from "./pages/App/Events/FailedEventRegistration";
+import TicketVerifier from "./pages/User/TicketVerifier";
 
-// --- Dashboard Components ---
+// --- Standard User Components ---
 import UserDashboard from "./pages/User/UserDashboard";
-import EBMDashboard from "./pages/ExecutiveBodyMember/EBMDashboard";
 import UserProfilePage from "./pages/User/UserProfilePage";
-
-import EBMPendingApprovals from "./pages/ExecutiveBodyMember/EBMPendingApprovals";
 import CreditsPage from "./pages/User/Credits/CreditsPage";
-import ShowEventRegistrationPage from "./pages/User/Events/ShowEventRegistrationPage";
 import ShowCreditPage from "./pages/User/Credits/ShowCreditsPage";
+import UserEventRegistrationCards from "./pages/User/Events/UserEventRegistrationsPage";
+import ShowEventRegistrationPage from "./pages/User/Events/ShowEventRegistrationPage";
+
+// --- Executive Body Member (EBM) Components ---
+import EBMDashboard from "./pages/ExecutiveBodyMember/EBMDashboard";
 import CreateEvent from "./pages/ExecutiveBodyMember/Events/CreateEvent";
 import MyEvents from "./pages/ExecutiveBodyMember/Events/MyEvents";
+import EventRegistrationsPage from "./pages/ExecutiveBodyMember/EventRegistrations/EventRegistrationsPage";
+// import ShowUTREventRegistrations from "./pages/ExecutiveBodyMember/EventRegistrations/ShowUTREventRegistrations";
+import EBMPendingApprovals from "./pages/ExecutiveBodyMember/EBMPendingApprovals";
 import ApplicantDetailsPage from "./pages/ExecutiveBodyMember/Users/ApplicationDetails";
 import ApprovalHistoryDetailsPage from "./pages/ExecutiveBodyMember/Users/ApprovalHistoryDetailsPage";
-import EventRegistrationsPage from "./pages/ExecutiveBodyMember/EventRegistrations/EventRegistrationsPage";
-import UserEventRegistrationCards from "./pages/User/Events/UserEventRegistrationsPage";
-import Home from "./pages/App/Home/Home";
-import TermsOfServicePage from "./pages/OtherPages/TermsOfService";
-import PrivacyPolicyPage from "./pages/OtherPages/PrivacyPolicy";
-import { FailedEventRegistration } from "./pages/App/Events/FailedEventRegistration";
-import RefundPolicyPage from "./pages/OtherPages/RefundPolicy";
 // import EbmDeskSale from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmDeskSale";
 // import EbmCollectionsList from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmCollectionsList";
 // import EbmTicketSuccess from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmTicketSuccess";
-import { UtrPublicUserSignUp } from "./pages/PublicUsers/UTRPublicUserSignUp";
-import SuccessURTEventRegistration from "./pages/PublicUsers/SuccessURTEventRegistration";
-// import ShowUTREventRegistrations from "./pages/ExecutiveBodyMember/EventRegistrations/ShowUTREventRegistrations";
-import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
-import Homev1 from "./pages/App/Home/Homev1";
-import TicketVerifier from "./pages/User/TicketVerifier";
+
+// --- Membership Head (MH) Components ---
 import MHDashboard from "./pages/MembershipHead/Dashboard/MHDashboard";
 import MHUserManagement from "./pages/MembershipHead/Users/MHUserManagement";
-import MHAppLayout from "./layouts/membership-head/MHAppLayout";
-import { UserStatsCards } from "./components/ui/shared/users/UserStatsCards";
 import PendingApprovals from "./pages/MembershipHead/Approvals/PendingApprovals";
 import MyApprovals from "./pages/MembershipHead/Approvals/MyApprovals";
+import { UserStatsCards } from "./components/ui/shared/users/UserStatsCards";
+
+// --- Credit Manager (CM) Components ---
+// import CMDashboard from "./pages/CreditManager/CMDashboard";
+import CreditEventRegistrationsPage from "./pages/CreditManager/CreditEventRegistrationsPage";
+import CMDashboard from "./pages/CreditManager/CMDashboard";
+import EventRegistrationsListPage from "./pages/CreditManager/EventRegistrationsListPage";
+import RegistrationDetailPage from "./pages/CreditManager/RegistrationDetailPage";
 
 // --- Helper Components ---
 
@@ -95,8 +105,8 @@ function App() {
         <Routes location={location} key={location.pathname}>
           {/* ================= PUBLIC ROUTES ================= */}
           <Route path="/" element={<MainLayout />}>
-            <Route index element={<Home />} />
-            <Route path="home" element={<Home />} />
+            <Route index element={<Homev1 />} />
+            <Route path="home" element={<Homev1 />} />
             <Route path="homev1" element={<Homev1 />} />
             {/* Feature Pages */}
             <Route path="events" element={<Events />} />
@@ -257,6 +267,29 @@ function App() {
               {/* <Route path="/:username/cm/dashboard" element={<CMDashboard />} /> */}
               {/* <Route path="/:username/cm/credits" element={<CMCreditsPage />} /> */}
             </Route>
+            <Route element={<MHAppLayout />}>
+              <Route
+                path="/:username/credit_manager/dashboard"
+                element={<CMDashboard />}
+              />
+
+              <Route
+                path="/:username/credit_manager/event-registrations"
+                element={<EventRegistrationsListPage />}
+              />
+              <Route
+                path="/:username/credit_manager/registrations/:registrationUuid"
+                element={<RegistrationDetailPage />}
+              />
+
+              <Route
+                path="/:username/credit-manager/events/:eventUuid/registrations"
+                element={<CreditEventRegistrationsPage />}
+              />
+
+              {/* /credit-manager/registrations/:registrationUuid
+               */}
+            </Route>
           </Route>
           {/* ================= 404 FALLBACK ================= */}
           <Route path="*" element={<NotFound />} />
@@ -267,7 +300,6 @@ function App() {
       <Toaster
         position="top-right"
         toastOptions={{
-          // ... (Keep existing styling configuration)
           className:
             "bg-[#09090b]/90 backdrop-blur-xl border border-white/10 text-white shadow-2xl shadow-black/50 rounded-2xl",
           classNames: {
