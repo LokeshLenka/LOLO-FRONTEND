@@ -33,8 +33,8 @@ import NotFound from "./pages/OtherPages/NotFound";
 
 // --- Auth & Registration Pages ---
 import Login from "./pages/App/Authentication/Login";
-// import SignUp from "./pages/App/Authentication/SignUp";
-import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
+import SignUp from "./pages/App/Authentication/SignUp";
+// import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
 import AdminLogin from "./pages/Admin/AdminLogin";
 import SuccessRegistration from "./pages/App/Authentication/SuccessRegistration";
 import RegistrationStatus from "./pages/App/Authentication/RegistrationStatus";
@@ -70,6 +70,7 @@ import MHUserManagement from "./pages/MembershipHead/Users/MHUserManagement";
 import PendingApprovals from "./pages/MembershipHead/Approvals/PendingApprovals";
 import MyApprovals from "./pages/MembershipHead/Approvals/MyApprovals";
 import { UserStatsCards } from "./components/ui/shared/users/UserStatsCards";
+import Home from "./pages/App/Home/Home";
 
 // --- Credit Manager (CM) Components ---
 // import CMDashboard from "./pages/CreditManager/CMDashboard";
@@ -136,7 +137,7 @@ function App() {
           {/* ----------------------------------------------------------------- */}
           {/* Auth & Status Pages */}
           {/* ----------------------------------------------------------------- */}
-          <Route path="/signup" element={<SignupsClosed />} />
+          <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/success" element={<SuccessRegistration />} />
