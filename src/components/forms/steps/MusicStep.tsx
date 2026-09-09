@@ -13,6 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { inputStyle } from "./AcademicInformationStep";
 
 export const MusicStep: React.FC<{ form: any; registrationType: string }> = ({
   form,
@@ -24,6 +27,12 @@ export const MusicStep: React.FC<{ form: any; registrationType: string }> = ({
     { value: "flutist", label: "Flutist" },
     { value: "guitarist", label: "Guitarist" },
     { value: "violinist", label: "Violinist" },
+    { value: "pianist", label: "Pianist" },
+  ];
+
+  const instrumentAvailOptions = [
+    { value: true, label: "Yes" },
+    { value: false, label: "No" },
   ];
 
   // Updated Helper Styles
@@ -73,6 +82,101 @@ export const MusicStep: React.FC<{ form: any; registrationType: string }> = ({
               </SelectContent>
             </Select>
             <FormMessage className="text-red-400 text-xs ml-1" />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="instrument_avail"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Instrument Availability *</FormLabel>
+            <FormControl>
+              <div className="flex gap-3 mt-2 h-14">
+                {instrumentAvailOptions.map(({ label, value }) => (
+                  <Button
+                    key={Number(value)}
+                    type="button"
+                    onClick={() => field.onChange(value)}
+                    className={`flex-1 h-full rounded-2xl font-bold transition-all border ${
+                      field.value === value
+                        ? "bg-lolo-pink border-lolo-pink text-white shadow-[0_0_15px_rgba(236,72,153,0.3)]"
+                        : "bg-transparent border-white/10 text-neutral-400 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="passion"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
+              Passion *
+            </FormLabel>
+            <FormControl>
+              <Textarea
+                {...field}
+                placeholder="Describe your passion for music"
+                className={`${inputStyle} placeholder:text-neutral-500`}
+                rows={8}
+                required
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="experience"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
+              Experience *
+            </FormLabel>
+            <FormControl>
+              <Textarea
+                {...field}
+                placeholder="Describe about your experience in specified field (your achievements, participations etc)."
+                className={`${inputStyle} placeholder:text-neutral-500`}
+                rows={4}
+                required
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="other_fields_of_interest"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
+              Other fields of interest *
+            </FormLabel>
+            <FormControl>
+              <Textarea
+                {...field}
+                placeholder="Mention other fields you're interested in"
+                className={`${inputStyle} placeholder:text-neutral-500`}
+                rows={4}
+                required
+              />
+            </FormControl>
+            <FormMessage />
           </FormItem>
         )}
       />

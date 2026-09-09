@@ -354,9 +354,9 @@ export const MusicSignUp: React.FC = () => {
       gender: "",
       sub_role: "",
 
-      other_fields_of_interest: "default",
-      experience: "default",
-      passion: "default",
+      other_fields_of_interest: "",
+      experience: "",
+      passion: "",
       instrument_avail: false,
 
       lateral_status: false,

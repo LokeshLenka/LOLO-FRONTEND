@@ -16,6 +16,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button/button";
 
+export const inputStyle =
+  "bg-white/5 border border-white/10 text-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-lolo-pink min-h-14 rounded-2xl placeholder:text-neutral-600 transition-colors";
+
 export const AcademicInformationStep: React.FC<{
   form: any;
   registrationType: string;
@@ -90,8 +93,6 @@ export const AcademicInformationStep: React.FC<{
   }, [form.watch("hostel_status")]);
 
   // Updated Styles
-  const inputStyle =
-    "bg-white/5 border border-white/10 text-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-lolo-pink h-14 rounded-2xl placeholder:text-neutral-600 transition-colors";
 
   const selectTriggerStyle =
     "bg-white/5 border border-white/10 text-white focus:ring-0 focus:ring-offset-0 focus:border-lolo-pink h-14 rounded-2xl data-[placeholder]:text-neutral-600 transition-all font-medium";
