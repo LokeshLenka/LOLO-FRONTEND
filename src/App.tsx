@@ -33,8 +33,8 @@ import NotFound from "./pages/OtherPages/NotFound";
 
 // --- Auth & Registration Pages ---
 import Login from "./pages/App/Authentication/Login";
-// import SignUp from "./pages/App/Authentication/SignUp";
-import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
+import SignUp from "./pages/App/Authentication/SignUp";
+// import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
 import AdminLogin from "./pages/Admin/AdminLogin";
 import SuccessRegistration from "./pages/App/Authentication/SuccessRegistration";
 import RegistrationStatus from "./pages/App/Authentication/RegistrationStatus";
