@@ -21,7 +21,7 @@ import { useForm } from "react-hook-form";
 
 const categoryOptions = [
   { label: "Music", value: "music" },
-  { label: "Management", value: "management" },
+  // { label: "Management", value: "management" },
 ];
 
 export default function SignUp() {
