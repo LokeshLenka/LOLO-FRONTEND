@@ -26,8 +26,9 @@ const formSchema = z
     password_confirmation: z.string().min(6, "Confirm password is required"),
     reg_num: z
       .string()
-      .min(10, "Registration number must be at least 10 digits")
-      .max(10, "Registration number must not be greater than 10 digits"),
+      // .min(10, "Registration number must be at least 10 digits")
+      // .max(10, "Registration number must not be greater than 10 digits")
+      .optional(),
     branch: z.string().min(1, "Branch is required"),
     year: z.string().min(1, "Year of study is required"),
     gender: z.string().min(1, "Gender is required"),

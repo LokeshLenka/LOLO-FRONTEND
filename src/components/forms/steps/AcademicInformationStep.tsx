@@ -121,10 +121,10 @@ export const AcademicInformationStep: React.FC<{
         render={({ field }) => (
           <FormItem>
             <FormLabel className="text-xs font-bold uppercase text-neutral-500 tracking-wider ml-1">
-              Registration Number *
+              Registration Number
             </FormLabel>
             <FormControl>
-              <Input {...field} className={inputStyle} required />
+              <Input {...field} className={inputStyle} />
             </FormControl>
             <FormMessage className="text-red-400 text-xs ml-1" />
           </FormItem>
