@@ -163,6 +163,9 @@ const MultiStepForm: React.FC<{ form: any }> = ({ form }) => {
         lateral_status: data.lateral_status ? 1 : 0,
         hostel_status: data.hostel_status ? 1 : 0,
         college_hostel_status: data.college_hostel_status ? 1 : 0,
+
+        sub_role:
+          data.sub_role === "default" || !data.sub_role ? "N/A" : data.sub_role,
         instrument_avail: data.instrument_avail ? 1 : 0,
 
         other_fields_of_interest:
