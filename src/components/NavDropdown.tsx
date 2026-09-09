@@ -6,10 +6,11 @@ import {
   Users,
   HelpCircle,
   Sparkles,
-  ClipboardCheck,
+  // ClipboardCheck,
   Handshake,
   Mail,
   Image,
+  ClipboardCheck,
 } from "lucide-react";
 import { motion, AnimatePresence, type Variants } from "framer-motion"; // Added Variants type
 
@@ -46,7 +47,7 @@ export default function NavDropdown({ isMobile = false }: NavDropdownProps) {
     {
       section: "Community",
       items: [
-        { label: "Our Team", path: "/team", icon: Users },
+        // { label: "Our Team", path: "/team", icon: Users },
         {
           label: "Registration Status",
           path: "/registration-status",
@@ -181,7 +182,7 @@ export default function NavDropdown({ isMobile = false }: NavDropdownProps) {
                 </div>
               ))}
 
-              {isMobile && (
+              {/* {isMobile && (
                 <div>
                   <div className="h-[1px] bg-white/5 mx-4 my-2" />
                   <div className="px-4 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
@@ -225,7 +226,7 @@ export default function NavDropdown({ isMobile = false }: NavDropdownProps) {
                     </div>
                   </Link>
                 </div>
-              )}
+              )} */}
             </div>
           </motion.div>
         )}
