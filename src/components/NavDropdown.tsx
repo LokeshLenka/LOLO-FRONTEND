@@ -3,13 +3,10 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   ChevronDown,
-  Users,
   HelpCircle,
   Sparkles,
-  // ClipboardCheck,
   Handshake,
   Mail,
-  Image,
   ClipboardCheck,
 } from "lucide-react";
 import { motion, AnimatePresence, type Variants } from "framer-motion"; // Added Variants type
@@ -84,7 +81,7 @@ export default function NavDropdown({ isMobile = false }: NavDropdownProps) {
         visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.14 } },
       };
 
-  const isGalleryActive = location.pathname === "/gallery";
+  // const isGalleryActive = location.pathname === "/gallery";
 
   return (
     <div
