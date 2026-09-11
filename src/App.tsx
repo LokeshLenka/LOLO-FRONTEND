@@ -20,7 +20,7 @@ import EventDetails from "./pages/App/Events/EventDetails";
 import ConcertDetails from "./pages/App/Concerts/PerformanceDetails";
 import Publication from "./pages/App/Publications/Publications";
 import PublicationDetails from "./pages/App/Publications/PublicationDetails";
-import Team from "./pages/App/Team/Team";
+// import Team from "./pages/App/Team/Team";
 import TeamDetails from "./pages/App/Team/TeamDetails";
 import AboutUs from "./pages/App/Support/AboutUs";
 import ContactUs from "./pages/App/Support/ContactUs";
@@ -112,7 +112,7 @@ function App() {
             <Route path="events" element={<Events />} />
             {/* <Route path="concerts" element={<Concerts />} /> */}
             <Route path="publications" element={<Publication />} />
-            <Route path="team" element={<Team />} />
+            {/* <Route path="team" element={<Team />} /> */}
             <Route path="gallery" element={<Gallery />} />
             {/* Info Pages */}
             <Route path="about" element={<AboutUs />} />
