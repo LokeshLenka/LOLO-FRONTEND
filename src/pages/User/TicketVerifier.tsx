@@ -372,10 +372,10 @@ export const TicketVerifier: React.FC = () => {
             onClick={resetNow}
             className={`fixed inset-0 z-[60] flex cursor-pointer flex-col items-center justify-center overflow-y-auto p-6 text-center ${
               status === "success"
-                ? "bg-green-600"
+                ? "bg-green-600 text-white"
                 : status === "warning"
                   ? "bg-yellow-500 text-gray-900"
-                  : "bg-red-600"
+                  : "bg-red-600 text-white"
             }`}
           >
             {status === "success" && <div className="css-confetti-burst" />}
