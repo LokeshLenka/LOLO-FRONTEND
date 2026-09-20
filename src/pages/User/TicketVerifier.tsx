@@ -370,7 +370,7 @@ export const TicketVerifier: React.FC = () => {
             exit={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 0.2 }}
             onClick={resetNow}
-            className={`absolute inset-0 z-30 flex cursor-pointer flex-col items-center justify-center overflow-y-auto p-6 text-center ${
+            className={`fixed inset-0 z-[60] flex cursor-pointer flex-col items-center justify-center overflow-y-auto p-6 text-center ${
               status === "success"
                 ? "bg-green-600"
                 : status === "warning"
