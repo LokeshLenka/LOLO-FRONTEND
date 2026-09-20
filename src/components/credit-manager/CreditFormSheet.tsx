@@ -94,6 +94,23 @@ export function CreditFormSheet({
                 Max value depends on backend validation.
               </p>
             </div>
+
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="h-11 w-full rounded-none bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            >
+              {isSubmitting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving
+                </span>
+              ) : mode === "create" ? (
+                "Assign Credit"
+              ) : (
+                "Update Credit"
+              )}
+            </Button>
           </div>
 
           <div className="mt-auto flex items-center justify-end gap-3 border-t border-zinc-200 px-6 py-4 dark:border-zinc-800">

@@ -44,7 +44,7 @@ function getActivityIcon(type: ActivityItem["type"]) {
     case "bulk_delete":
       return <MinusCircle className="h-4 w-4 text-red-600 dark:text-red-400" />;
     default:
-      return <CircleDollarSign className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />;
+      return <CircleDollarSign className="h-4 w-4 text-zinc-500 dark:text-gray-400" />;
   }
 }
 
@@ -79,7 +79,7 @@ function getActivityColor(type: ActivityItem["type"]) {
     case "bulk_delete":
       return "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300";
     default:
-      return "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300";
+      return "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300";
   }
 }
 
@@ -94,12 +94,12 @@ export function RecentActivityFeed({ activities, onViewAll, maxItems = 5 }: Rece
 
   if (activities.length === 0) {
     return (
-      <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
-        <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+      <Card className="rounded-none border-zinc-200 shadow-none dark:border-gray-800">
+        <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-gray-800">
           <CardTitle className="text-base font-semibold tracking-tight">Recent Activity</CardTitle>
         </CardHeader>
         <CardContent className="p-5">
-          <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
+          <div className="text-center py-8 text-zinc-500 dark:text-gray-400">
             <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No recent credit activity</p>
           </div>
@@ -109,8 +109,8 @@ export function RecentActivityFeed({ activities, onViewAll, maxItems = 5 }: Rece
   }
 
   return (
-    <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
-      <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+    <Card className="rounded-none border-zinc-200 shadow-none dark:border-gray-800">
+      <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-gray-800">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-semibold tracking-tight">Recent Activity</CardTitle>
           {onViewAll && (
@@ -122,11 +122,11 @@ export function RecentActivityFeed({ activities, onViewAll, maxItems = 5 }: Rece
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="divide-y divide-zinc-200 dark:divide-zinc-800">
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="divide-y divide-zinc-200 dark:divide-gray-800">
           {displayActivities.map((activity) => (
-            <motion.div key={activity.id} variants={itemVariants} className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
+            <motion.div key={activity.id} variants={itemVariants} className="p-4 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors">
               <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-none border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 flex-shrink-0">
+                <div className="flex h-8 w-8 items-center justify-center rounded-none border border-zinc-200 bg-zinc-50 dark:border-gray-800 dark:bg-gray-800 flex-shrink-0">
                   {getActivityIcon(activity.type)}
                 </div>
                 <div className="flex-1 min-w-0 space-y-1">
@@ -138,13 +138,13 @@ export function RecentActivityFeed({ activities, onViewAll, maxItems = 5 }: Rece
                       {getActivityLabel(activity.type)}
                     </Badge>
                     {activity.amount && (
-                      <Badge variant="outline" className="rounded-none px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] border-zinc-200 bg-white text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
+                      <Badge variant="outline" className="rounded-none px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] border-zinc-200 bg-white text-zinc-700 dark:border-gray-800 dark:bg-white/5 dark:text-gray-300">
                         {activity.amount} credits
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-zinc-950 dark:text-zinc-100 truncate">{activity.description}</p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-sm text-zinc-950 dark:text-gray-100 truncate">{activity.description}</p>
+                  <p className="text-xs text-zinc-500 dark:text-gray-400">
                     {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
                   </p>
                 </div>
