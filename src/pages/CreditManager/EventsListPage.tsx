@@ -59,7 +59,7 @@ function renderEventType(type?: string) {
       className={`rounded-none px-2 py-1 text-[10px] uppercase tracking-[0.2em] ${
         isPublic
           ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300"
-          : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+          : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-[#344054] dark:bg-[#1D2939] dark:text-[#98A2B3]"
       }`}
     >
       {type ?? "Unknown"}
@@ -90,15 +90,15 @@ export default function EventsListPage() {
       animate="visible"
       className="space-y-6"
     >
-      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-zinc-800 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-[#344054] md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
             Credit Manager
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-[#F2F4F7]">
             Events
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-zinc-500 dark:text-[#98A2B3]">
             All events including public ones. Open an event to manage credits.
           </p>
         </div>
@@ -112,11 +112,11 @@ export default function EventsListPage() {
         </p>
       </div>
 
-      <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
-        <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+      <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
+        <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-[#344054]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <CardTitle className="flex items-center gap-2 text-base font-semibold tracking-tight">
-              <LayoutGrid className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+              <LayoutGrid className="h-4 w-4 text-zinc-500 dark:text-[#98A2B3]" />
               All Events
             </CardTitle>
 
@@ -125,10 +125,10 @@ export default function EventsListPage() {
                 placeholder="Search events"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="h-9 w-full rounded-none border-zinc-300 dark:border-zinc-700"
+                className="h-9 w-full rounded-none border-zinc-300 dark:border-[#344054]"
               />
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-full rounded-none border-zinc-300 dark:border-zinc-700">
+                <SelectTrigger className="w-full rounded-none border-zinc-300 dark:border-[#344054]">
                   <SelectValue placeholder="Event type" />
                 </SelectTrigger>
                 <SelectContent className="rounded-none">
@@ -148,7 +148,7 @@ export default function EventsListPage() {
               {Array.from({ length: 6 }).map((_, idx) => (
                 <div
                   key={idx}
-                  className="h-12 animate-pulse border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900"
+                  className="h-12 animate-pulse border border-zinc-200 bg-zinc-50 dark:border-[#344054] dark:bg-[#1D2939]"
                 />
               ))}
             </div>
@@ -157,7 +157,7 @@ export default function EventsListPage() {
               Failed to load events.
             </div>
           ) : events.length === 0 ? (
-            <div className="p-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <div className="p-8 text-center text-sm text-zinc-500 dark:text-[#98A2B3]">
               No events found.
             </div>
           ) : (
@@ -165,7 +165,7 @@ export default function EventsListPage() {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-zinc-200 bg-zinc-50 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:bg-zinc-900/50">
+                    <TableRow className="border-zinc-200 bg-zinc-50 hover:bg-zinc-50 dark:border-[#344054] dark:bg-[#1D2939] dark:hover:bg-[#253247]">
                       <TableHead className="w-16">#</TableHead>
                       <TableHead>Event</TableHead>
                       <TableHead>Type</TableHead>
@@ -179,18 +179,18 @@ export default function EventsListPage() {
                     {events.map((event, index) => (
                       <TableRow
                         key={event.uuid}
-                        className="border-zinc-200 dark:border-zinc-800"
+                        className="border-zinc-200 dark:border-[#344054]"
                       >
-                        <TableCell className="text-zinc-500 dark:text-zinc-400">
+                        <TableCell className="text-zinc-500 dark:text-[#98A2B3]">
                           {(page - 1) * (meta?.per_page ?? 20) + index + 1}
                         </TableCell>
 
                         <TableCell>
                           <div className="space-y-1">
-                            <p className="font-medium text-zinc-950 dark:text-zinc-50">
+                            <p className="font-medium text-zinc-950 dark:text-[#F2F4F7]">
                               {event.name}
                             </p>
-                            <p className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+                            <p className="flex items-center gap-1 text-xs text-zinc-500 dark:text-[#98A2B3]">
                               <CalendarRange className="h-3 w-3" />
                               {event.venue ?? "Venue TBD"}
                             </p>
@@ -199,13 +199,13 @@ export default function EventsListPage() {
 
                         <TableCell>{renderEventType(event.type)}</TableCell>
 
-                        <TableCell className="text-zinc-600 dark:text-zinc-300">
+                        <TableCell className="text-zinc-600 dark:text-[#98A2B3]">
                           {formatDate(event.end_date)}
                         </TableCell>
 
                         <TableCell>
-                          <span className="inline-flex items-center gap-1 font-medium text-zinc-950 dark:text-zinc-50">
-                            <CircleDollarSign className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+                          <span className="inline-flex items-center gap-1 font-medium text-zinc-950 dark:text-[#F2F4F7]">
+                            <CircleDollarSign className="h-3.5 w-3.5 text-zinc-500 dark:text-[#98A2B3]" />
                             {event.credits_awarded ?? "—"}
                           </span>
                         </TableCell>
@@ -219,7 +219,7 @@ export default function EventsListPage() {
                                   `/${username}/credit_manager/events/${event.uuid}/registrations`
                                 )
                               }
-                              className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                              className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
                             >
                               Manage
                               <ArrowRight className="ml-2 h-4 w-4" />
@@ -233,7 +233,7 @@ export default function EventsListPage() {
               </div>
 
               {meta ? (
-                <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
+                <div className="border-t border-zinc-200 p-4 dark:border-[#344054]">
                   <TablePagination meta={meta} onPageChange={setPage} />
                 </div>
               ) : null}

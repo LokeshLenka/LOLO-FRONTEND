@@ -94,7 +94,7 @@ function renderRegistrationStatus(status?: string) {
           : {
               label: status || "Unknown",
               className:
-                "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300",
+                "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-[#344054] dark:bg-[#1D2939] dark:text-[#98A2B3]",
             };
 
   return (
@@ -111,14 +111,14 @@ function renderCreditStatus(hasCredit: boolean) {
   return hasCredit ? (
     <Badge
       variant="outline"
-      className="rounded-none border border-zinc-300 bg-zinc-100 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+      className="rounded-none border border-zinc-300 bg-zinc-100 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-900 dark:border-[#344054] dark:bg-[#1D2939] dark:text-[#F2F4F7]"
     >
       Assigned
     </Badge>
   ) : (
     <Badge
       variant="outline"
-      className="rounded-none border border-zinc-200 bg-white px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400"
+      className="rounded-none border border-zinc-200 bg-white px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:border-[#344054] dark:bg-[#161F2E] dark:text-[#98A2B3]"
     >
       Unassigned
     </Badge>
@@ -135,15 +135,15 @@ function StatCard({
   icon: React.ElementType;
 }) {
   return (
-    <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
+    <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
       <CardContent className="flex items-center justify-between p-5">
         <div className="space-y-1">
-          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
             {title}
           </p>
           <p className="text-2xl font-semibold tracking-tight">{value}</p>
         </div>
-        <div className="flex h-10 w-10 items-center justify-center border border-zinc-200 text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
+        <div className="flex h-10 w-10 items-center justify-center border border-zinc-200 text-zinc-600 dark:border-[#344054] dark:bg-[#1D2939] dark:text-[#98A2B3]">
           <Icon className="h-4 w-4" />
         </div>
       </CardContent>
@@ -274,15 +274,15 @@ export default function CreditEventRegistrationsPage() {
       animate="visible"
       className="space-y-6"
     >
-      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-zinc-800 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-[#344054] md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
             Credit Manager
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-[#F2F4F7]">
             {eventName}
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-zinc-500 dark:text-[#98A2B3]">
             Assign credits to participants and management members for this event.
           </p>
         </div>
@@ -290,7 +290,7 @@ export default function CreditEventRegistrationsPage() {
         <Button
           variant="outline"
           onClick={() => navigate(`/${username}/credit_manager/events`)}
-          className="rounded-none border-zinc-300 dark:border-zinc-700"
+          className="rounded-none border-zinc-300 dark:border-[#344054]"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           All events
@@ -322,8 +322,8 @@ export default function CreditEventRegistrationsPage() {
         <StatCard title="Uncredited" value={stats.uncredited} icon={CreditCard} />
       </div>
 
-      <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
-        <CardHeader className="space-y-4 border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+      <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
+        <CardHeader className="space-y-4 border-b border-zinc-200 px-5 py-4 dark:border-[#344054]">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <CardTitle className="text-base font-semibold tracking-tight">
               Eligible members
@@ -341,7 +341,7 @@ export default function CreditEventRegistrationsPage() {
                   setPage(1);
                   setFilters((prev) => ({ ...prev, search: e.target.value }));
                 }}
-                className="h-9 w-full rounded-none border-zinc-300 dark:border-zinc-700 sm:w-56"
+                className="h-9 w-full rounded-none border-zinc-300 dark:border-[#344054] sm:w-56"
               />
               <Select
                 value={filters.credit_status ?? "all"}
@@ -353,7 +353,7 @@ export default function CreditEventRegistrationsPage() {
                   }));
                 }}
               >
-                <SelectTrigger className="w-full rounded-none border-zinc-300 dark:border-zinc-700 sm:w-44">
+                <SelectTrigger className="w-full rounded-none border-zinc-300 dark:border-[#344054] sm:w-44">
                   <SelectValue placeholder="Credit status" />
                 </SelectTrigger>
                 <SelectContent className="rounded-none">
@@ -381,22 +381,22 @@ export default function CreditEventRegistrationsPage() {
                 }}
                 className={`rounded-none ${
                   activeTab === tab.value
-                    ? "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900"
-                    : "border-zinc-300 dark:border-zinc-700"
+                    ? "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-[#7F56D9] dark:text-white"
+                    : "border-zinc-300 dark:border-[#344054]"
                 }`}
               >
                 {tab.label}
               </Button>
             ))}
             <div className="ml-auto flex items-center gap-2">
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs text-zinc-500 dark:text-[#98A2B3]">
                 {selectedIds.length} selected
               </span>
               <Button
                 size="sm"
                 disabled={selectedIds.length === 0}
                 onClick={() => setIsBulkOpen(true)}
-                className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
               >
                 Bulk assign
               </Button>
@@ -404,7 +404,7 @@ export default function CreditEventRegistrationsPage() {
                 size="sm"
                 variant="outline"
                 onClick={() => refresh()}
-                className="rounded-none border-zinc-300 dark:border-zinc-700"
+                className="rounded-none border-zinc-300 dark:border-[#344054]"
               >
                 Refresh
               </Button>
@@ -418,7 +418,7 @@ export default function CreditEventRegistrationsPage() {
               {Array.from({ length: 6 }).map((_, idx) => (
                 <div
                   key={idx}
-                  className="h-12 animate-pulse rounded-none border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900"
+                  className="h-12 animate-pulse rounded-none border border-zinc-200 bg-zinc-50 dark:border-[#344054] dark:bg-[#1D2939]"
                 />
               ))}
             </div>
@@ -428,7 +428,7 @@ export default function CreditEventRegistrationsPage() {
             </div>
           ) : registrations.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-zinc-500 dark:text-[#98A2B3]">
                 No members match the current filters.
               </p>
             </div>
@@ -437,7 +437,7 @@ export default function CreditEventRegistrationsPage() {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-zinc-200 bg-zinc-50 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:bg-zinc-900/50">
+                    <TableRow className="border-zinc-200 bg-zinc-50 hover:bg-zinc-50 dark:border-[#344054] dark:bg-[#1D2939] dark:hover:bg-[#253247]">
                       <TableHead className="w-12">
                         <Checkbox
                           checked={
@@ -448,22 +448,22 @@ export default function CreditEventRegistrationsPage() {
                           aria-label="Select all"
                         />
                       </TableHead>
-                      <TableHead className="text-zinc-900 dark:text-zinc-100">
+                      <TableHead className="text-zinc-900 dark:text-[#F2F4F7]">
                         Member
                       </TableHead>
-                      <TableHead className="text-zinc-900 dark:text-zinc-100">
+                      <TableHead className="text-zinc-900 dark:text-[#F2F4F7]">
                         Eligibility
                       </TableHead>
-                      <TableHead className="text-zinc-900 dark:text-zinc-100">
+                      <TableHead className="text-zinc-900 dark:text-[#F2F4F7]">
                         Registration
                       </TableHead>
-                      <TableHead className="text-zinc-900 dark:text-zinc-100">
+                      <TableHead className="text-zinc-900 dark:text-[#F2F4F7]">
                         Credit
                       </TableHead>
-                      <TableHead className="text-zinc-900 dark:text-zinc-100">
+                      <TableHead className="text-zinc-900 dark:text-[#F2F4F7]">
                         Amount
                       </TableHead>
-                      <TableHead className="w-[220px] text-right text-zinc-900 dark:text-zinc-100">
+                      <TableHead className="w-[220px] text-right text-zinc-900 dark:text-[#F2F4F7]">
                         Action
                       </TableHead>
                     </TableRow>
@@ -479,7 +479,7 @@ export default function CreditEventRegistrationsPage() {
                       return (
                         <TableRow
                           key={`${row.user_id}-${row.uuid}`}
-                          className="border-zinc-200 dark:border-zinc-800"
+                          className="border-zinc-200 dark:border-[#344054]"
                         >
                           <TableCell>
                             <Checkbox
@@ -492,10 +492,10 @@ export default function CreditEventRegistrationsPage() {
 
                           <TableCell>
                             <div className="space-y-1">
-                              <p className="font-medium text-zinc-950 dark:text-zinc-50">
+                              <p className="font-medium text-zinc-950 dark:text-[#F2F4F7]">
                                 {row.user.username}
                               </p>
-                              <p className="text-xs capitalize text-zinc-500 dark:text-zinc-400">
+                              <p className="text-xs capitalize text-zinc-500 dark:text-[#98A2B3]">
                                 {memberSubRole(row)}
                                 {row.is_management_member ? " · management" : ""}
                               </p>
@@ -514,7 +514,7 @@ export default function CreditEventRegistrationsPage() {
                             {renderCreditStatus(Boolean(row.credit))}
                           </TableCell>
 
-                          <TableCell className="font-medium text-zinc-950 dark:text-zinc-50">
+                          <TableCell className="font-medium text-zinc-950 dark:text-[#F2F4F7]">
                             {formatAmount(row.credit?.amount)}
                           </TableCell>
 
@@ -529,7 +529,7 @@ export default function CreditEventRegistrationsPage() {
                                       `/${username}/credit_manager/registrations/${row.uuid}`
                                     )
                                   }
-                                  className="rounded-none border-zinc-300 dark:border-zinc-700"
+                                  className="rounded-none border-zinc-300 dark:border-[#344054]"
                                 >
                                   <Eye className="mr-2 h-4 w-4" />
                                   View
@@ -542,7 +542,7 @@ export default function CreditEventRegistrationsPage() {
                                     setSelectedRow(row);
                                     setIsDetailOpen(true);
                                   }}
-                                  className="rounded-none border-zinc-300 dark:border-zinc-700"
+                                  className="rounded-none border-zinc-300 dark:border-[#344054]"
                                 >
                                   <Eye className="mr-2 h-4 w-4" />
                                   View
@@ -559,7 +559,7 @@ export default function CreditEventRegistrationsPage() {
                                       : "Only the manager who assigned this credit (or an admin) can edit it"
                                   }
                                   onClick={() => openEdit(row)}
-                                  className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                                  className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
                                 >
                                   <Pencil className="mr-2 h-4 w-4" />
                                   Edit
@@ -573,7 +573,7 @@ export default function CreditEventRegistrationsPage() {
                                     row.eligibility_status === "not_eligible"
                                   }
                                   onClick={() => openAssign(row)}
-                                  className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                                  className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
                                 >
                                   <CreditCard className="mr-2 h-4 w-4" />
                                   Assign
@@ -589,7 +589,7 @@ export default function CreditEventRegistrationsPage() {
               </div>
 
               {meta ? (
-                <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
+                <div className="border-t border-zinc-200 p-4 dark:border-[#344054]">
                   <TablePagination meta={meta} onPageChange={setPage} />
                 </div>
               ) : null}
@@ -601,13 +601,13 @@ export default function CreditEventRegistrationsPage() {
       <Sheet open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <SheetContent
           side="right"
-          className="w-full max-w-xl rounded-none border-l border-zinc-200 bg-white p-0 text-zinc-950 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
+          className="w-full max-w-xl rounded-none border-l border-zinc-200 bg-white p-0 text-zinc-950 dark:border-[#344054] dark:bg-[#161F2E] dark:text-[#F2F4F7]"
         >
-          <SheetHeader className="border-b border-zinc-200 px-6 py-5 dark:border-zinc-800">
+          <SheetHeader className="border-b border-zinc-200 px-6 py-5 dark:border-[#344054]">
             <SheetTitle className="text-base font-semibold tracking-tight">
               Member details
             </SheetTitle>
-            <SheetDescription className="text-sm text-zinc-500 dark:text-zinc-400">
+            <SheetDescription className="text-sm text-zinc-500 dark:text-[#98A2B3]">
               {selectedRow?.user.username} · {selectedRow?.event.name}
             </SheetDescription>
           </SheetHeader>
@@ -654,7 +654,7 @@ export default function CreditEventRegistrationsPage() {
             </div>
           ) : null}
 
-          <div className="mt-auto flex items-center justify-end gap-3 border-t border-zinc-200 px-6 py-4 dark:border-zinc-800">
+          <div className="mt-auto flex items-center justify-end gap-3 border-t border-zinc-200 px-6 py-4 dark:border-[#344054]">
             {selectedRow?.credit ? (
               <Button
                 disabled={!canManageCredit(selectedRow.credit)}
@@ -667,7 +667,7 @@ export default function CreditEventRegistrationsPage() {
                   setIsDetailOpen(false);
                   if (selectedRow) openEdit(selectedRow);
                 }}
-                className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
               >
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit Credit
@@ -683,7 +683,7 @@ export default function CreditEventRegistrationsPage() {
                   setIsDetailOpen(false);
                   openAssign(selectedRow);
                 }}
-                className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
               >
                 <CreditCard className="mr-2 h-4 w-4" />
                 Assign Credit
@@ -718,11 +718,11 @@ export default function CreditEventRegistrationsPage() {
 
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-zinc-200 p-4 dark:border-zinc-800">
-      <p className="mb-1 text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+    <div className="border border-zinc-200 p-4 dark:border-[#344054] dark:bg-[#1D2939]">
+      <p className="mb-1 text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
         {label}
       </p>
-      <p className="break-all text-sm text-zinc-900 dark:text-zinc-100">{value}</p>
+      <p className="break-all text-sm text-zinc-900 dark:text-[#F2F4F7]">{value}</p>
     </div>
   );
 }

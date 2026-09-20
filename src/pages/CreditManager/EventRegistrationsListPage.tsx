@@ -57,7 +57,7 @@ function renderRegistrationStatus(status?: string) {
       ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300"
       : normalized === "pending"
         ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
-        : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300";
+        : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-[#344054] dark:bg-[#1D2939] dark:text-[#98A2B3]";
 
   return (
     <Badge
@@ -77,7 +77,7 @@ function renderPaymentStatus(status?: string) {
       ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300"
       : normalized === "pending"
         ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
-        : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300";
+        : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-[#344054] dark:bg-[#1D2939] dark:text-[#98A2B3]";
 
   return (
     <Badge
@@ -99,15 +99,15 @@ function StatCard({
   icon: React.ElementType;
 }) {
   return (
-    <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
+    <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
       <CardContent className="flex items-center justify-between p-5">
         <div className="space-y-1">
-          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
             {title}
           </p>
           <p className="text-2xl font-semibold tracking-tight">{value}</p>
         </div>
-        <div className="flex h-10 w-10 items-center justify-center border border-zinc-200 text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
+        <div className="flex h-10 w-10 items-center justify-center border border-zinc-200 text-zinc-600 dark:border-[#344054] dark:bg-[#1D2939] dark:text-[#98A2B3]">
           <Icon className="h-4 w-4" />
         </div>
       </CardContent>
@@ -151,15 +151,15 @@ export default function EventRegistrationsListPage() {
       animate="visible"
       className="space-y-6"
     >
-      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-zinc-800 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-[#344054] md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
             Credit Manager
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-[#F2F4F7]">
             Event Registrations
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-zinc-500 dark:text-[#98A2B3]">
             Browse registrations and move into event-wise credit workflows.
           </p>
         </div>
@@ -176,8 +176,8 @@ export default function EventRegistrationsListPage() {
         <StatCard title="Paid" value={stats.paid} icon={CircleDollarSign} />
       </div>
 
-      <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
-        <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+      <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
+        <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-[#344054]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <CardTitle className="text-base font-semibold tracking-tight">
               Registrations List
@@ -194,7 +194,7 @@ export default function EventRegistrationsListPage() {
                   }));
                 }}
               >
-                <SelectTrigger className="w-full rounded-none border-zinc-300 dark:border-zinc-700">
+                <SelectTrigger className="w-full rounded-none border-zinc-300 dark:border-[#344054]">
                   <SelectValue placeholder="Registration Status" />
                 </SelectTrigger>
                 <SelectContent className="rounded-none">
@@ -214,7 +214,7 @@ export default function EventRegistrationsListPage() {
                   }));
                 }}
               >
-                <SelectTrigger className="w-full rounded-none border-zinc-300 dark:border-zinc-700">
+                <SelectTrigger className="w-full rounded-none border-zinc-300 dark:border-[#344054]">
                   <SelectValue placeholder="Payment Status" />
                 </SelectTrigger>
                 <SelectContent className="rounded-none">
@@ -234,7 +234,7 @@ export default function EventRegistrationsListPage() {
                   }));
                 }}
               >
-                <SelectTrigger className="w-full rounded-none border-zinc-300 dark:border-zinc-700">
+                <SelectTrigger className="w-full rounded-none border-zinc-300 dark:border-[#344054]">
                   <SelectValue placeholder="Paid / Unpaid" />
                 </SelectTrigger>
                 <SelectContent className="rounded-none">
@@ -253,7 +253,7 @@ export default function EventRegistrationsListPage() {
               {Array.from({ length: 6 }).map((_, idx) => (
                 <div
                   key={idx}
-                  className="h-12 animate-pulse border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900"
+                  className="h-12 animate-pulse border border-zinc-200 bg-zinc-50 dark:border-[#344054] dark:bg-[#1D2939]"
                 />
               ))}
             </div>
@@ -262,7 +262,7 @@ export default function EventRegistrationsListPage() {
               Failed to load registrations.
             </div>
           ) : registrations.length === 0 ? (
-            <div className="p-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <div className="p-8 text-center text-sm text-zinc-500 dark:text-[#98A2B3]">
               No registrations found.
             </div>
           ) : (
@@ -270,7 +270,7 @@ export default function EventRegistrationsListPage() {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-zinc-200 bg-zinc-50 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:bg-zinc-900/50">
+                    <TableRow className="border-zinc-200 bg-zinc-50 hover:bg-zinc-50 dark:border-[#344054] dark:bg-[#1D2939] dark:hover:bg-[#253247]">
                       <TableHead className="w-16">#</TableHead>
                       <TableHead>Username</TableHead>
                       <TableHead>Event</TableHead>
@@ -291,18 +291,18 @@ export default function EventRegistrationsListPage() {
                       return (
                         <TableRow
                           key={item.uuid}
-                          className="border-zinc-200 dark:border-zinc-800"
+                          className="border-zinc-200 dark:border-[#344054]"
                         >
-                          <TableCell className="text-zinc-500 dark:text-zinc-400">
+                          <TableCell className="text-zinc-500 dark:text-[#98A2B3]">
                             {(page - 1) * (meta?.per_page ?? 20) + index + 1}
                           </TableCell>
 
                           <TableCell>
                             <div className="space-y-1">
-                              <p className="font-medium text-zinc-950 dark:text-zinc-50">
+                              <p className="font-medium text-zinc-950 dark:text-[#F2F4F7]">
                                 {item.user?.username ?? "Unknown User"}
                               </p>
-                              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                              <p className="text-xs text-zinc-500 dark:text-[#98A2B3]">
                                 {item.uuid}
                               </p>
                             </div>
@@ -310,16 +310,16 @@ export default function EventRegistrationsListPage() {
 
                           <TableCell>
                             <div className="space-y-1">
-                              <p className="font-medium text-zinc-950 dark:text-zinc-50">
+                              <p className="font-medium text-zinc-950 dark:text-[#F2F4F7]">
                                 {item.event?.name ?? "Unknown Event"}
                               </p>
-                              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                              <p className="text-xs text-zinc-500 dark:text-[#98A2B3]">
                                 {item.event?.uuid ?? "—"}
                               </p>
                             </div>
                           </TableCell>
 
-                          <TableCell className="uppercase text-zinc-600 dark:text-zinc-300">
+                          <TableCell className="uppercase text-zinc-600 dark:text-[#98A2B3]">
                             {item.event?.type ?? "—"}
                           </TableCell>
 
@@ -336,8 +336,8 @@ export default function EventRegistrationsListPage() {
                               variant="outline"
                               className={`rounded-none px-2 py-1 text-[10px] uppercase tracking-[0.2em] ${
                                 paid
-                                  ? "border-zinc-300 bg-zinc-100 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                                  : "border-zinc-200 bg-white text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400"
+                                  ? "border-zinc-300 bg-zinc-100 text-zinc-900 dark:border-[#344054] dark:bg-[#1D2939] dark:text-[#F2F4F7]"
+                                  : "border-zinc-200 bg-white text-zinc-500 dark:border-[#344054] dark:bg-[#161F2E] dark:text-[#98A2B3]"
                               }`}
                             >
                               {paid ? "Paid" : "Unpaid"}
@@ -354,7 +354,7 @@ export default function EventRegistrationsListPage() {
                                      `/${username}/credit_manager/registrations/${item.uuid}`,
                                   )
                                 }
-                                className="rounded-none border-zinc-300 dark:border-zinc-700"
+                                className="rounded-none border-zinc-300 dark:border-[#344054]"
                               >
                                 View
                               </Button>
@@ -368,7 +368,7 @@ export default function EventRegistrationsListPage() {
                                     );
                                   }
                                 }}
-                                className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                                className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
                               >
                                 Manage
                                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -383,7 +383,7 @@ export default function EventRegistrationsListPage() {
               </div>
 
               {meta ? (
-                <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
+                <div className="border-t border-zinc-200 p-4 dark:border-[#344054]">
                   <TablePagination meta={meta} onPageChange={setPage} />
                 </div>
               ) : null}

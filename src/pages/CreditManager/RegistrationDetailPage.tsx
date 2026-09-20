@@ -30,11 +30,11 @@ const pageVariants: Variants = {
 
 function InfoRow({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="flex items-start justify-between gap-6 border-b border-zinc-200 py-3 last:border-b-0 dark:border-zinc-800">
-      <span className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+    <div className="flex items-start justify-between gap-6 border-b border-zinc-200 py-3 last:border-b-0 dark:border-[#344054]">
+      <span className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
         {label}
       </span>
-      <span className="max-w-[60%] break-all text-right text-sm text-zinc-950 dark:text-zinc-50">
+      <span className="max-w-[60%] break-all text-right text-sm text-zinc-950 dark:text-[#F2F4F7]">
         {value}
       </span>
     </div>
@@ -48,7 +48,7 @@ function renderStatus(
   const normalized = (status ?? "").toLowerCase();
 
   let className =
-    "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300";
+    "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-[#344054] dark:bg-[#1D2939] dark:text-[#98A2B3]";
 
   if (normalized === "confirmed") {
     className =
@@ -174,15 +174,15 @@ export default function RegistrationDetailPage() {
       animate="visible"
       className="space-y-6"
     >
-      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-zinc-800 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-[#344054] md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
             Credit Manager
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-[#F2F4F7]">
             {pageTitle}
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-zinc-500 dark:text-[#98A2B3]">
             View registration context and manage assigned credits from one page.
           </p>
         </div>
@@ -192,7 +192,7 @@ export default function RegistrationDetailPage() {
           onClick={() =>
             navigate(`/${username}/credit_manager/event-registrations`)
           }
-          className="rounded-none border-zinc-300 dark:border-zinc-700"
+          className="rounded-none border-zinc-300 dark:border-[#344054]"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Registrations
@@ -219,12 +219,12 @@ export default function RegistrationDetailPage() {
           {Array.from({ length: 3 }).map((_, idx) => (
             <div
               key={idx}
-              className="h-72 animate-pulse border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900"
+              className="h-72 animate-pulse border border-zinc-200 bg-zinc-50 dark:border-[#344054] dark:bg-[#1D2939]"
             />
           ))}
         </div>
       ) : isError || !registration ? (
-        <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
+        <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
           <CardContent className="p-8 text-center text-sm text-red-600 dark:text-red-400">
             Failed to load registration details.
           </CardContent>
@@ -232,36 +232,36 @@ export default function RegistrationDetailPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
+            <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
               <CardContent className="flex items-center justify-between p-5">
                 <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
                     Registration
                   </p>
                   <div>{renderStatus(registration.registration_status)}</div>
                 </div>
-                <BadgeCheck className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                <BadgeCheck className="h-4 w-4 text-zinc-500 dark:text-[#98A2B3]" />
               </CardContent>
             </Card>
 
-            <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
+            <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
               <CardContent className="flex items-center justify-between p-5">
                 <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
                     Payment
                   </p>
                   <div>
                     {renderStatus(registration.payment_status, "payment")}
                   </div>
                 </div>
-                <CircleDollarSign className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                <CircleDollarSign className="h-4 w-4 text-zinc-500 dark:text-[#98A2B3]" />
               </CardContent>
             </Card>
 
-            <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
+            <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
               <CardContent className="flex items-center justify-between p-5">
                 <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
                     Credit Status
                   </p>
                   <div>
@@ -269,36 +269,36 @@ export default function RegistrationDetailPage() {
                       variant="outline"
                       className={`rounded-none px-2 py-1 text-[10px] uppercase tracking-[0.2em] ${
                         credit
-                          ? "border-zinc-300 bg-zinc-100 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                          : "border-zinc-200 bg-white text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400"
+                          ? "border-zinc-300 bg-zinc-100 text-zinc-900 dark:border-[#344054] dark:bg-[#1D2939] dark:text-[#F2F4F7]"
+                          : "border-zinc-200 bg-white text-zinc-500 dark:border-[#344054] dark:bg-[#161F2E] dark:text-[#98A2B3]"
                       }`}
                     >
                       {credit ? "Assigned" : "Unassigned"}
                     </Badge>
                   </div>
                 </div>
-                <CreditCard className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                <CreditCard className="h-4 w-4 text-zinc-500 dark:text-[#98A2B3]" />
               </CardContent>
             </Card>
 
-            <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
+            <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
               <CardContent className="flex items-center justify-between p-5">
                 <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
                     Credit Amount
                   </p>
-                  <p className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+                  <p className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-[#F2F4F7]">
                     {credit ? Number(credit.amount).toFixed(2) : "—"}
                   </p>
                 </div>
-                <CircleDollarSign className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                <CircleDollarSign className="h-4 w-4 text-zinc-500 dark:text-[#98A2B3]" />
               </CardContent>
             </Card>
           </div>
 
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-            <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
-              <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+            <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
+              <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-[#344054]">
                 <CardTitle className="text-base font-semibold tracking-tight">
                   Registration
                 </CardTitle>
@@ -328,8 +328,8 @@ export default function RegistrationDetailPage() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
-              <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+            <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
+              <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-[#344054]">
                 <CardTitle className="text-base font-semibold tracking-tight">
                   Member
                 </CardTitle>
@@ -343,17 +343,17 @@ export default function RegistrationDetailPage() {
                   label="Email"
                   value={registration.user?.email ?? "—"}
                 />
-                <div className="mt-5 flex items-center gap-2 border border-zinc-200 p-4 dark:border-zinc-800">
-                  <UserRound className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                <div className="mt-5 flex items-center gap-2 border border-zinc-200 p-4 dark:border-[#344054] dark:bg-[#1D2939]">
+                  <UserRound className="h-4 w-4 text-zinc-500 dark:text-[#98A2B3]" />
+                  <span className="text-sm text-zinc-700 dark:text-[#98A2B3]">
                     This registration is tied to the selected user record.
                   </span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="rounded-none border-zinc-200 shadow-none dark:border-zinc-800">
-              <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+            <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
+              <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-[#344054]">
                 <CardTitle className="text-base font-semibold tracking-tight">
                   Event & Credit
                 </CardTitle>
@@ -390,7 +390,7 @@ export default function RegistrationDetailPage() {
                           ? "Only the manager who assigned this credit (or an admin) can edit it"
                           : "Assign or edit credit"
                     }
-                    className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                    className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
                   >
                     {credit ? (
                       <>
@@ -413,7 +413,7 @@ export default function RegistrationDetailPage() {
                           `/${username}/credit_manager/events/${registration.event.uuid}/registrations`,
                         )
                       }
-                      className="rounded-none border-zinc-300 dark:border-zinc-700"
+                      className="rounded-none border-zinc-300 dark:border-[#344054]"
                     >
                       <CalendarRange className="mr-2 h-4 w-4" />
                       Event View

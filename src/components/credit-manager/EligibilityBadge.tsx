@@ -27,7 +27,7 @@ const statusConfig: Record<EligibilityStatus, { label: string; icon: React.React
     label: "Registered",
     icon: <UserCheck className="h-3 w-3" />,
     variant: "secondary",
-    colorClass: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+    colorClass: "bg-zinc-100 text-zinc-700 dark:bg-[#1D2939] dark:text-[#98A2B3]",
   },
   public: {
     label: "Public - Not Eligible",
@@ -45,7 +45,7 @@ const statusConfig: Record<EligibilityStatus, { label: string; icon: React.React
     label: "Not Eligible",
     icon: <UserX className="h-3 w-3" />,
     variant: "outline",
-    colorClass: "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400",
+    colorClass: "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-[#344054] dark:bg-[#1D2939] dark:text-[#98A2B3]",
   },
 };
 

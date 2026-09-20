@@ -58,22 +58,22 @@ export default function CMDashboard() {
   if (isLoading) {
     return (
       <motion.div variants={pageVariants} initial="hidden" animate="visible" className="space-y-6">
-        <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-gray-800 md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-[#344054] md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-gray-400">Credit Manager</p>
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-gray-100">Dashboard</h1>
+            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">Credit Manager</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-[#F2F4F7]">Dashboard</h1>
           </div>
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <motion.div key={i} variants={itemVariants}>
-              <div className="h-24 animate-pulse border border-zinc-200 bg-zinc-50 dark:border-gray-800 dark:bg-gray-800 rounded-none" />
+              <div className="h-24 animate-pulse border border-zinc-200 bg-zinc-50 dark:border-[#344054] dark:bg-[#1D2939] rounded-none" />
             </motion.div>
           ))}
         </div>
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-          <div className="xl:col-span-2 h-64 animate-pulse border border-zinc-200 bg-zinc-50 dark:border-gray-800 dark:bg-gray-800 rounded-none" />
-          <div className="h-64 animate-pulse border border-zinc-200 bg-zinc-50 dark:border-gray-800 dark:bg-gray-800 rounded-none" />
+          <div className="xl:col-span-2 h-64 animate-pulse border border-zinc-200 bg-zinc-50 dark:border-[#344054] dark:bg-[#1D2939] rounded-none" />
+          <div className="h-64 animate-pulse border border-zinc-200 bg-zinc-50 dark:border-[#344054] dark:bg-[#1D2939] rounded-none" />
         </div>
       </motion.div>
     );
@@ -82,7 +82,7 @@ export default function CMDashboard() {
   if (isError || !dashboard) {
     return (
       <motion.div variants={pageVariants} initial="hidden" animate="visible" className="space-y-6">
-        <Card className="rounded-none border-zinc-200 shadow-none dark:border-gray-800">
+        <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
           <CardContent className="p-8 text-center text-sm text-red-600 dark:text-red-400">
             Failed to load dashboard data.
             <Button variant="outline" onClick={() => refresh()} className="ml-2 rounded-none">
@@ -96,22 +96,22 @@ export default function CMDashboard() {
 
   return (
     <motion.div variants={pageVariants} initial="hidden" animate="visible" className="space-y-6">
-      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-gray-800 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-[#344054] md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-gray-400">Credit Manager</p>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-gray-100">Dashboard</h1>
-          <p className="text-sm text-zinc-500 dark:text-gray-400">
+          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">Credit Manager</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-[#F2F4F7]">Dashboard</h1>
+          <p className="text-sm text-zinc-500 dark:text-[#98A2B3]">
             Overview of credit assignment activity, event progress, and pending work.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => refresh()} className="rounded-none border-zinc-300 dark:border-gray-700">
+          <Button variant="outline" onClick={() => refresh()} className="rounded-none border-zinc-300 dark:border-[#344054]">
             Refresh
           </Button>
           <Button
             onClick={() => navigate(`/${username}/credit_manager/events`)}
-            className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+            className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
           >
             View Events
             <ArrowUpRight className="ml-2 h-4 w-4" />
@@ -157,18 +157,18 @@ export default function CMDashboard() {
       <Separator className="my-4" />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <Card className="rounded-none border-zinc-200 shadow-none dark:border-gray-800 xl:col-span-2">
-          <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-gray-800">
+        <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E] xl:col-span-2">
+          <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-[#344054]">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-semibold tracking-tight">Event Credit Progress</CardTitle>
-              <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-[#98A2B3]">
                 <span>Total events: {eventsProgress.length}</span>
               </div>
             </div>
           </CardHeader>
           <CardContent className="p-4">
             {eventsProgress.length === 0 ? (
-              <div className="text-center py-12 text-zinc-500 dark:text-gray-400">
+              <div className="text-center py-12 text-zinc-500 dark:text-[#98A2B3]">
                 <CalendarRange className="h-10 w-10 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No completed events found</p>
                 <p className="text-xs mt-1">Events will appear here after they end</p>
@@ -182,35 +182,35 @@ export default function CMDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-none border-zinc-200 shadow-none dark:border-gray-800">
-          <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-gray-800">
+        <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
+          <CardHeader className="border-b border-zinc-200 px-5 py-4 dark:border-[#344054]">
             <CardTitle className="text-base font-semibold tracking-tight">Eligible Members</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 p-4">
-            <div className="border border-zinc-200 dark:border-gray-800 rounded-none p-3">
+            <div className="border border-zinc-200 dark:border-[#344054] rounded-none p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-sm font-medium text-zinc-950 dark:text-gray-100">Management</span>
+                  <span className="text-sm font-medium text-zinc-950 dark:text-[#F2F4F7]">Management</span>
                 </div>
-                <span className="text-lg font-semibold text-zinc-950 dark:text-gray-100">
+                <span className="text-lg font-semibold text-zinc-950 dark:text-[#F2F4F7]">
                   {stats?.total_management_members ?? 0}
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 dark:text-gray-400 mt-1">Eligible for all events without registration</p>
+              <p className="text-xs text-zinc-500 dark:text-[#98A2B3] mt-1">Eligible for all events without registration</p>
             </div>
 
-            <div className="border border-zinc-200 dark:border-gray-800 rounded-none p-3">
+            <div className="border border-zinc-200 dark:border-[#344054] rounded-none p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Music className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  <span className="text-sm font-medium text-zinc-950 dark:text-gray-100">Music</span>
+                  <span className="text-sm font-medium text-zinc-950 dark:text-[#F2F4F7]">Music</span>
                 </div>
-                <span className="text-lg font-semibold text-zinc-950 dark:text-gray-100">
+                <span className="text-lg font-semibold text-zinc-950 dark:text-[#F2F4F7]">
                   {stats?.total_music_members ?? 0}
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 dark:text-gray-400 mt-1">Require event registration for credits</p>
+              <p className="text-xs text-zinc-500 dark:text-[#98A2B3] mt-1">Require event registration for credits</p>
             </div>
           </CardContent>
         </Card>

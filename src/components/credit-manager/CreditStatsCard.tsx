@@ -24,16 +24,16 @@ export function CreditStatsCard({
   className = "",
 }: CreditStatsCardProps) {
   return (
-    <Card className={`rounded-none border-zinc-200 shadow-none dark:border-gray-800 ${className}`}>
+    <Card className={`rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E] ${className}`}>
       <CardContent className="flex items-start justify-between p-5">
         <div className="space-y-2 min-w-0">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500 dark:text-gray-400 truncate">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085] truncate">
             {title}
           </p>
-          <p className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-gray-100 truncate">
+          <p className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-[#F2F4F7] truncate">
             {value}
           </p>
-          <p className="text-sm text-zinc-500 dark:text-gray-400 truncate">{hint}</p>
+          <p className="text-sm text-zinc-500 dark:text-[#98A2B3] truncate">{hint}</p>
           {trend && (
             <div
               className={`flex items-center gap-1.5 mt-2 text-xs font-medium ${
@@ -43,12 +43,12 @@ export function CreditStatsCard({
               <span className="flex items-center gap-0.5">
                 {trend.positive ? "▲" : "▼"} {Math.abs(trend.value)}%
               </span>
-              <span className="text-zinc-500 dark:text-gray-400">{trend.label}</span>
+              <span className="text-zinc-500 dark:text-[#98A2B3]">{trend.label}</span>
             </div>
           )}
         </div>
 
-        <div className="flex h-10 w-10 items-center justify-center border border-zinc-200 text-zinc-600 dark:border-gray-800 dark:text-gray-300 flex-shrink-0">
+        <div className="flex h-10 w-10 items-center justify-center border border-zinc-200 text-zinc-600 dark:border-[#344054] dark:bg-[#1D2939] dark:text-[#98A2B3] flex-shrink-0">
           {icon}
         </div>
       </CardContent>
