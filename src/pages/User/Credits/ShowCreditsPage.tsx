@@ -46,6 +46,8 @@ interface Credit {
   event_id: number;
   amount: number;
   assigned_by: number;
+  assigned_by_username?: string | null;
+  assigner?: { username?: string | null } | null;
   created_at: string;
   updated_at: string;
   event: Event;
@@ -285,7 +287,11 @@ export default function ShowCreditPage() {
                   <InfoRow
                     icon={User}
                     label="Assigned By"
-                    value={`ID: ${credit.assigned_by || "System"}`}
+                    value={
+                      credit.assigned_by_username ??
+                      credit.assigner?.username ??
+                      (credit.assigned_by ? `ID: ${credit.assigned_by}` : "System")
+                    }
                   />
                   <InfoRow
                     icon={Hash}

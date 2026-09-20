@@ -42,6 +42,7 @@ import {
 import { TablePagination } from "@/components/pagination/TablePagination";
 import { CreditFormSheet } from "@/components/credit-manager/CreditFormSheet";
 import { EligibilityBadge } from "@/components/credit-manager/EligibilityBadge";
+import { assignerName, canManageCredit } from "@/components/credit-manager/creditUtils";
 import {
   useCMEventRegistrations,
   type CMEventRegistrationItem,
@@ -551,8 +552,14 @@ export default function CreditEventRegistrationsPage() {
                               {row.credit ? (
                                 <Button
                                   size="sm"
+                                  disabled={!canManageCredit(row.credit)}
+                                  title={
+                                    canManageCredit(row.credit)
+                                      ? "Edit credit"
+                                      : "Only the manager who assigned this credit (or an admin) can edit it"
+                                  }
                                   onClick={() => openEdit(row)}
-                                  className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                                  className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
                                 >
                                   <Pencil className="mr-2 h-4 w-4" />
                                   Edit
@@ -618,6 +625,10 @@ export default function CreditEventRegistrationsPage() {
                 <InfoItem label="Role" value={selectedRow.user.role ?? "—"} />
                 <InfoItem label="Sub role" value={memberSubRole(selectedRow)} />
                 <InfoItem
+                  label="Assigned by"
+                  value={assignerName(selectedRow.credit)}
+                />
+                <InfoItem
                   label="Credit amount"
                   value={
                     selectedRow.credit
@@ -646,11 +657,17 @@ export default function CreditEventRegistrationsPage() {
           <div className="mt-auto flex items-center justify-end gap-3 border-t border-zinc-200 px-6 py-4 dark:border-zinc-800">
             {selectedRow?.credit ? (
               <Button
+                disabled={!canManageCredit(selectedRow.credit)}
+                title={
+                  canManageCredit(selectedRow.credit)
+                    ? "Edit credit"
+                    : "Only the manager who assigned this credit (or an admin) can edit it"
+                }
                 onClick={() => {
                   setIsDetailOpen(false);
                   if (selectedRow) openEdit(selectedRow);
                 }}
-                className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
               >
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit Credit

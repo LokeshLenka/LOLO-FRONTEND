@@ -56,6 +56,9 @@ export interface CMDetailCredit {
   event_id: number;
   amount: number | string;
   assigned_by?: number;
+  assigned_by_username?: string | null;
+  assigner?: { username?: string | null } | null;
+  can_manage_credit?: boolean;
   created_at?: string;
   updated_at?: string;
 }

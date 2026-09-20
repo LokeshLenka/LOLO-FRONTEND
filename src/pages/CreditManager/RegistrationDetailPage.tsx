@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditFormSheet } from "@/components/credit-manager/CreditFormSheet";
 import { EligibilityBadge, type EligibilityStatus } from "@/components/credit-manager/EligibilityBadge";
+import { assignerName, canManageCredit } from "@/components/credit-manager/creditUtils";
 import { useCMRegistrationDetail } from "@/hooks/useCMRegistrationDetail";
 
 const pageVariants: Variants = {
@@ -369,7 +370,7 @@ export default function RegistrationDetailPage() {
                 <InfoRow label="Credit UUID" value={credit?.uuid ?? "—"} />
                 <InfoRow
                   label="Assigned By"
-                  value={credit?.assigned_by != null ? credit.assigned_by : "—"}
+                  value={assignerName(credit)}
                 />
                 <InfoRow
                   label="Updated At"
@@ -381,11 +382,13 @@ export default function RegistrationDetailPage() {
                 <div className="mt-5 flex flex-wrap items-center gap-3">
                   <Button
                     onClick={() => setIsFormOpen(true)}
-                    disabled={creditBlocked}
+                    disabled={creditBlocked || (credit ? !canManageCredit(credit) : false)}
                     title={
                       creditBlocked
                         ? "Not eligible for credits"
-                        : "Assign or edit credit"
+                        : credit && !canManageCredit(credit)
+                          ? "Only the manager who assigned this credit (or an admin) can edit it"
+                          : "Assign or edit credit"
                     }
                     className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
                   >

@@ -48,6 +48,8 @@ export interface CMEventRegistrationCredit {
   uuid: string;
   amount: number;
   assigned_by: number;
+  assigned_by_username?: string | null;
+  can_manage_credit?: boolean;
   created_at: string;
   updated_at: string;
 }
