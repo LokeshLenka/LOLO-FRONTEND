@@ -7,12 +7,9 @@ import React, {
   Suspense,
 } from "react";
 import axios, { AxiosError } from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ScanLine,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
-  WifiOff,
   RotateCcw,
   TicketCheck,
 } from "lucide-react";
@@ -116,6 +113,7 @@ export const TicketVerifier: React.FC = () => {
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [manualCode, setManualCode] = useState<string>("");
+  const [lastResult, setLastResult] = useState<string>("");
   const [counts, setCounts] = useState<Counts>({
     verified: 0,
     duplicate: 0,
@@ -197,6 +195,7 @@ export const TicketVerifier: React.FC = () => {
         if (!mountedRef.current) return;
         const returnedTicket = response.data?.data || response.data;
         setTicketData(returnedTicket);
+        setLastResult(`${returnedTicket?.reg_num ?? ""} · ${returnedTicket?.ticket_code ?? ""}`);
         setStatus("success");
         setCounts((c) => ({ ...c, verified: c.verified + 1 }));
         beep("success");
@@ -220,6 +219,11 @@ export const TicketVerifier: React.FC = () => {
             setErrorMessage(backendMessage);
             if (axiosError.response.data?.data) {
               setTicketData(axiosError.response.data.data);
+              setLastResult(
+                `${axiosError.response.data.data?.reg_num ?? ""} · ${axiosError.response.data.data?.ticket_code ?? ""} (dup)`,
+              );
+            } else {
+              setLastResult(backendMessage);
             }
             setCounts((c) => ({ ...c, duplicate: c.duplicate + 1 }));
             beep("warning");
@@ -227,6 +231,7 @@ export const TicketVerifier: React.FC = () => {
           } else {
             setStatus("error");
             setErrorMessage(backendMessage);
+            setLastResult(backendMessage);
             setCounts((c) => ({ ...c, invalid: c.invalid + 1 }));
             beep("error");
             scheduleReset("error");
@@ -237,11 +242,13 @@ export const TicketVerifier: React.FC = () => {
         ) {
           setStatus("network_error");
           setErrorMessage("Network timeout. Please retry.");
+          setLastResult("Network timeout");
           beep("error");
           scheduleReset("network_error");
         } else {
           setStatus("network_error");
           setErrorMessage("Network error. Check connection.");
+          setLastResult("Network error");
           beep("error");
           scheduleReset("network_error");
         }
@@ -261,7 +268,7 @@ export const TicketVerifier: React.FC = () => {
   const showResult = status !== "idle" && status !== "loading";
 
   return (
-    <div className="flex w-full flex-col bg-[#101828] font-sans text-white h-[calc(100dvh-6rem)] min-h-[540px]">
+    <div className="relative flex w-full flex-col bg-[#101828] font-sans text-white h-[calc(100dvh-6rem)] min-h-[540px]">
       {/* Compact header with live session counters */}
       <header className="flex items-center justify-between border-b border-[#344054] bg-[#161F2E] px-4 py-3">
         <div className="flex items-center gap-2">
@@ -302,7 +309,10 @@ export const TicketVerifier: React.FC = () => {
             </p>
           </div>
           <button
-            onClick={() => setCounts({ verified: 0, duplicate: 0, invalid: 0 })}
+            onClick={() => {
+              setCounts({ verified: 0, duplicate: 0, invalid: 0 });
+              setLastResult("");
+            }}
             title="Reset counters"
             className="border border-[#344054] bg-[#1D2939] p-2 text-[#98A2B3] transition-colors hover:bg-[#253247] hover:text-[#F2F4F7]"
           >
@@ -351,84 +361,30 @@ export const TicketVerifier: React.FC = () => {
           )}
         </section>
 
-        {/* Result + manual entry — fixed-height panel, video never unmounts */}
+        {/* Status + manual entry — scanner and form stay mounted, results play as overlay */}
         <section className="flex min-h-[280px] flex-col gap-3">
-          <button
-            onClick={resetNow}
-            title="Tap to scan next"
-            className={`flex min-h-[168px] flex-1 flex-col items-center justify-center gap-1 border p-4 text-center transition-colors ${
-              status === "success"
-                ? "border-emerald-500 bg-emerald-500/15"
-                : status === "warning"
-                  ? "border-amber-500 bg-amber-500/15"
-                  : status === "error" || status === "network_error"
-                    ? "border-red-500 bg-red-500/15"
-                    : "border-[#344054] bg-[#161F2E]"
-            }`}
-          >
-            {status === "success" && (
+          <div className="flex min-h-[168px] flex-1 flex-col items-center justify-center gap-2 border border-[#344054] bg-[#161F2E] p-4 text-center">
+            {status === "loading" ? (
               <>
-                <CheckCircle2 className="h-12 w-12 text-emerald-400" />
-                <p className="text-xl font-bold tracking-wide text-emerald-300">
-                  ALLOWED
+                <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#7F56D9] border-t-transparent" />
+                <p className="text-sm font-medium tracking-wide text-[#98A2B3]">
+                  Verifying…
                 </p>
               </>
-            )}
-            {status === "warning" && (
-              <>
-                <AlertTriangle className="h-12 w-12 text-amber-400" />
-                <p className="text-xl font-bold tracking-wide text-amber-300">
-                  ALREADY IN
-                </p>
-              </>
-            )}
-            {(status === "error" || status === "network_error") && (
-              <>
-                {status === "network_error" ? (
-                  <WifiOff className="h-12 w-12 text-red-400" />
-                ) : (
-                  <XCircle className="h-12 w-12 text-red-400" />
-                )}
-                <p className="text-xl font-bold tracking-wide text-red-300">
-                  {status === "network_error" ? "NO SIGNAL" : "DENIED"}
-                </p>
-              </>
-            )}
-            {status === "idle" && (
+            ) : (
               <>
                 <ScanLine className="h-12 w-12 text-[#667085]" />
                 <p className="text-sm font-medium tracking-wide text-[#98A2B3]">
                   Point camera at a ticket
                 </p>
+                {lastResult && (
+                  <p className="max-w-full truncate text-xs text-[#667085]">
+                    Last: {lastResult}
+                  </p>
+                )}
               </>
             )}
-            {status === "loading" && (
-              <p className="text-sm font-medium tracking-wide text-[#98A2B3]">
-                Verifying…
-              </p>
-            )}
-
-            {ticketData && showResult && (
-              <div className="mt-2 w-full border border-white/10 bg-black/30 px-3 py-2">
-                <p className="font-mono text-2xl font-bold text-white">
-                  {ticketData.reg_num}
-                </p>
-                <p className="truncate font-mono text-xs text-white/70">
-                  {ticketData.ticket_code}
-                </p>
-              </div>
-            )}
-            {errorMessage && showResult && status !== "warning" && (
-              <p className="mt-1 max-w-full truncate px-2 text-sm text-white/80">
-                {errorMessage}
-              </p>
-            )}
-            {showResult && (
-              <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-white/50">
-                Tap for next
-              </p>
-            )}
-          </button>
+          </div>
 
           <form
             onSubmit={handleManualSubmit}
@@ -453,6 +409,125 @@ export const TicketVerifier: React.FC = () => {
           </form>
         </section>
       </main>
+
+      {/* Full-screen animated result takeover */}
+      <AnimatePresence>
+        {showResult && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={
+              status === "error"
+                ? { opacity: 1, scale: 1, x: [-10, 10, -10, 10, 0] }
+                : { opacity: 1, scale: 1 }
+            }
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.2 }}
+            onClick={resetNow}
+            className={`absolute inset-0 z-30 flex cursor-pointer flex-col items-center justify-center overflow-y-auto p-6 text-center ${
+              status === "success"
+                ? "bg-green-600"
+                : status === "warning"
+                  ? "bg-yellow-500 text-gray-900"
+                  : "bg-red-600"
+            }`}
+          >
+            {status === "success" && <div className="css-confetti-burst" />}
+
+            <div className="mb-6">
+              {status === "success" && (
+                <svg
+                  className="mx-auto h-32 w-32 drop-shadow-lg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              )}
+              {status === "warning" && (
+                <svg
+                  className="mx-auto h-32 w-32 drop-shadow-lg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              )}
+              {(status === "error" || status === "network_error") && (
+                <svg
+                  className="mx-auto h-32 w-32 drop-shadow-lg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              )}
+            </div>
+
+            <h2 className="mb-2 text-4xl font-bold drop-shadow-md">
+              {status === "success"
+                ? "Verified Successfully"
+                : status === "warning"
+                  ? "Already Verified"
+                  : status === "network_error"
+                    ? "Network Error"
+                    : "Invalid Ticket"}
+            </h2>
+
+            {ticketData && (
+              <div className="mt-8 w-full max-w-sm rounded-2xl border border-white/10 bg-black/20 p-6 backdrop-blur-sm">
+                <p className="mb-1 text-sm uppercase tracking-wider opacity-80">
+                  Reg Number
+                </p>
+                <p className="mb-4 font-mono text-3xl font-bold">
+                  {ticketData.reg_num}
+                </p>
+
+                <p className="mb-1 text-sm uppercase tracking-wider opacity-80">
+                  Ticket Code
+                </p>
+                <p className="font-mono text-xl">{ticketData.ticket_code}</p>
+              </div>
+            )}
+
+            {errorMessage && status !== "warning" && (
+              <p className="mt-6 rounded-xl bg-black/30 px-6 py-3 text-xl">
+                {errorMessage}
+              </p>
+            )}
+
+            <button
+              onClick={resetNow}
+              className={`mt-10 rounded-full px-10 py-4 text-xl font-bold shadow-lg transition-transform active:scale-95 ${
+                status === "warning"
+                  ? "bg-gray-900 text-white"
+                  : "bg-white text-gray-900"
+              }`}
+            >
+              {status === "network_error"
+                ? "Retry Scanner"
+                : "Scan Next Ticket"}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
