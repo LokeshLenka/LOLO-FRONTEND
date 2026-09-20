@@ -72,11 +72,11 @@ import MyApprovals from "./pages/MembershipHead/Approvals/MyApprovals";
 import { UserStatsCards } from "./components/ui/shared/users/UserStatsCards";
 
 // --- Credit Manager (CM) Components ---
-// import CMDashboard from "./pages/CreditManager/CMDashboard";
-// import CreditEventRegistrationsPage from "./pages/CreditManager/CreditEventRegistrationsPage";
-// import CMDashboard from "./pages/CreditManager/CMDashboard";
-// import EventRegistrationsListPage from "./pages/CreditManager/EventRegistrationsListPage";
-// import RegistrationDetailPage from "./pages/CreditManager/RegistrationDetailPage";
+import CMDashboard from "./pages/CreditManager/CMDashboard";
+import CreditEventRegistrationsPage from "./pages/CreditManager/CreditEventRegistrationsPage";
+import EventsListPage from "./pages/CreditManager/EventsListPage";
+import EventRegistrationsListPage from "./pages/CreditManager/EventRegistrationsListPage";
+import RegistrationDetailPage from "./pages/CreditManager/RegistrationDetailPage";
 
 // --- Helper Components ---
 
@@ -238,6 +238,28 @@ function App() {
                 path="/:username/executive_body_member/ticket-success"
                 element={<EbmTicketSuccess />}
               /> */}
+
+              {/* Credit Manager (CM) Routes */}
+              <Route
+                path="/:username/credit_manager/dashboard"
+                element={<CMDashboard />}
+              />
+              <Route
+                path="/:username/credit_manager/events"
+                element={<EventsListPage />}
+              />
+              <Route
+                path="/:username/credit_manager/event-registrations"
+                element={<EventRegistrationsListPage />}
+              />
+              <Route
+                path="/:username/credit_manager/registrations/:registrationUuid"
+                element={<RegistrationDetailPage />}
+              />
+              <Route
+                path="/:username/credit_manager/events/:eventUuid/registrations"
+                element={<CreditEventRegistrationsPage />}
+              />
             </Route>
 
             {/* Management Head (MH) Routes */}
