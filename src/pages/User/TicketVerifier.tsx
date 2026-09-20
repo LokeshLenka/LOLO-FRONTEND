@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import axios, { AxiosError } from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { ScanLine, TicketCheck } from "lucide-react";
+import { TicketCheck } from "lucide-react";
 
 // Lazy load the QR scanner so gate page paints before camera lib parses
 const QrScanner = lazy(() =>
@@ -292,9 +292,6 @@ export const TicketVerifier: React.FC = () => {
             </p>
           </div>
         </div>
-        <p className="hidden text-xs text-zinc-500 sm:block dark:text-[#667085]">
-          Green in · Amber dup · Red stop
-        </p>
       </header>
 
       <main className="mx-auto grid w-full max-w-3xl flex-1 grid-cols-1 content-center gap-4 overflow-y-auto p-4 md:grid-cols-2">
@@ -337,29 +334,8 @@ export const TicketVerifier: React.FC = () => {
           )}
         </section>
 
-        {/* Status + manual entry */}
-        <section className="flex min-h-[280px] flex-col gap-3">
-          <div className="flex min-h-[168px] flex-1 flex-col items-center justify-center gap-2 border border-zinc-200 bg-zinc-50 p-4 text-center dark:border-[#344054] dark:bg-[#161F2E]">
-            {status === "loading" ? (
-              <>
-                <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#7F56D9] border-t-transparent" />
-                <p className="text-sm font-medium tracking-wide text-zinc-500 dark:text-[#98A2B3]">
-                  Verifying…
-                </p>
-              </>
-            ) : (
-              <>
-                <ScanLine className="h-12 w-12 text-zinc-400 dark:text-[#667085]" />
-                <p className="text-sm font-medium tracking-wide text-zinc-600 dark:text-[#98A2B3]">
-                  Point camera at a ticket
-                </p>
-                <p className="text-xs text-zinc-500 dark:text-[#667085]">
-                  Result appears full-screen — tap it for the next scan
-                </p>
-              </>
-            )}
-          </div>
-
+        {/* Manual entry fallback */}
+        <section className="flex flex-col justify-center gap-3">
           <form onSubmit={handleManualSubmit} className="flex gap-2">
             <input
               type="text"
