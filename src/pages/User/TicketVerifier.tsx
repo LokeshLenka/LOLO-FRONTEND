@@ -7,9 +7,17 @@ import React, {
   Suspense,
 } from "react";
 import axios, { AxiosError } from "axios";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  ScanLine,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  WifiOff,
+  RotateCcw,
+  TicketCheck,
+} from "lucide-react";
 
-// Lazy load the modern QR Scanner
+// Lazy load the QR scanner so gate page paints before camera lib parses
 const QrScanner = lazy(() =>
   import("@yudiel/react-qr-scanner").then((module) => ({
     default: module.Scanner,
@@ -17,13 +25,7 @@ const QrScanner = lazy(() =>
 );
 
 // --- Types ---
-type Status =
-  | "idle"
-  | "loading"
-  | "success"
-  | "warning"
-  | "error"
-  | "network_error";
+type Status = "idle" | "loading" | "success" | "warning" | "error" | "network_error";
 
 interface TicketData {
   ticket_code: string;
@@ -32,32 +34,77 @@ interface TicketData {
   verified_at?: string;
 }
 
-// --- Audio & Haptics Hook ---
-const useFeedback = () => {
-  const sounds = useRef<Record<string, HTMLAudioElement>>({});
+interface Counts {
+  verified: number;
+  duplicate: number;
+  invalid: number;
+}
 
-  useEffect(() => {
-    sounds.current = {
-      success: new Audio("/sounds/success.mp3"),
-      warning: new Audio("/sounds/warning.mp3"),
-      error: new Audio("/sounds/error.mp3"),
-    };
-    Object.values(sounds.current).forEach((audio) => {
-      audio.load();
-      audio.volume = 0.8;
-    });
+const AUTO_RESET_MS: Record<Exclude<Status, "idle" | "loading">, number> = {
+  success: 1200,
+  warning: 2000,
+  error: 1500,
+  network_error: 2500,
+};
+
+// --- Zero-asset audio feedback (WebAudio beeps, no mp3 fetches) ---
+const useBeep = () => {
+  const ctxRef = useRef<AudioContext | null>(null);
+
+  const getCtx = () => {
+    if (!ctxRef.current) {
+      const AC =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
+      if (!AC) return null;
+      ctxRef.current = new AC();
+    }
+    if (ctxRef.current.state === "suspended") {
+      void ctxRef.current.resume();
+    }
+    return ctxRef.current;
+  };
+
+  const beep = useCallback((freq: number, at: number, dur: number) => {
+    const ctx = getCtx();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.001, ctx.currentTime + at);
+    gain.gain.exponentialRampToValueAtTime(0.4, ctx.currentTime + at + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + at + dur);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime + at);
+    osc.stop(ctx.currentTime + at + dur + 0.05);
   }, []);
 
-  const trigger = useCallback((type: "success" | "warning" | "error") => {
-    if (sounds.current[type]) {
-      sounds.current[type].currentTime = 0;
-      sounds.current[type].play().catch(() => {});
-    }
-    if (typeof navigator !== "undefined" && navigator.vibrate) {
-      if (type === "success") navigator.vibrate(100);
-      else if (type === "warning") navigator.vibrate([100, 50, 100]);
-      else navigator.vibrate([50, 50, 50, 50, 50]);
-    }
+  const trigger = useCallback(
+    (type: "success" | "warning" | "error") => {
+      if (type === "success") beep(880, 0, 0.12);
+      else if (type === "warning") {
+        beep(660, 0, 0.12);
+        beep(660, 0.16, 0.12);
+      } else {
+        beep(220, 0, 0.25);
+      }
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        if (type === "success") navigator.vibrate(60);
+        else if (type === "warning") navigator.vibrate([80, 40, 80]);
+        else navigator.vibrate([60, 60, 60]);
+      }
+    },
+    [beep],
+  );
+
+  useEffect(() => {
+    return () => {
+      void ctxRef.current?.close().catch(() => {});
+      ctxRef.current = null;
+    };
   }, []);
 
   return trigger;
@@ -69,91 +116,120 @@ export const TicketVerifier: React.FC = () => {
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [manualCode, setManualCode] = useState<string>("");
+  const [counts, setCounts] = useState<Counts>({
+    verified: 0,
+    duplicate: 0,
+    invalid: 0,
+  });
 
-  const abortControllerRef = useRef<AbortController | null>(null);
+  // Refs (not state) for the hot scan path — no re-render churn, no stale closures
+  const busyRef = useRef(false);
   const lastScannedRef = useRef<{ code: string; time: number }>({
     code: "",
     time: 0,
   });
-  const resetTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
 
   const APP_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const beep = useBeep();
 
-  const triggerFeedback = useFeedback();
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      abortRef.current?.abort();
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
 
-  const resetScanner = useCallback(() => {
+  const scheduleReset = useCallback((next: Exclude<Status, "idle" | "loading">) => {
+    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    resetTimerRef.current = setTimeout(() => {
+      if (!mountedRef.current) return;
+      busyRef.current = false;
+      setStatus("idle");
+      setTicketData(null);
+      setErrorMessage("");
+      setManualCode("");
+    }, AUTO_RESET_MS[next]);
+  }, []);
+
+  const resetNow = useCallback(() => {
+    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    busyRef.current = false;
     setStatus("idle");
     setTicketData(null);
     setErrorMessage("");
     setManualCode("");
-    if (inputRef.current) inputRef.current.focus();
   }, []);
 
   const verifyTicket = useCallback(
-    async (ticketCode: string) => {
-      const now = Date.now();
+    async (rawCode: string) => {
+      const ticketCode = rawCode.trim().toUpperCase();
+      if (!ticketCode || busyRef.current) return;
 
-      if (status === "loading") return;
+      const now = Date.now();
       if (
         lastScannedRef.current.code === ticketCode &&
         now - lastScannedRef.current.time < 2000
-      )
+      ) {
         return;
-
+      }
       lastScannedRef.current = { code: ticketCode, time: now };
+      busyRef.current = true;
       setStatus("loading");
 
-      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-      if (abortControllerRef.current) abortControllerRef.current.abort();
-      abortControllerRef.current = new AbortController();
+      abortRef.current?.abort();
+      abortRef.current = new AbortController();
 
       try {
         const response = await axios.put(
           `${APP_BASE_URL}/verify-ticket/${ticketCode}`,
           {},
           {
-            signal: abortControllerRef.current.signal,
+            signal: abortRef.current.signal,
             timeout: 5000,
           },
         );
 
-        // If axios didn't throw an error, it's a 200 OK.
-        // Meaning: Laravel successfully processed and updated the valid ticket!
-
-        // Flexibly extract the data regardless of how Laravel wraps it (data.data vs data)
+        if (!mountedRef.current) return;
         const returnedTicket = response.data?.data || response.data;
-
         setTicketData(returnedTicket);
         setStatus("success");
-        triggerFeedback("success");
-        resetTimerRef.current = setTimeout(resetScanner, 3000);
+        setCounts((c) => ({ ...c, verified: c.verified + 1 }));
+        beep("success");
+        scheduleReset("success");
       } catch (error) {
-        if (axios.isCancel(error)) return;
+        if (!mountedRef.current) return;
+        if (axios.isCancel(error)) {
+          busyRef.current = false;
+          setStatus("idle");
+          return;
+        }
 
         const axiosError = error as AxiosError<any>;
-
         if (axiosError.response) {
           const statusCode = axiosError.response.status;
           const backendMessage =
             axiosError.response.data?.message || "Invalid Ticket Code";
 
-          // Laravel verifyTicket() throws a 403 if it's already verified
           if (statusCode === 403) {
             setStatus("warning");
             setErrorMessage(backendMessage);
-            triggerFeedback("warning");
-
-            // If your backend returns the ticket data inside the error payload, set it here
             if (axiosError.response.data?.data) {
               setTicketData(axiosError.response.data.data);
             }
-          }
-          // Laravel firstOrFail() throws a 404 if ticket doesn't exist
-          else {
+            setCounts((c) => ({ ...c, duplicate: c.duplicate + 1 }));
+            beep("warning");
+            scheduleReset("warning");
+          } else {
             setStatus("error");
             setErrorMessage(backendMessage);
-            triggerFeedback("error");
+            setCounts((c) => ({ ...c, invalid: c.invalid + 1 }));
+            beep("error");
+            scheduleReset("error");
           }
         } else if (
           axiosError.code === "ECONNABORTED" ||
@@ -161,206 +237,221 @@ export const TicketVerifier: React.FC = () => {
         ) {
           setStatus("network_error");
           setErrorMessage("Network timeout. Please retry.");
-          triggerFeedback("error");
+          beep("error");
+          scheduleReset("network_error");
         } else {
           setStatus("network_error");
           setErrorMessage("Network error. Check connection.");
-          triggerFeedback("error");
+          beep("error");
+          scheduleReset("network_error");
         }
       }
     },
-    [status, triggerFeedback, resetScanner, APP_BASE_URL],
+    [APP_BASE_URL, beep, scheduleReset],
   );
 
-  useEffect(() => {
-    if (manualCode.length >= 6) {
-      const handler = setTimeout(() => verifyTicket(manualCode), 300);
-      return () => clearTimeout(handler);
-    }
-  }, [manualCode, verifyTicket]);
+  const handleManualSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (manualCode.trim()) void verifyTicket(manualCode);
+    },
+    [manualCode, verifyTicket],
+  );
+
+  const showResult = status !== "idle" && status !== "loading";
 
   return (
-    <div className="flex flex-col h-screen w-full bg-gray-900 text-white font-sans overflow-hidden">
-      <header className="flex justify-between items-center p-4 bg-gray-800 shadow-md z-10">
-        <div>
-          <h1 className="text-xl font-bold tracking-wider text-blue-400">
-            LOLO <span className="text-sm text-gray-400">by SRKR</span>
-          </h1>
-          <p className="text-xs text-gray-500 uppercase tracking-widest">
-            Boarding Gate
-          </p>
+    <div className="flex w-full flex-col bg-[#101828] font-sans text-white h-[calc(100dvh-6rem)] min-h-[540px]">
+      {/* Compact header with live session counters */}
+      <header className="flex items-center justify-between border-b border-[#344054] bg-[#161F2E] px-4 py-3">
+        <div className="flex items-center gap-2">
+          <TicketCheck className="h-5 w-5 text-[#9E77ED]" />
+          <div>
+            <h1 className="text-sm font-bold tracking-wider text-[#F2F4F7]">
+              GATE VERIFY
+            </h1>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#667085]">
+              LOLO · SRKR
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 text-center">
+          <div className="border border-[#344054] bg-[#1D2939] px-2.5 py-1">
+            <p className="text-sm font-bold leading-none text-emerald-400">
+              {counts.verified}
+            </p>
+            <p className="mt-0.5 text-[9px] uppercase tracking-widest text-[#667085]">
+              In
+            </p>
+          </div>
+          <div className="border border-[#344054] bg-[#1D2939] px-2.5 py-1">
+            <p className="text-sm font-bold leading-none text-amber-400">
+              {counts.duplicate}
+            </p>
+            <p className="mt-0.5 text-[9px] uppercase tracking-widest text-[#667085]">
+              Dup
+            </p>
+          </div>
+          <div className="border border-[#344054] bg-[#1D2939] px-2.5 py-1">
+            <p className="text-sm font-bold leading-none text-red-400">
+              {counts.invalid}
+            </p>
+            <p className="mt-0.5 text-[9px] uppercase tracking-widest text-[#667085]">
+              Bad
+            </p>
+          </div>
+          <button
+            onClick={() => setCounts({ verified: 0, duplicate: 0, invalid: 0 })}
+            title="Reset counters"
+            className="border border-[#344054] bg-[#1D2939] p-2 text-[#98A2B3] transition-colors hover:bg-[#253247] hover:text-[#F2F4F7]"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+          </button>
         </div>
       </header>
 
-      <main className="flex-1 relative flex flex-col items-center justify-center p-4">
-        {/* Scanner View */}
-        <div
-          className={`relative w-full max-w-md aspect-square rounded-2xl overflow-hidden shadow-2xl transition-opacity duration-300 ${status !== "idle" && status !== "loading" ? "opacity-0 pointer-events-none absolute" : "opacity-100"}`}
-        >
+      <main className="mx-auto grid w-full max-w-3xl flex-1 grid-cols-1 content-center gap-4 overflow-y-auto p-4 md:grid-cols-2">
+        {/* Scanner — stays mounted across scans, no remount cost */}
+        <section className="relative aspect-square w-full overflow-hidden border border-[#344054] bg-black">
           <Suspense
             fallback={
-              <div className="w-full h-full bg-gray-800 animate-pulse flex items-center justify-center">
-                Loading Camera...
+              <div className="flex h-full w-full animate-pulse items-center justify-center bg-[#1D2939] text-sm text-[#98A2B3]">
+                Loading camera…
               </div>
             }
           >
             <QrScanner
               onScan={(result) => {
                 if (result && result.length > 0 && result[0].rawValue) {
-                  verifyTicket(result[0].rawValue);
+                  void verifyTicket(result[0].rawValue);
                 }
               }}
+              onError={() => {}}
               formats={["qr_code"]}
-              components={{
-                finder: false,
-              }}
+              components={{ finder: false }}
             />
           </Suspense>
 
-          <div className="absolute inset-0 border-[3px] border-white/20 z-10 rounded-2xl pointer-events-none">
-            <div className="absolute top-1/2 left-0 w-full h-[2px] bg-blue-500/50 shadow-[0_0_15px_3px_rgba(59,130,246,0.5)] animate-[scan_2s_ease-in-out_infinite]" />
+          {/* Lightweight corner viewfinder (no blur/shadow cost) */}
+          <div className="pointer-events-none absolute inset-6">
+            <span className="absolute left-0 top-0 h-8 w-8 border-l-4 border-t-4 border-[#7F56D9]" />
+            <span className="absolute right-0 top-0 h-8 w-8 border-r-4 border-t-4 border-[#7F56D9]" />
+            <span className="absolute bottom-0 left-0 h-8 w-8 border-b-4 border-l-4 border-[#7F56D9]" />
+            <span className="absolute bottom-0 right-0 h-8 w-8 border-b-4 border-r-4 border-[#7F56D9]" />
+            {!showResult && (
+              <div className="absolute inset-x-0 top-0 h-[2px] animate-[scan_1.6s_ease-in-out_infinite] bg-[#9E77ED] shadow-[0_0_12px_2px_rgba(127,86,217,0.6)]" />
+            )}
           </div>
 
           {status === "loading" && (
-            <div className="absolute inset-0 bg-black/60 z-20 flex items-center justify-center backdrop-blur-sm">
-              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#7F56D9] border-t-transparent" />
             </div>
           )}
-        </div>
+        </section>
 
-        <div
-          className={`mt-8 w-full max-w-md transition-opacity duration-300 ${status !== "idle" ? "opacity-0 pointer-events-none" : "opacity-100"}`}
-        >
-          <input
-            ref={inputRef}
-            type="text"
-            value={manualCode}
-            onChange={(e) => setManualCode(e.target.value.toUpperCase())}
-            placeholder="Or enter ticket code manually..."
-            className="w-full bg-gray-800 text-white px-6 py-4 rounded-xl border border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none text-center font-mono text-lg transition-all placeholder:text-gray-500 uppercase"
-            disabled={status !== "idle"}
-          />
-        </div>
-
-        <AnimatePresence>
-          {(status === "success" ||
-            status === "warning" ||
-            status === "error" ||
-            status === "network_error") && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={
-                status === "error"
-                  ? { opacity: 1, scale: 1, x: [-10, 10, -10, 10, 0] }
-                  : { opacity: 1, scale: 1 }
-              }
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-              className={`absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center ${
-                status === "success"
-                  ? "bg-green-600"
-                  : status === "warning"
-                    ? "bg-yellow-500 text-gray-900"
-                    : "bg-red-600"
-              }`}
-            >
-              {status === "success" && <div className="css-confetti-burst" />}
-
-              <div className="mb-6">
-                {status === "success" && (
-                  <svg
-                    className="w-32 h-32 mx-auto drop-shadow-lg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                )}
-                {status === "warning" && (
-                  <svg
-                    className="w-32 h-32 mx-auto drop-shadow-lg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                    />
-                  </svg>
-                )}
-                {(status === "error" || status === "network_error") && (
-                  <svg
-                    className="w-32 h-32 mx-auto drop-shadow-lg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                )}
-              </div>
-
-              <h2 className="text-4xl font-bold mb-2 drop-shadow-md">
-                {status === "success"
-                  ? "Verified Successfully"
-                  : status === "warning"
-                    ? "Already Verified"
-                    : status === "network_error"
-                      ? "Network Error"
-                      : "Invalid Ticket"}
-              </h2>
-
-              {ticketData && (
-                <div className="mt-8 bg-black/20 p-6 rounded-2xl backdrop-blur-sm w-full max-w-sm border border-white/10">
-                  <p className="text-sm uppercase tracking-wider opacity-80 mb-1">
-                    Reg Number
-                  </p>
-                  <p className="text-3xl font-mono font-bold mb-4">
-                    {ticketData.reg_num}
-                  </p>
-
-                  <p className="text-sm uppercase tracking-wider opacity-80 mb-1">
-                    Ticket Code
-                  </p>
-                  <p className="text-xl font-mono">{ticketData.ticket_code}</p>
-                </div>
-              )}
-
-              {errorMessage && status !== "warning" && (
-                <p className="mt-6 text-xl bg-black/30 px-6 py-3 rounded-xl">
-                  {errorMessage}
+        {/* Result + manual entry — fixed-height panel, video never unmounts */}
+        <section className="flex min-h-[280px] flex-col gap-3">
+          <button
+            onClick={resetNow}
+            title="Tap to scan next"
+            className={`flex min-h-[168px] flex-1 flex-col items-center justify-center gap-1 border p-4 text-center transition-colors ${
+              status === "success"
+                ? "border-emerald-500 bg-emerald-500/15"
+                : status === "warning"
+                  ? "border-amber-500 bg-amber-500/15"
+                  : status === "error" || status === "network_error"
+                    ? "border-red-500 bg-red-500/15"
+                    : "border-[#344054] bg-[#161F2E]"
+            }`}
+          >
+            {status === "success" && (
+              <>
+                <CheckCircle2 className="h-12 w-12 text-emerald-400" />
+                <p className="text-xl font-bold tracking-wide text-emerald-300">
+                  ALLOWED
                 </p>
-              )}
+              </>
+            )}
+            {status === "warning" && (
+              <>
+                <AlertTriangle className="h-12 w-12 text-amber-400" />
+                <p className="text-xl font-bold tracking-wide text-amber-300">
+                  ALREADY IN
+                </p>
+              </>
+            )}
+            {(status === "error" || status === "network_error") && (
+              <>
+                {status === "network_error" ? (
+                  <WifiOff className="h-12 w-12 text-red-400" />
+                ) : (
+                  <XCircle className="h-12 w-12 text-red-400" />
+                )}
+                <p className="text-xl font-bold tracking-wide text-red-300">
+                  {status === "network_error" ? "NO SIGNAL" : "DENIED"}
+                </p>
+              </>
+            )}
+            {status === "idle" && (
+              <>
+                <ScanLine className="h-12 w-12 text-[#667085]" />
+                <p className="text-sm font-medium tracking-wide text-[#98A2B3]">
+                  Point camera at a ticket
+                </p>
+              </>
+            )}
+            {status === "loading" && (
+              <p className="text-sm font-medium tracking-wide text-[#98A2B3]">
+                Verifying…
+              </p>
+            )}
 
-              <button
-                onClick={resetScanner}
-                className={`mt-10 px-10 py-4 rounded-full font-bold text-xl shadow-lg transition-transform active:scale-95 ${
-                  status === "warning"
-                    ? "bg-gray-900 text-white"
-                    : "bg-white text-gray-900"
-                }`}
-              >
-                {status === "network_error"
-                  ? "Retry Scanner"
-                  : "Scan Next Ticket"}
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            {ticketData && showResult && (
+              <div className="mt-2 w-full border border-white/10 bg-black/30 px-3 py-2">
+                <p className="font-mono text-2xl font-bold text-white">
+                  {ticketData.reg_num}
+                </p>
+                <p className="truncate font-mono text-xs text-white/70">
+                  {ticketData.ticket_code}
+                </p>
+              </div>
+            )}
+            {errorMessage && showResult && status !== "warning" && (
+              <p className="mt-1 max-w-full truncate px-2 text-sm text-white/80">
+                {errorMessage}
+              </p>
+            )}
+            {showResult && (
+              <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-white/50">
+                Tap for next
+              </p>
+            )}
+          </button>
+
+          <form
+            onSubmit={handleManualSubmit}
+            className="flex gap-2"
+          >
+            <input
+              type="text"
+              value={manualCode}
+              onChange={(e) => setManualCode(e.target.value.toUpperCase())}
+              placeholder="TICKET CODE"
+              autoComplete="off"
+              disabled={status === "loading"}
+              className="h-11 min-w-0 flex-1 border border-[#344054] bg-[#1D2939] px-3 text-center font-mono text-sm uppercase text-[#F2F4F7] outline-none placeholder:text-[#667085] focus:border-[#7F56D9] disabled:opacity-50"
+            />
+            <button
+              type="submit"
+              disabled={status === "loading" || !manualCode.trim()}
+              className="h-11 shrink-0 bg-[#7F56D9] px-4 text-sm font-bold text-white transition-colors hover:bg-[#9E77ED] disabled:opacity-50"
+            >
+              Verify
+            </button>
+          </form>
+        </section>
       </main>
     </div>
   );

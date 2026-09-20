@@ -1,4 +1,4 @@
-import { CalendarRange, LayoutDashboard } from "lucide-react";
+import { CalendarRange, LayoutDashboard, ScanLine } from "lucide-react";
 
 export const getCMNavItems = (basePath: string) => [
   {
@@ -10,5 +10,10 @@ export const getCMNavItems = (basePath: string) => [
     icon: <CalendarRange />,
     name: "Events",
     path: `${basePath}/events`,
+  },
+  {
+    icon: <ScanLine />,
+    name: "Verify Ticket",
+    path: `${basePath}/verify-ticket`,
   },
 ];

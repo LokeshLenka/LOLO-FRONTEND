@@ -2,6 +2,7 @@ import {
   CheckCircle2,
   CalendarPlus,
   LayoutDashboard,
+  ScanLine,
 } from "lucide-react";
 
 export const getEBMNavItems = (basePath: string) => [
@@ -20,6 +21,11 @@ export const getEBMNavItems = (basePath: string) => [
       },
       { name: "My Approvals", path: `${basePath}/approvals-history` },
     ],
+  },
+  {
+    icon: <ScanLine />,
+    name: "Verify Ticket",
+    path: `${basePath}/verify-ticket`,
   },
   {
     icon: <CalendarPlus />,

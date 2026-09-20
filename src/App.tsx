@@ -226,6 +226,10 @@ function App() {
                 path="/:username/executive_body_member/approvals-history/"
                 element={<ApprovalHistoryDetailsPage />}
               />
+              <Route
+                path="/:username/executive_body_member/verify-ticket"
+                element={<TicketVerifier />}
+              />
               {/* <Route
                 path="/:username/executive_body_member/desk-sale"
                 element={<EbmDeskSale />}
@@ -260,6 +264,10 @@ function App() {
                 path="/:username/credit_manager/events/:eventUuid/registrations"
                 element={<CreditEventRegistrationsPage />}
               />
+              <Route
+                path="/:username/credit_manager/verify-ticket"
+                element={<TicketVerifier />}
+              />
             </Route>
 
             {/* Management Head (MH) Routes */}
@@ -283,6 +291,10 @@ function App() {
               <Route
                 path="/:username/membership_head/user-stats"
                 element={<UserStatsCards />}
+              />
+              <Route
+                path="/:username/membership_head/verify-ticket"
+                element={<TicketVerifier />}
               />
               {/* <Route path="/:username/mh/approvals" element={<MHApprovals />} /> */}
               {/* Credit Manager (CM) Routes */}

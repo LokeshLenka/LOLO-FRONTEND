@@ -2,6 +2,7 @@ import {
   ShieldCheck,
   Users,
   LayoutDashboard,
+  ScanLine,
 } from "lucide-react";
 
 export const getMHNavItems = (basePath: string) => [
@@ -22,6 +23,11 @@ export const getMHNavItems = (basePath: string) => [
     icon: <Users />,
     name: "Members",
     path: `${basePath}/users`,
+  },
+  {
+    icon: <ScanLine />,
+    name: "Verify Ticket",
+    path: `${basePath}/verify-ticket`,
   },
 
   // subItems: [
