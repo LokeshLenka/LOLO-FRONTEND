@@ -8,11 +8,7 @@ import React, {
 } from "react";
 import axios, { AxiosError } from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ScanLine,
-  RotateCcw,
-  TicketCheck,
-} from "lucide-react";
+import { ScanLine, TicketCheck } from "lucide-react";
 
 // Lazy load the QR scanner so gate page paints before camera lib parses
 const QrScanner = lazy(() =>
@@ -29,12 +25,6 @@ interface TicketData {
   reg_num: string;
   is_verified: boolean;
   verified_at?: string;
-}
-
-interface Counts {
-  verified: number;
-  duplicate: number;
-  invalid: number;
 }
 
 const AUTO_RESET_MS: Record<Exclude<Status, "idle" | "loading">, number> = {
@@ -107,18 +97,50 @@ const useBeep = () => {
   return trigger;
 };
 
+// --- Keep gate screen awake while on duty ---
+const useWakeLock = () => {
+  useEffect(() => {
+    let lock: { release: () => Promise<void> } | null = null;
+    let cancelled = false;
+
+    const acquire = async () => {
+      try {
+        const nav = navigator as unknown as {
+          wakeLock?: { request: (t: string) => Promise<{ release: () => Promise<void> }> };
+        };
+        if (!nav.wakeLock) return;
+        const next = await nav.wakeLock.request("screen");
+        if (cancelled) {
+          await next.release();
+          return;
+        }
+        lock = next;
+      } catch {
+        // Unsupported or denied — gate still works, screen may sleep
+      }
+    };
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void acquire();
+    };
+
+    void acquire();
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisible);
+      void lock?.release().catch(() => {});
+    };
+  }, []);
+};
+
 // --- Main Component ---
 export const TicketVerifier: React.FC = () => {
   const [status, setStatus] = useState<Status>("idle");
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [manualCode, setManualCode] = useState<string>("");
-  const [lastResult, setLastResult] = useState<string>("");
-  const [counts, setCounts] = useState<Counts>({
-    verified: 0,
-    duplicate: 0,
-    invalid: 0,
-  });
 
   // Refs (not state) for the hot scan path — no re-render churn, no stale closures
   const busyRef = useRef(false);
@@ -132,6 +154,7 @@ export const TicketVerifier: React.FC = () => {
 
   const APP_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const beep = useBeep();
+  useWakeLock();
 
   useEffect(() => {
     mountedRef.current = true;
@@ -142,18 +165,6 @@ export const TicketVerifier: React.FC = () => {
     };
   }, []);
 
-  const scheduleReset = useCallback((next: Exclude<Status, "idle" | "loading">) => {
-    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-    resetTimerRef.current = setTimeout(() => {
-      if (!mountedRef.current) return;
-      busyRef.current = false;
-      setStatus("idle");
-      setTicketData(null);
-      setErrorMessage("");
-      setManualCode("");
-    }, AUTO_RESET_MS[next]);
-  }, []);
-
   const resetNow = useCallback(() => {
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
     busyRef.current = false;
@@ -162,6 +173,17 @@ export const TicketVerifier: React.FC = () => {
     setErrorMessage("");
     setManualCode("");
   }, []);
+
+  const scheduleReset = useCallback(
+    (next: Exclude<Status, "idle" | "loading">) => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+      resetTimerRef.current = setTimeout(() => {
+        if (!mountedRef.current) return;
+        resetNow();
+      }, AUTO_RESET_MS[next]);
+    },
+    [resetNow],
+  );
 
   const verifyTicket = useCallback(
     async (rawCode: string) => {
@@ -195,9 +217,7 @@ export const TicketVerifier: React.FC = () => {
         if (!mountedRef.current) return;
         const returnedTicket = response.data?.data || response.data;
         setTicketData(returnedTicket);
-        setLastResult(`${returnedTicket?.reg_num ?? ""} · ${returnedTicket?.ticket_code ?? ""}`);
         setStatus("success");
-        setCounts((c) => ({ ...c, verified: c.verified + 1 }));
         beep("success");
         scheduleReset("success");
       } catch (error) {
@@ -219,20 +239,12 @@ export const TicketVerifier: React.FC = () => {
             setErrorMessage(backendMessage);
             if (axiosError.response.data?.data) {
               setTicketData(axiosError.response.data.data);
-              setLastResult(
-                `${axiosError.response.data.data?.reg_num ?? ""} · ${axiosError.response.data.data?.ticket_code ?? ""} (dup)`,
-              );
-            } else {
-              setLastResult(backendMessage);
             }
-            setCounts((c) => ({ ...c, duplicate: c.duplicate + 1 }));
             beep("warning");
             scheduleReset("warning");
           } else {
             setStatus("error");
             setErrorMessage(backendMessage);
-            setLastResult(backendMessage);
-            setCounts((c) => ({ ...c, invalid: c.invalid + 1 }));
             beep("error");
             scheduleReset("error");
           }
@@ -242,13 +254,11 @@ export const TicketVerifier: React.FC = () => {
         ) {
           setStatus("network_error");
           setErrorMessage("Network timeout. Please retry.");
-          setLastResult("Network timeout");
           beep("error");
           scheduleReset("network_error");
         } else {
           setStatus("network_error");
           setErrorMessage("Network error. Check connection.");
-          setLastResult("Network error");
           beep("error");
           scheduleReset("network_error");
         }
@@ -268,65 +278,31 @@ export const TicketVerifier: React.FC = () => {
   const showResult = status !== "idle" && status !== "loading";
 
   return (
-    <div className="relative flex w-full flex-col bg-[#101828] font-sans text-white h-[calc(100dvh-6rem)] min-h-[540px]">
-      {/* Compact header with live session counters */}
-      <header className="flex items-center justify-between border-b border-[#344054] bg-[#161F2E] px-4 py-3">
+    <div className="relative flex h-[calc(100dvh-6rem)] min-h-[540px] w-full flex-col bg-white font-sans text-zinc-950 dark:bg-[#101828] dark:text-white">
+      {/* Compact header */}
+      <header className="flex items-center justify-between border-b border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-[#344054] dark:bg-[#161F2E]">
         <div className="flex items-center gap-2">
-          <TicketCheck className="h-5 w-5 text-[#9E77ED]" />
+          <TicketCheck className="h-5 w-5 text-[#7F56D9]" />
           <div>
-            <h1 className="text-sm font-bold tracking-wider text-[#F2F4F7]">
+            <h1 className="text-sm font-bold tracking-wider text-zinc-950 dark:text-[#F2F4F7]">
               GATE VERIFY
             </h1>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-[#667085]">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
               LOLO · SRKR
             </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-2 text-center">
-          <div className="border border-[#344054] bg-[#1D2939] px-2.5 py-1">
-            <p className="text-sm font-bold leading-none text-emerald-400">
-              {counts.verified}
-            </p>
-            <p className="mt-0.5 text-[9px] uppercase tracking-widest text-[#667085]">
-              In
-            </p>
-          </div>
-          <div className="border border-[#344054] bg-[#1D2939] px-2.5 py-1">
-            <p className="text-sm font-bold leading-none text-amber-400">
-              {counts.duplicate}
-            </p>
-            <p className="mt-0.5 text-[9px] uppercase tracking-widest text-[#667085]">
-              Dup
-            </p>
-          </div>
-          <div className="border border-[#344054] bg-[#1D2939] px-2.5 py-1">
-            <p className="text-sm font-bold leading-none text-red-400">
-              {counts.invalid}
-            </p>
-            <p className="mt-0.5 text-[9px] uppercase tracking-widest text-[#667085]">
-              Bad
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              setCounts({ verified: 0, duplicate: 0, invalid: 0 });
-              setLastResult("");
-            }}
-            title="Reset counters"
-            className="border border-[#344054] bg-[#1D2939] p-2 text-[#98A2B3] transition-colors hover:bg-[#253247] hover:text-[#F2F4F7]"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-          </button>
-        </div>
+        <p className="hidden text-xs text-zinc-500 sm:block dark:text-[#667085]">
+          Green in · Amber dup · Red stop
+        </p>
       </header>
 
       <main className="mx-auto grid w-full max-w-3xl flex-1 grid-cols-1 content-center gap-4 overflow-y-auto p-4 md:grid-cols-2">
         {/* Scanner — stays mounted across scans, no remount cost */}
-        <section className="relative aspect-square w-full overflow-hidden border border-[#344054] bg-black">
+        <section className="relative aspect-square w-full overflow-hidden border border-zinc-300 bg-black dark:border-[#344054]">
           <Suspense
             fallback={
-              <div className="flex h-full w-full animate-pulse items-center justify-center bg-[#1D2939] text-sm text-[#98A2B3]">
+              <div className="flex h-full w-full animate-pulse items-center justify-center bg-zinc-100 text-sm text-zinc-500 dark:bg-[#1D2939] dark:text-[#98A2B3]">
                 Loading camera…
               </div>
             }
@@ -361,35 +337,30 @@ export const TicketVerifier: React.FC = () => {
           )}
         </section>
 
-        {/* Status + manual entry — scanner and form stay mounted, results play as overlay */}
+        {/* Status + manual entry */}
         <section className="flex min-h-[280px] flex-col gap-3">
-          <div className="flex min-h-[168px] flex-1 flex-col items-center justify-center gap-2 border border-[#344054] bg-[#161F2E] p-4 text-center">
+          <div className="flex min-h-[168px] flex-1 flex-col items-center justify-center gap-2 border border-zinc-200 bg-zinc-50 p-4 text-center dark:border-[#344054] dark:bg-[#161F2E]">
             {status === "loading" ? (
               <>
                 <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#7F56D9] border-t-transparent" />
-                <p className="text-sm font-medium tracking-wide text-[#98A2B3]">
+                <p className="text-sm font-medium tracking-wide text-zinc-500 dark:text-[#98A2B3]">
                   Verifying…
                 </p>
               </>
             ) : (
               <>
-                <ScanLine className="h-12 w-12 text-[#667085]" />
-                <p className="text-sm font-medium tracking-wide text-[#98A2B3]">
+                <ScanLine className="h-12 w-12 text-zinc-400 dark:text-[#667085]" />
+                <p className="text-sm font-medium tracking-wide text-zinc-600 dark:text-[#98A2B3]">
                   Point camera at a ticket
                 </p>
-                {lastResult && (
-                  <p className="max-w-full truncate text-xs text-[#667085]">
-                    Last: {lastResult}
-                  </p>
-                )}
+                <p className="text-xs text-zinc-500 dark:text-[#667085]">
+                  Result appears full-screen — tap it for the next scan
+                </p>
               </>
             )}
           </div>
 
-          <form
-            onSubmit={handleManualSubmit}
-            className="flex gap-2"
-          >
+          <form onSubmit={handleManualSubmit} className="flex gap-2">
             <input
               type="text"
               value={manualCode}
@@ -397,12 +368,12 @@ export const TicketVerifier: React.FC = () => {
               placeholder="TICKET CODE"
               autoComplete="off"
               disabled={status === "loading"}
-              className="h-11 min-w-0 flex-1 border border-[#344054] bg-[#1D2939] px-3 text-center font-mono text-sm uppercase text-[#F2F4F7] outline-none placeholder:text-[#667085] focus:border-[#7F56D9] disabled:opacity-50"
+              className="h-11 min-w-0 flex-1 rounded-none border border-zinc-300 bg-white px-3 text-center font-mono text-sm uppercase text-zinc-950 outline-none placeholder:text-zinc-400 focus:border-[#7F56D9] disabled:opacity-50 dark:border-[#344054] dark:bg-[#1D2939] dark:text-[#F2F4F7] dark:placeholder:text-[#667085]"
             />
             <button
               type="submit"
               disabled={status === "loading" || !manualCode.trim()}
-              className="h-11 shrink-0 bg-[#7F56D9] px-4 text-sm font-bold text-white transition-colors hover:bg-[#9E77ED] disabled:opacity-50"
+              className="h-11 shrink-0 rounded-none bg-zinc-900 px-4 text-sm font-bold text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-[#7F56D9] dark:hover:bg-[#9E77ED]"
             >
               Verify
             </button>
