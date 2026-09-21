@@ -59,11 +59,11 @@ const SpotlightCard: React.FC<{ item: SpotlightItemProps }> = ({ item }) => {
       className="group relative flex-shrink-0 w-[85vw] sm:w-[300px] md:w-[380px] h-[450px] md:h-[480px] rounded-[2rem] overflow-hidden border border-white/10 bg-neutral-900/50 backdrop-blur-sm transition-all duration-500 hover:border-white/20 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)]"
     >
       {/* Image Background */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0">
         <img
           src={item.image}
           alt={item.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter brightness-[0.5] group-hover:brightness-[0.4]"
+          className="w-full h-full object-cover transition-transform duration-700 filter brightness-[0.9] group-hover:brightness-[0.6]"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90" />
       </div>
@@ -257,11 +257,11 @@ const EventsSection: React.FC = () => {
   }, [activeIndex, isPaused, spotlightItems.length]);
 
   return (
-    <section className="py-24 md:py-32 bg-[#020202] relative overflow-hidden">
+    <section className="py-12 md:py-16 bg-[#020202] relative overflow-hidden">
       {/* Background Decor */}
       <div className="absolute right-0 top-1/4 w-[600px] h-[600px] bg-indigo-900/10 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6 mb-12 flex flex-col md:flex-row items-end justify-between gap-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-6 flex flex-col md:flex-row items-end justify-between gap-6">
         <SectionHeader
           title={
             <>

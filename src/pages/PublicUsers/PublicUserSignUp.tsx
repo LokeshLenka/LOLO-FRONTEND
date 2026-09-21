@@ -313,6 +313,11 @@ export const PublicUserSignUp: React.FC = () => {
         name: order.event_name || eventName || "Event",
         order_id: order.order_id, // IMPORTANT for signature + order binding
         prefill,
+        theme: {
+          color: "#ff00ff", // <--- Matches your pink UI accent
+          backdrop_color: "rgba(0,0,0,0.8)", // <--- Forces a dark transparent overlay
+        },
+
         modal: {
           ondismiss: () => {
             onFailure?.({

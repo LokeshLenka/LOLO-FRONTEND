@@ -90,7 +90,7 @@ const RANK_DATA: RankData = {
       barColor: "bg-orange-500",
       gradient: "from-orange-500/20 to-orange-900/10",
       border: "border-orange-500/30",
-      icon: "📋",
+      icon: "🥉",
       perks: [
         "Event Volunteer Badge",
         "Access to planning meetings",
@@ -104,7 +104,7 @@ const RANK_DATA: RankData = {
       barColor: "bg-slate-400",
       gradient: "from-slate-400/20 to-slate-700/10",
       border: "border-slate-400/40",
-      icon: "🤝",
+      icon: "🥈",
       perks: [
         "Team Lead Role",
         "Backstage Logistics Access",
@@ -118,7 +118,7 @@ const RANK_DATA: RankData = {
       barColor: "bg-yellow-500",
       gradient: "from-yellow-500/20 to-amber-700/10",
       border: "border-yellow-500/40",
-      icon: "💼",
+      icon: "🥇",
       perks: [
         "Budget Management Access",
         "Event Strategy Workshops",
@@ -132,7 +132,7 @@ const RANK_DATA: RankData = {
       barColor: "bg-cyan-400",
       gradient: "from-cyan-400/20 to-cyan-700/10",
       border: "border-cyan-400/40",
-      icon: "👔",
+      icon: "💎",
       perks: [
         "Core Council Membership",
         "Signature Authority",
@@ -227,16 +227,18 @@ const AnimatedRanks = () => {
 
               <div className="flex justify-between items-start mb-6 relative z-10">
                 <h3
-                  className={`text-3xl font-bold ${rank.color} tracking-tight`}
+                  className={`text-xl sm:text-2xl font-bold ${rank.color} tracking-tight`}
                 >
                   {rank.name}
                 </h3>
-                <span className="text-4xl filter drop-shadow-lg grayscale group-hover:grayscale-0 transition-all duration-500">
+                <span
+                  className={`text-2xl sm:text-4xl filter drop-shadow-lg transition-all duration-500`}
+                >
                   {rank.icon}
                 </span>
               </div>
 
-              <p className="text-sm text-gray-400 font-mono mb-8 bg-black/40 px-4 py-1.5 rounded-full w-fit border border-white/5 backdrop-blur-md">
+              <p className="text-xs text-gray-400 font-mono mb-8 bg-black/40 px-4 py-1.5 rounded-full w-fit border border-white/5 backdrop-blur-md">
                 {rank.range}
               </p>
 
@@ -248,7 +250,7 @@ const AnimatedRanks = () => {
                   {rank.perks.map((perk, idx) => (
                     <li
                       key={idx}
-                      className="flex items-start gap-3 text-sm text-gray-300 leading-snug"
+                      className="flex items-start gap-3 text-xs sm:text-sm text-gray-300 leading-snug"
                     >
                       <div
                         className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${rank.barColor} shadow-[0_0_8px_currentColor]`}

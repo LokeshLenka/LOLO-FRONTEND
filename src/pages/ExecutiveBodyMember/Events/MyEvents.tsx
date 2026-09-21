@@ -9,7 +9,6 @@ import {
   Ticket,
   Clock,
   Calendar,
-  Users2,
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -114,9 +113,8 @@ export default function MyEvents() {
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);
     try {
-      const endpoint = `${API_BASE_URL}/ebm/my-events?page=${
-        page + 1
-      }&per_page=${rowsPerPage}`;
+      const endpoint = `${API_BASE_URL}/ebm/my-events?page=${page + 1
+        }&per_page=${rowsPerPage}`;
       const response = await axios.get<ApiResponse>(endpoint);
 
       if (response.data?.data) {
@@ -292,7 +290,7 @@ export default function MyEvents() {
                   <Calendar size={18} />
                 </Button>
               </Tooltip>
-              <Tooltip
+              {/* <Tooltip
                 content="View Event Registrations"
                 placement="bottom"
                 className="bg-black dark:bg-white text-white dark:text-black backdrop-blur-lg border"
@@ -308,7 +306,7 @@ export default function MyEvents() {
                 >
                   <Users2 size={18} />
                 </Button>
-              </Tooltip>
+              </Tooltip> */}
             </div>
           );
         default:
@@ -400,7 +398,7 @@ export default function MyEvents() {
                   td: "py-4 border-b border-gray-100 dark:border-slate-800/50 group-data-[last=true]:border-none",
                   tr: "hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors",
                 }}
-                // onRowAction={(key) => handleEventClick(String(key))}
+              // onRowAction={(key) => handleEventClick(String(key))}
               >
                 <TableHeader columns={columns}>
                   {(column) => (
