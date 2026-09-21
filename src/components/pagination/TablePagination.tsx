@@ -1,4 +1,5 @@
 // src/components/membership-head/TablePagination.tsx
+import { Button } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
@@ -72,72 +73,107 @@ export function TablePagination({ meta, onPageChange }: TablePaginationProps) {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/30 gap-4 sm:gap-0">
-      {/* Left side: Item counter */}
-      <div className="text-sm text-zinc-500">
-        Showing{" "}
-        <span className="font-medium text-zinc-900 dark:text-zinc-100">
-          {from}
-        </span>{" "}
-        to{" "}
-        <span className="font-medium text-zinc-900 dark:text-zinc-100">
-          {to}
-        </span>{" "}
-        of{" "}
-        <span className="font-medium text-zinc-900 dark:text-zinc-100">
-          {total}
-        </span>{" "}
-        results
+    <div className="border-t border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900/30">
+      {/* Mobile: compact prev / page indicator / next with 44px targets */}
+      <div className="flex items-center justify-between gap-2 sm:hidden">
+        <Button
+          variant="outline"
+          disabled={current_page === 1}
+          onClick={() => current_page > 1 && onPageChange(current_page - 1)}
+          className="min-h-[44px] flex-1 rounded-none border-zinc-300 disabled:opacity-50 dark:border-zinc-700"
+        >
+          Prev
+        </Button>
+        <span className="shrink-0 text-sm text-zinc-500">
+          Page{" "}
+          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+            {current_page}
+          </span>{" "}
+          of{" "}
+          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+            {last_page}
+          </span>
+        </span>
+        <Button
+          variant="outline"
+          disabled={current_page === last_page}
+          onClick={() =>
+            current_page < last_page && onPageChange(current_page + 1)
+          }
+          className="min-h-[44px] flex-1 rounded-none border-zinc-300 disabled:opacity-50 dark:border-zinc-700"
+        >
+          Next
+        </Button>
       </div>
 
-      {/* Right side: Pagination controls */}
-      <Pagination className="w-auto mx-0">
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={() => current_page > 1 && onPageChange(current_page - 1)}
-              className={`rounded-none cursor-pointer ${
-                current_page === 1
-                  ? "pointer-events-none opacity-50"
-                  : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              }`}
-            />
-          </PaginationItem>
+      {/* Desktop: full counter + page numbers */}
+      <div className="hidden items-center justify-between gap-4 sm:flex">
+        {/* Left side: Item counter */}
+        <div className="text-sm text-zinc-500">
+          Showing{" "}
+          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+            {from}
+          </span>{" "}
+          to{" "}
+          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+            {to}
+          </span>{" "}
+          of{" "}
+          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+            {total}
+          </span>{" "}
+          results
+        </div>
 
-          {getPageNumbers().map((page, index) => (
-            <PaginationItem key={index}>
-              {page === "ellipsis" ? (
-                <PaginationEllipsis />
-              ) : (
-                <PaginationLink
-                  onClick={() => onPageChange(page as number)}
-                  isActive={current_page === page}
-                  className={`rounded-none cursor-pointer ${
-                    current_page === page
-                      ? "bg-zinc-900 text-zinc-50 hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                  }`}
-                >
-                  {page}
-                </PaginationLink>
-              )}
+        {/* Right side: Pagination controls */}
+        <Pagination className="w-auto mx-0">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => current_page > 1 && onPageChange(current_page - 1)}
+                className={`rounded-none cursor-pointer ${
+                  current_page === 1
+                    ? "pointer-events-none opacity-50"
+                    : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                }`}
+              />
             </PaginationItem>
-          ))}
 
-          <PaginationItem>
-            <PaginationNext
-              onClick={() =>
-                current_page < last_page && onPageChange(current_page + 1)
-              }
-              className={`rounded-none cursor-pointer ${
-                current_page === last_page
-                  ? "pointer-events-none opacity-50"
-                  : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              }`}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+            {getPageNumbers().map((page, index) => (
+              <PaginationItem key={index}>
+                {page === "ellipsis" ? (
+                  <PaginationEllipsis />
+                ) : (
+                  <PaginationLink
+                    onClick={() => onPageChange(page as number)}
+                    isActive={current_page === page}
+                    className={`rounded-none cursor-pointer ${
+                      current_page === page
+                        ? "bg-zinc-900 text-zinc-50 hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    }`}
+                  >
+                    {page}
+                  </PaginationLink>
+                )}
+              </PaginationItem>
+            ))}
+
+            <PaginationItem>
+              <PaginationNext
+                onClick={() =>
+                  current_page < last_page && onPageChange(current_page + 1)
+                }
+                className={`rounded-none cursor-pointer ${
+                  current_page === last_page
+                    ? "pointer-events-none opacity-50"
+                    : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                }`}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </div>
   );
 }

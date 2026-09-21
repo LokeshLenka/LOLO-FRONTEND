@@ -1,8 +1,10 @@
 import "./App.css";
+import { Suspense, lazy } from "react";
 import { Route, Routes, useLocation, Navigate, Outlet } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
-// --- Layouts & Providers ---
+// --- Layouts & Providers (eager: app shell renders instantly) ---
 import MainLayout from "./layouts/MainLayout";
 import AppLayout from "./layouts/AppLayout";
 import MHAppLayout from "./layouts/membership-head/MHAppLayout";
@@ -11,72 +13,146 @@ import GlobalLoader from "./components/GlobalLoader";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import { Toaster } from "sonner";
 
-// --- Public Pages ---
+// --- Public Pages (lazy: one chunk per route) ---
 // import Home from "./pages/App/Home/Home";
-import Homev1 from "./pages/App/Home/Homev1";
-import Events from "./pages/App/Events/Events";
-import EventDetails from "./pages/App/Events/EventDetails";
+const Homev1 = lazy(() => import("./pages/App/Home/Homev1"));
+const Events = lazy(() => import("./pages/App/Events/Events"));
+const EventDetails = lazy(() => import("./pages/App/Events/EventDetails"));
 // import Concerts from "./pages/App/Concerts/Performances";
-import ConcertDetails from "./pages/App/Concerts/PerformanceDetails";
-import Publication from "./pages/App/Publications/Publications";
-import PublicationDetails from "./pages/App/Publications/PublicationDetails";
+const ConcertDetails = lazy(
+  () => import("./pages/App/Concerts/PerformanceDetails"),
+);
+const Publication = lazy(() => import("./pages/App/Publications/Publications"));
+const PublicationDetails = lazy(
+  () => import("./pages/App/Publications/PublicationDetails"),
+);
 // import Team from "./pages/App/Team/Team";
-import TeamDetails from "./pages/App/Team/TeamDetails";
-import AboutUs from "./pages/App/Support/AboutUs";
-import ContactUs from "./pages/App/Support/ContactUs";
-import FAQ from "./pages/App/Support/FAQ";
-import Gallery from "./pages/App/Gallery/Gallery";
-import TermsOfServicePage from "./pages/OtherPages/TermsOfService";
-import PrivacyPolicyPage from "./pages/OtherPages/PrivacyPolicy";
-import RefundPolicyPage from "./pages/OtherPages/RefundPolicy";
-import NotFound from "./pages/OtherPages/NotFound";
+const TeamDetails = lazy(() => import("./pages/App/Team/TeamDetails"));
+const AboutUs = lazy(() => import("./pages/App/Support/AboutUs"));
+const ContactUs = lazy(() => import("./pages/App/Support/ContactUs"));
+const FAQ = lazy(() => import("./pages/App/Support/FAQ"));
+const Gallery = lazy(() => import("./pages/App/Gallery/Gallery"));
+const TermsOfServicePage = lazy(
+  () => import("./pages/OtherPages/TermsOfService"),
+);
+const PrivacyPolicyPage = lazy(
+  () => import("./pages/OtherPages/PrivacyPolicy"),
+);
+const RefundPolicyPage = lazy(() => import("./pages/OtherPages/RefundPolicy"));
+const NotFound = lazy(() => import("./pages/OtherPages/NotFound"));
 
-// --- Auth & Registration Pages ---
-import Login from "./pages/App/Authentication/Login";
-import SignUp from "./pages/App/Authentication/SignUp";
+// --- Auth & Registration Pages (lazy) ---
+const Login = lazy(() => import("./pages/App/Authentication/Login"));
+const SignUp = lazy(() => import("./pages/App/Authentication/SignUp"));
 // import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
-import AdminLogin from "./pages/Admin/AdminLogin";
-import SuccessRegistration from "./pages/App/Authentication/SuccessRegistration";
-import RegistrationStatus from "./pages/App/Authentication/RegistrationStatus";
-import { UtrPublicUserSignUp } from "./pages/PublicUsers/UTRPublicUserSignUp";
-import SuccessURTEventRegistration from "./pages/PublicUsers/SuccessURTEventRegistration";
-import { FailedEventRegistration } from "./pages/App/Events/FailedEventRegistration";
-import TicketVerifier from "./pages/User/TicketVerifier";
+const AdminLogin = lazy(() => import("./pages/Admin/AdminLogin"));
+const SuccessRegistration = lazy(
+  () => import("./pages/App/Authentication/SuccessRegistration"),
+);
+const RegistrationStatus = lazy(
+  () => import("./pages/App/Authentication/RegistrationStatus"),
+);
+const UtrPublicUserSignUp = lazy(() =>
+  import("./pages/PublicUsers/UTRPublicUserSignUp").then((m) => ({
+    default: m.UtrPublicUserSignUp,
+  })),
+);
+const SuccessURTEventRegistration = lazy(
+  () => import("./pages/PublicUsers/SuccessURTEventRegistration"),
+);
+const FailedEventRegistration = lazy(() =>
+  import("./pages/App/Events/FailedEventRegistration").then((m) => ({
+    default: m.FailedEventRegistration,
+  })),
+);
+const TicketVerifier = lazy(() => import("./pages/User/TicketVerifier"));
 
-// --- Standard User Components ---
-import UserDashboard from "./pages/User/UserDashboard";
-import UserProfilePage from "./pages/User/UserProfilePage";
-import CreditsPage from "./pages/User/Credits/CreditsPage";
-import ShowCreditPage from "./pages/User/Credits/ShowCreditsPage";
-import UserEventRegistrationCards from "./pages/User/Events/UserEventRegistrationsPage";
-import ShowEventRegistrationPage from "./pages/User/Events/ShowEventRegistrationPage";
+// --- Standard User Components (lazy) ---
+const UserDashboard = lazy(() => import("./pages/User/UserDashboard"));
+const UserProfilePage = lazy(() => import("./pages/User/UserProfilePage"));
+const CreditsPage = lazy(() => import("./pages/User/Credits/CreditsPage"));
+const ShowCreditPage = lazy(
+  () => import("./pages/User/Credits/ShowCreditsPage"),
+);
+const UserEventRegistrationCards = lazy(
+  () => import("./pages/User/Events/UserEventRegistrationsPage"),
+);
+const ShowEventRegistrationPage = lazy(
+  () => import("./pages/User/Events/ShowEventRegistrationPage"),
+);
 
-// --- Executive Body Member (EBM) Components ---
-import EBMDashboard from "./pages/ExecutiveBodyMember/EBMDashboard";
-import CreateEvent from "./pages/ExecutiveBodyMember/Events/CreateEvent";
-import MyEvents from "./pages/ExecutiveBodyMember/Events/MyEvents";
-import EventRegistrationsPage from "./pages/ExecutiveBodyMember/EventRegistrations/EventRegistrationsPage";
+// --- Executive Body Member (EBM) Components (lazy) ---
+const EBMDashboard = lazy(
+  () => import("./pages/ExecutiveBodyMember/EBMDashboard"),
+);
+const CreateEvent = lazy(
+  () => import("./pages/ExecutiveBodyMember/Events/CreateEvent"),
+);
+const MyEvents = lazy(
+  () => import("./pages/ExecutiveBodyMember/Events/MyEvents"),
+);
+const EventRegistrationsPage = lazy(
+  () =>
+    import("./pages/ExecutiveBodyMember/EventRegistrations/EventRegistrationsPage"),
+);
 // import ShowUTREventRegistrations from "./pages/ExecutiveBodyMember/EventRegistrations/ShowUTREventRegistrations";
-import EBMPendingApprovals from "./pages/ExecutiveBodyMember/EBMPendingApprovals";
-import ApplicantDetailsPage from "./pages/ExecutiveBodyMember/Users/ApplicationDetails";
-import ApprovalHistoryDetailsPage from "./pages/ExecutiveBodyMember/Users/ApprovalHistoryDetailsPage";
+const EBMPendingApprovals = lazy(
+  () => import("./pages/ExecutiveBodyMember/EBMPendingApprovals"),
+);
+const ApplicantDetailsPage = lazy(
+  () => import("./pages/ExecutiveBodyMember/Users/ApplicationDetails"),
+);
+const ApprovalHistoryDetailsPage = lazy(
+  () =>
+    import("./pages/ExecutiveBodyMember/Users/ApprovalHistoryDetailsPage"),
+);
 // import EbmDeskSale from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmDeskSale";
 // import EbmCollectionsList from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmCollectionsList";
 // import EbmTicketSuccess from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmTicketSuccess";
 
-// --- Membership Head (MH) Components ---
-import MHDashboard from "./pages/MembershipHead/Dashboard/MHDashboard";
-import MHUserManagement from "./pages/MembershipHead/Users/MHUserManagement";
-import PendingApprovals from "./pages/MembershipHead/Approvals/PendingApprovals";
-import MyApprovals from "./pages/MembershipHead/Approvals/MyApprovals";
-import { UserStatsCards } from "./components/ui/shared/users/UserStatsCards";
+// --- Membership Head (MH) Components (lazy) ---
+const MHDashboard = lazy(
+  () => import("./pages/MembershipHead/Dashboard/MHDashboard"),
+);
+const MHUserManagement = lazy(
+  () => import("./pages/MembershipHead/Users/MHUserManagement"),
+);
+const PendingApprovals = lazy(
+  () => import("./pages/MembershipHead/Approvals/PendingApprovals"),
+);
+const MyApprovals = lazy(
+  () => import("./pages/MembershipHead/Approvals/MyApprovals"),
+);
+const UserStatsCards = lazy(() =>
+  import("./components/ui/shared/users/UserStatsCards").then((m) => ({
+    default: m.UserStatsCards,
+  })),
+);
 
-// --- Credit Manager (CM) Components ---
-import CMDashboard from "./pages/CreditManager/CMDashboard";
-import CreditEventRegistrationsPage from "./pages/CreditManager/CreditEventRegistrationsPage";
-import EventsListPage from "./pages/CreditManager/EventsListPage";
-import EventRegistrationsListPage from "./pages/CreditManager/EventRegistrationsListPage";
-import RegistrationDetailPage from "./pages/CreditManager/RegistrationDetailPage";
+// --- Credit Manager (CM) Components (lazy) ---
+const CMDashboard = lazy(() => import("./pages/CreditManager/CMDashboard"));
+const CreditEventRegistrationsPage = lazy(
+  () => import("./pages/CreditManager/CreditEventRegistrationsPage"),
+);
+const EventsListPage = lazy(
+  () => import("./pages/CreditManager/EventsListPage"),
+);
+const RegistrationDetailPage = lazy(
+  () => import("./pages/CreditManager/RegistrationDetailPage"),
+);
+// --- Admin (lazy) ---
+const AdminDashboard = lazy(() => import("./pages/Admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("./pages/Admin/AdminUsers"));
+const AdminAnalytics = lazy(() => import("./pages/Admin/AdminAnalytics"));
+const AdminEventsFull = lazy(() => import("./pages/Admin/AdminEventsFull"));
+const AdminApprovals = lazy(() => import("./pages/Admin/AdminApprovals"));
+const AdminTeam = lazy(() => import("./pages/Admin/AdminTeam"));
+const AdminUserApprovalMgmt = lazy(() => import("./pages/Admin/AdminUserApprovalMgmt"));
+const AdminRegistrationsFull = lazy(() => import("./pages/Admin/AdminRegistrationsFull"));
+const AdminTicketsPage = lazy(() => import("./pages/Admin/AdminTicketsPage"));
+const AdminUsersByRole = lazy(() => import("./pages/Admin/AdminUsersByRole"));
+const AdminSettings = lazy(() => import("./pages/Admin/AdminSettings"));
+const AdminLayout = lazy(() => import("./layouts/admin/AdminLayout"));
 
 // --- Helper Components ---
 
@@ -87,14 +163,18 @@ function PrivateRoute() {
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
+// Chunk-load placeholder while a lazy route resolves
+function RouteFallback() {
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-zinc-400 dark:text-[#667085]" />
+    </div>
+  );
+}
+
 // --- Main App Component ---
 function App() {
   const location = useLocation();
-
-  // Wrapper to pass state as props
-  const SuccessWrapper = () => {
-    return <SuccessURTEventRegistration />;
-  };
 
   return (
     <AuthProvider>
@@ -102,6 +182,7 @@ function App() {
       <ScrollToTop />
 
       <AnimatePresence mode="wait">
+        <Suspense fallback={<RouteFallback />}>
         <Routes location={location} key={location.pathname}>
           {/* ================= PUBLIC ROUTES ================= */}
           <Route path="/" element={<MainLayout />}>
@@ -149,10 +230,7 @@ function App() {
           />
           <Route
             path="/success-event-registration"
-            element={
-              // Wrap with a small component to extract location state if needed
-              <SuccessWrapper />
-            }
+            element={<SuccessURTEventRegistration />}
           />
           <Route
             path="/failed-event-registration"
@@ -253,10 +331,6 @@ function App() {
                 element={<EventsListPage />}
               />
               <Route
-                path="/:username/credit_manager/event-registrations"
-                element={<EventRegistrationsListPage />}
-              />
-              <Route
                 path="/:username/credit_manager/registrations/:registrationUuid"
                 element={<RegistrationDetailPage />}
               />
@@ -308,10 +382,6 @@ function App() {
               />
 
               <Route
-                path="/:username/credit_manager/event-registrations"
-                element={<EventRegistrationsListPage />}
-              />
-              <Route
                 path="/:username/credit_manager/registrations/:registrationUuid"
                 element={<RegistrationDetailPage />}
               />
@@ -323,9 +393,28 @@ function App() {
 
             </Route> */}
           </Route>
+          {/* ================= ADMIN ROUTES — full api.php coverage ================= */}
+          <Route element={<AdminLayout />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/analytics" element={<AdminAnalytics />} />
+            <Route path="/admin/events" element={<AdminEventsFull />} />
+            <Route path="/admin/approvals" element={<AdminApprovals />} />
+            <Route path="/admin/team" element={<AdminTeam />} />
+            <Route path="/admin/user-approvals" element={<AdminUserApprovalMgmt />} />
+            <Route path="/admin/registrations" element={<AdminRegistrationsFull />} />
+            <Route path="/admin/tickets" element={<AdminTicketsPage />} />
+            <Route path="/admin/users-by-role" element={<AdminUsersByRole />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
+            {/* legacy aliases */}
+            <Route path="/admin/team-profiles" element={<AdminTeam />} />
+            <Route path="/admin/event-registrations" element={<AdminRegistrationsFull />} />
+          </Route>
+
           {/* ================= 404 FALLBACK ================= */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </AnimatePresence>
 
       {/* Toast Notifications */}

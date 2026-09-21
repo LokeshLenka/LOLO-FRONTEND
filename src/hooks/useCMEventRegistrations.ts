@@ -253,6 +253,32 @@ export function useCMEventRegistrations(eventUuid?: string) {
     }
   };
 
+  const bulkUpdate = async (payload: { user_ids: number[]; amount: number }) => {
+    if (!eventUuid) return false;
+    try {
+      const res = await axios.put(
+        `${API_BASE_URL}/credit-manager/event/${eventUuid}/credits/batch`,
+        payload,
+        { headers: getHeaders() }
+      );
+      const summary = res.data?.data?.summary;
+      toast.success(
+        summary
+          ? `Bulk update done: ${summary.processed_count} updated, ${summary.failed_count} failed`
+          : "Bulk credit update completed"
+      );
+      await mutate();
+      return true;
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.error ||
+          err?.response?.data?.message ||
+          "Failed to bulk update credits"
+      );
+      return false;
+    }
+  };
+
   return {
     registrations: data?.data ?? [],
     event: data?.event ?? null,
@@ -275,5 +301,6 @@ export function useCMEventRegistrations(eventUuid?: string) {
     assignCredit,
     updateCredit,
     bulkAssign,
+    bulkUpdate,
   };
 }

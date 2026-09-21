@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditFormSheet } from "@/components/credit-manager/CreditFormSheet";
+import { CMBreadcrumb } from "@/components/credit-manager/CMBreadcrumb";
 import { EligibilityBadge, type EligibilityStatus } from "@/components/credit-manager/EligibilityBadge";
 import { assignerName, canManageCredit } from "@/components/credit-manager/creditUtils";
 import { useCMRegistrationDetail } from "@/hooks/useCMRegistrationDetail";
@@ -174,6 +175,21 @@ export default function RegistrationDetailPage() {
       animate="visible"
       className="space-y-6"
     >
+      <CMBreadcrumb
+        items={[
+          { label: "Dashboard", to: `/${username}/credit_manager/dashboard` },
+          { label: "Events", to: `/${username}/credit_manager/events` },
+          ...(registration?.event?.uuid
+            ? [
+                {
+                  label: registration.event.name ?? "Event",
+                  to: `/${username}/credit_manager/events/${registration.event.uuid}/registrations`,
+                },
+              ]
+            : []),
+          { label: registration?.user?.username ?? "Registration" },
+        ]}
+      />
       <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-[#344054] md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
@@ -189,13 +205,18 @@ export default function RegistrationDetailPage() {
 
         <Button
           variant="outline"
-          onClick={() =>
-            navigate(`/${username}/credit_manager/event-registrations`)
-          }
-          className="rounded-none border-zinc-300 dark:border-[#344054]"
+          onClick={() => {
+            const eventUuid = registration?.event?.uuid;
+            navigate(
+              eventUuid
+                ? `/${username}/credit_manager/events/${eventUuid}/registrations`
+                : `/${username}/credit_manager/events`,
+            );
+          }}
+          className="min-h-[44px] w-full justify-center rounded-none border-zinc-300 sm:w-auto dark:border-[#344054]"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Registrations
+          {registration?.event?.uuid ? "Back to Event" : "Back to Events"}
         </Button>
       </div>
 
@@ -379,7 +400,7 @@ export default function RegistrationDetailPage() {
                   }
                 />
 
-                <div className="mt-5 flex flex-wrap items-center gap-3">
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                   <Button
                     onClick={() => setIsFormOpen(true)}
                     disabled={creditBlocked || (credit ? !canManageCredit(credit) : false)}
@@ -390,7 +411,7 @@ export default function RegistrationDetailPage() {
                           ? "Only the manager who assigned this credit (or an admin) can edit it"
                           : "Assign or edit credit"
                     }
-                    className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
+                    className="min-h-[44px] w-full justify-center rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 sm:w-auto dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
                   >
                     {credit ? (
                       <>
@@ -413,7 +434,7 @@ export default function RegistrationDetailPage() {
                           `/${username}/credit_manager/events/${registration.event.uuid}/registrations`,
                         )
                       }
-                      className="rounded-none border-zinc-300 dark:border-[#344054]"
+                      className="min-h-[44px] w-full justify-center rounded-none border-zinc-300 sm:w-auto dark:border-[#344054]"
                     >
                       <CalendarRange className="mr-2 h-4 w-4" />
                       Event View

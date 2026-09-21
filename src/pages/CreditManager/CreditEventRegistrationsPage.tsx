@@ -41,8 +41,12 @@ import {
 } from "@/components/ui/table";
 import { TablePagination } from "@/components/pagination/TablePagination";
 import { CreditFormSheet } from "@/components/credit-manager/CreditFormSheet";
+import { CMBreadcrumb } from "@/components/credit-manager/CMBreadcrumb";
 import { EligibilityBadge } from "@/components/credit-manager/EligibilityBadge";
-import { assignerName, canManageCredit } from "@/components/credit-manager/creditUtils";
+import {
+  assignerName,
+  canManageCredit,
+} from "@/components/credit-manager/creditUtils";
 import {
   useCMEventRegistrations,
   type CMEventRegistrationItem,
@@ -185,6 +189,7 @@ export default function CreditEventRegistrationsPage() {
     assignCredit,
     updateCredit,
     bulkAssign,
+    bulkUpdate,
   } = useCMEventRegistrations(eventUuid);
 
   const [selectedRow, setSelectedRow] =
@@ -193,43 +198,68 @@ export default function CreditEventRegistrationsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [isBulkOpen, setIsBulkOpen] = useState(false);
+  const [bulkMode, setBulkMode] = useState<"assign" | "update">("assign");
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const stats = useMemo(() => {
     const total = registrations.length;
     const credited = registrations.filter((r) => r.credit !== null).length;
     const uncredited = total - credited;
-    const management = registrations.filter((r) => r.is_management_member).length;
+    const management = registrations.filter(
+      (r) => r.is_management_member,
+    ).length;
     return { total, credited, uncredited, management };
   }, [registrations]);
 
   const eventName =
-    eventMeta?.name ?? registrations[0]?.event?.name ?? "Event credit management";
+    eventMeta?.name ??
+    registrations[0]?.event?.name ??
+    "Event credit management";
   const eventType = eventMeta?.type ?? registrations[0]?.event?.type;
-  const maxCredits = eventMeta?.credits_awarded ?? registrations[0]?.event?.credits_awarded;
+  const maxCredits =
+    eventMeta?.credits_awarded ?? registrations[0]?.event?.credits_awarded;
   const isPublicEvent = (eventType ?? "").toLowerCase() === "public";
 
-  const bulkEligible = useMemo(
+  const isRowSelectable = (row: CMEventRegistrationItem) =>
+    (row.eligibility_status === "management" ||
+      row.eligibility_status === "registered" ||
+      row.eligibility_status === "eligible") &&
+    (!row.credit || canManageCredit(row.credit));
+
+  const selectableRows = useMemo(
+    () => registrations.filter(isRowSelectable),
+    [registrations],
+  );
+
+  const selectedAssignableIds = useMemo(
     () =>
-      registrations.filter(
-        (r) =>
-          !r.credit &&
-          (r.eligibility_status === "management" ||
-            r.eligibility_status === "registered" ||
-            r.eligibility_status === "eligible")
-      ),
-    [registrations]
+      selectableRows
+        .filter((r) => !r.credit && selectedIds.includes(r.user_id))
+        .map((r) => r.user_id),
+    [selectableRows, selectedIds],
+  );
+
+  const selectedUpdatableIds = useMemo(
+    () =>
+      selectableRows
+        .filter((r) => r.credit && selectedIds.includes(r.user_id))
+        .map((r) => r.user_id),
+    [selectableRows, selectedIds],
   );
 
   const toggleSelect = (userId: number) => {
     setSelectedIds((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId],
     );
   };
 
   const toggleSelectAll = () => {
-    const ids = bulkEligible.map((r) => r.user_id);
-    setSelectedIds((prev) => (prev.length === ids.length ? [] : ids));
+    const ids = selectableRows.map((r) => r.user_id);
+    setSelectedIds((prev) =>
+      prev.length === ids.length && ids.length > 0 ? [] : ids,
+    );
   };
 
   const openAssign = (row: CMEventRegistrationItem) => {
@@ -257,10 +287,21 @@ export default function CreditEventRegistrationsPage() {
     });
   };
 
+  const openBulk = (mode: "assign" | "update") => {
+    setBulkMode(mode);
+    setIsBulkOpen(true);
+  };
+
   const handleBulkSubmit = async (amount: number) => {
-    const ok = await bulkAssign({ user_ids: selectedIds, amount });
+    const ids =
+      bulkMode === "assign" ? selectedAssignableIds : selectedUpdatableIds;
+    if (ids.length === 0) return;
+    const ok =
+      bulkMode === "assign"
+        ? await bulkAssign({ user_ids: ids, amount })
+        : await bulkUpdate({ user_ids: ids, amount });
     if (ok) {
-      setSelectedIds([]);
+      setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
       setIsBulkOpen(false);
     }
   };
@@ -274,6 +315,13 @@ export default function CreditEventRegistrationsPage() {
       animate="visible"
       className="space-y-6"
     >
+      <CMBreadcrumb
+        items={[
+          { label: "Dashboard", to: `/${username}/credit_manager/dashboard` },
+          { label: "Events", to: `/${username}/credit_manager/events` },
+          { label: eventName },
+        ]}
+      />
       <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-[#344054] md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
@@ -283,14 +331,15 @@ export default function CreditEventRegistrationsPage() {
             {eventName}
           </h1>
           <p className="text-sm text-zinc-500 dark:text-[#98A2B3]">
-            Assign credits to participants and management members for this event.
+            Assign credits to participants and management members for this
+            event.
           </p>
         </div>
 
         <Button
           variant="outline"
           onClick={() => navigate(`/${username}/credit_manager/events`)}
-          className="rounded-none border-zinc-300 dark:border-[#344054]"
+          className="min-h-[44px] w-full justify-center rounded-none border-zinc-300 sm:w-auto dark:border-[#344054]"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           All events
@@ -310,16 +359,30 @@ export default function CreditEventRegistrationsPage() {
           <p className="font-medium">Who can receive credits for this event?</p>
           <ul className="mt-1 list-disc space-y-0.5 pl-5 text-[13px]">
             <li>Registered members are eligible for credits.</li>
-            <li>Management members are eligible with or without registration.</li>
+            <li>
+              Management members are eligible with or without registration.
+            </li>
           </ul>
         </div>
       )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <StatCard title="Shown" value={stats.total} icon={UserRound} />
-        <StatCard title="Management" value={stats.management} icon={ShieldCheck} />
-        <StatCard title="Credited" value={stats.credited} icon={CircleDollarSign} />
-        <StatCard title="Uncredited" value={stats.uncredited} icon={CreditCard} />
+        <StatCard
+          title="Management"
+          value={stats.management}
+          icon={ShieldCheck}
+        />
+        <StatCard
+          title="Credited"
+          value={stats.credited}
+          icon={CircleDollarSign}
+        />
+        <StatCard
+          title="Uncredited"
+          value={stats.uncredited}
+          icon={CreditCard}
+        />
       </div>
 
       <Card className="rounded-none border-zinc-200 shadow-none dark:border-[#344054] dark:bg-[#161F2E]">
@@ -329,7 +392,8 @@ export default function CreditEventRegistrationsPage() {
               Eligible members
               {eventType ? (
                 <span className="ml-2 align-middle text-[10px] font-normal uppercase tracking-[0.2em] text-zinc-500">
-                  {eventType} event{maxCredits != null ? ` · max ${maxCredits}` : ""}
+                  {eventType} event
+                  {maxCredits != null ? ` · max ${maxCredits}` : ""}
                 </span>
               ) : null}
             </CardTitle>
@@ -365,7 +429,8 @@ export default function CreditEventRegistrationsPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Member tabs — segmented 2-up on mobile */}
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
             {MEMBER_TABS.map((tab) => (
               <Button
                 key={tab.value}
@@ -379,7 +444,7 @@ export default function CreditEventRegistrationsPage() {
                     member_type: tab.value as typeof prev.member_type,
                   }));
                 }}
-                className={`rounded-none ${
+                className={`min-h-[44px] justify-center rounded-none ${
                   activeTab === tab.value
                     ? "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-[#7F56D9] dark:text-white"
                     : "border-zinc-300 dark:border-[#344054]"
@@ -388,23 +453,60 @@ export default function CreditEventRegistrationsPage() {
                 {tab.label}
               </Button>
             ))}
-            <div className="ml-auto flex items-center gap-2">
-              <span className="text-xs text-zinc-500 dark:text-[#98A2B3]">
-                {selectedIds.length} selected
-              </span>
-              <Button
-                size="sm"
-                disabled={selectedIds.length === 0}
-                onClick={() => setIsBulkOpen(true)}
-                className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
-              >
-                Bulk assign
-              </Button>
+          </div>
+
+          {/* Selection + bulk actions */}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+            <div className="flex flex-1 flex-col gap-3 border border-zinc-200 bg-zinc-50 p-3 sm:flex-row sm:items-center dark:border-[#344054] dark:bg-[#1D2939]">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm text-zinc-600 dark:text-[#98A2B3]">
+                  <span className="font-semibold text-zinc-950 dark:text-[#F2F4F7]">
+                    {selectedIds.length}
+                  </span>{" "}
+                  selected
+                  <span className="ml-1 text-xs">
+                    · {selectedAssignableIds.length} to assign ·{" "}
+                    {selectedUpdatableIds.length} to update
+                  </span>
+                </p>
+                {selectedIds.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedIds([])}
+                    className="min-h-[44px] shrink-0 rounded-none px-3"
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-2 sm:ml-auto sm:flex sm:items-center">
+                <Button
+                  size="sm"
+                  disabled={selectedAssignableIds.length === 0}
+                  onClick={() => openBulk("assign")}
+                  title="Assign credits to selected uncredited members"
+                  className="min-h-[44px] rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
+                >
+                  Assign ({selectedAssignableIds.length})
+                </Button> 
+                <Button
+                  size="sm"
+                  disabled={selectedUpdatableIds.length === 0}
+                  onClick={() => openBulk("update")}
+                  title="Update credits for selected credited members"
+                  className="min-h-[44px] rounded-none border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-100 disabled:opacity-50 dark:border-[#344054] dark:bg-transparent dark:text-[#F2F4F7] dark:hover:bg-[#253247]"
+                >
+                  Update ({selectedUpdatableIds.length})
+                </Button>
+              </div>
+            </div>
+            <div className="border border-zinc-200 bg-zinc-50 p-3 sm:flex-row sm:items-center dark:border-[#344054] dark:bg-[#1D2939]">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => refresh()}
-                className="rounded-none border-zinc-300 dark:border-[#344054]"
+                className="min-h-[44px] w-full rounded-none border-zinc-300 sm:w-auto dark:border-[#344054] my-auto"
               >
                 Refresh
               </Button>
@@ -434,15 +536,119 @@ export default function CreditEventRegistrationsPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              {/* Mobile cards — no horizontal scroll, full-width tap targets */}
+              <div className="space-y-3 p-4 md:hidden">
+                {registrations.map((row) => {
+                  const selectable = isRowSelectable(row);
+                  const isRegisteredView =
+                    row.is_registered && !row.uuid.startsWith("mgmt_");
+                  const credited = Boolean(row.credit);
+                  return (
+                    <div
+                      key={`${row.user_id}-${row.uuid}`}
+                      className={`border border-zinc-200 border-l-4 bg-white p-4 dark:border-[#344054] dark:bg-[#1D2939] ${
+                        credited ? "border-l-emerald-500" : "border-l-amber-400"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={selectedIds.includes(row.user_id)}
+                          disabled={!selectable}
+                          onCheckedChange={() => toggleSelect(row.user_id)}
+                          aria-label={`Select ${row.user.username}`}
+                          className="h-5 w-5 shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-medium text-zinc-950 dark:text-[#F2F4F7]">
+                            {row.user.username}
+                          </p>
+                          <p className="truncate text-xs capitalize text-zinc-500 dark:text-[#98A2B3]">
+                            {memberSubRole(row)}
+                            {row.is_management_member ? " · management" : ""}
+                          </p>
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <p className="font-medium text-zinc-950 dark:text-[#F2F4F7]">
+                            {formatAmount(row.credit?.amount)}
+                          </p>
+                          <p
+                            className={`text-[10px] uppercase tracking-[0.15em] ${
+                              credited
+                                ? "text-emerald-600 dark:text-emerald-400"
+                                : "text-amber-600 dark:text-amber-400"
+                            }`}
+                          >
+                            {credited ? "Credited" : "Uncredited"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        <EligibilityBadge
+                          status={row.eligibility_status}
+                          size="sm"
+                        />
+                        {renderRegistrationStatus(row.registration_status)}
+                        {renderCreditStatus(Boolean(row.credit))}
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            if (isRegisteredView) {
+                              navigate(
+                                `/${username}/credit_manager/registrations/${row.uuid}`,
+                              );
+                            } else {
+                              setSelectedRow(row);
+                              setIsDetailOpen(true);
+                            }
+                          }}
+                          className="min-h-[44px] rounded-none border-zinc-300 dark:border-[#344054]"
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          View
+                        </Button>
+                        {row.credit ? (
+                          <Button
+                            disabled={!canManageCredit(row.credit)}
+                            onClick={() => openEdit(row)}
+                            className="min-h-[44px] rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit
+                          </Button>
+                        ) : (
+                          <Button
+                            disabled={
+                              row.eligibility_status === "pending" ||
+                              row.eligibility_status === "public" ||
+                              row.eligibility_status === "not_eligible"
+                            }
+                            onClick={() => openAssign(row)}
+                            className="min-h-[44px] rounded-none bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
+                          >
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            Assign
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden overflow-x-auto md:block">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-zinc-200 bg-zinc-50 hover:bg-zinc-50 dark:border-[#344054] dark:bg-[#1D2939] dark:hover:bg-[#253247]">
                       <TableHead className="w-12">
                         <Checkbox
                           checked={
-                            bulkEligible.length > 0 &&
-                            selectedIds.length === bulkEligible.length
+                            selectableRows.length > 0 &&
+                            selectedIds.length === selectableRows.length
                           }
                           onCheckedChange={toggleSelectAll}
                           aria-label="Select all"
@@ -471,11 +677,7 @@ export default function CreditEventRegistrationsPage() {
 
                   <TableBody>
                     {registrations.map((row) => {
-                      const selectable =
-                        !row.credit &&
-                        row.eligibility_status !== "public" &&
-                        row.eligibility_status !== "not_eligible" &&
-                        row.eligibility_status !== "pending";
+                      const selectable = isRowSelectable(row);
                       return (
                         <TableRow
                           key={`${row.user_id}-${row.uuid}`}
@@ -497,13 +699,18 @@ export default function CreditEventRegistrationsPage() {
                               </p>
                               <p className="text-xs capitalize text-zinc-500 dark:text-[#98A2B3]">
                                 {memberSubRole(row)}
-                                {row.is_management_member ? " · management" : ""}
+                                {row.is_management_member
+                                  ? " · management"
+                                  : ""}
                               </p>
                             </div>
                           </TableCell>
 
                           <TableCell>
-                            <EligibilityBadge status={row.eligibility_status} size="sm" />
+                            <EligibilityBadge
+                              status={row.eligibility_status}
+                              size="sm"
+                            />
                           </TableCell>
 
                           <TableCell>
@@ -520,13 +727,14 @@ export default function CreditEventRegistrationsPage() {
 
                           <TableCell>
                             <div className="flex items-center justify-end gap-2">
-                              {row.is_registered && !row.uuid.startsWith("mgmt_") ? (
+                              {row.is_registered &&
+                              !row.uuid.startsWith("mgmt_") ? (
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() =>
                                     navigate(
-                                      `/${username}/credit_manager/registrations/${row.uuid}`
+                                      `/${username}/credit_manager/registrations/${row.uuid}`,
                                     )
                                   }
                                   className="rounded-none border-zinc-300 dark:border-[#344054]"
@@ -645,10 +853,11 @@ export default function CreditEventRegistrationsPage() {
                   }
                 />
               </div>
-              {selectedRow.is_management_member && !selectedRow.is_registered ? (
+              {selectedRow.is_management_member &&
+              !selectedRow.is_registered ? (
                 <p className="border border-blue-200 bg-blue-50 p-3 text-[13px] text-blue-800 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300">
-                  Management member — eligible without event registration. Credits
-                  can be assigned directly from this page.
+                  Management member — eligible without event registration.
+                  Credits can be assigned directly from this page.
                 </p>
               ) : null}
             </div>
@@ -706,8 +915,13 @@ export default function CreditEventRegistrationsPage() {
       <CreditFormSheet
         open={isBulkOpen}
         onOpenChange={setIsBulkOpen}
-        mode="create"
-        username={`Bulk assignment · ${selectedIds.length} members`}
+        mode={bulkMode === "assign" ? "create" : "edit"}
+        title={bulkMode === "assign" ? "Bulk Assign" : "Bulk Update"}
+        username={`${
+          bulkMode === "assign"
+            ? selectedAssignableIds.length
+            : selectedUpdatableIds.length
+        } members`}
         eventName={eventName}
         initialAmount={maxCredits ?? ""}
         onSubmit={handleBulkSubmit}
@@ -722,7 +936,9 @@ function InfoItem({ label, value }: { label: string; value: string }) {
       <p className="mb-1 text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
         {label}
       </p>
-      <p className="break-all text-sm text-zinc-900 dark:text-[#F2F4F7]">{value}</p>
+      <p className="break-all text-sm text-zinc-900 dark:text-[#F2F4F7]">
+        {value}
+      </p>
     </div>
   );
 }

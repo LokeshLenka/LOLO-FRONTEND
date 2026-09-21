@@ -129,7 +129,7 @@ const RegistrationCard = memo<{
         viewport={{ once: true }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        <article className="p-8 rounded-3xl bg-white/[0.04] border border-white/5 shadow-2xl relative overflow-hidden backdrop-blur-sm">
+        <article className="p-8 rounded-3xl bg-white/[0.06] backdrop-blur-md relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-lolo-pink/5 via-transparent to-transparent pointer-events-none" />
 
           <h3 className="text-2xl font-bold mb-2 text-white relative z-10">
@@ -553,61 +553,44 @@ const EventDetails: React.FC = () => {
                 }
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
               {[
                 {
                   icon: Globe,
                   label: "Reg. Mode",
                   val: event.registration_mode,
-                  sub: event.registration_place,
-                  // Store the full border class you want to apply
-                  borderColor: "border-l-blue-400",
-                  iconColor: "text-blue-400",
                 },
                 {
                   icon: Users,
                   label: "Capacity",
                   val: `${event.max_participants} Participants`,
-                  borderColor: "border-l-purple-400",
-                  iconColor: "text-purple-400",
                 },
                 {
                   icon: Trophy,
                   label: "Credits",
                   val: `${event.credits_awarded} Points`,
-                  borderColor: "border-l-yellow-400",
-                  iconColor: "text-yellow-400",
                 },
                 {
                   icon: CreditCard,
                   label: "Entry Fee",
                   val: event.fee > 0 ? `₹${event.fee}` : "Free Entry",
-                  borderColor: "border-l-green-400",
-                  iconColor: "text-green-400",
                 },
               ].map((item, idx) => (
                 <div
                   key={idx}
-                  // Use the full class string directly
-                  className={`border-l rounded-r-xl rounded-l-xl bg-white/[0.03] h-20 border-l-lolo-pink p-5 flex items-center gap-5 transition-all hover:bg-white/[0.05]`}
+                  className="group relative overflow-hidden rounded-2xl bg-white/[0.06] p-5 backdrop-blur-md transition-all duration-300 hover:bg-white/[0.08] hover:-translate-y-0.5"
                 >
-                  <div
-                    className={`p-3 rounded-full bg-white/5 ${item.iconColor}`}
-                  >
-                    <item.icon size={24} />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1">
-                      {item.label}
-                    </p>
-                    <p className="text-white font-bold text-lg capitalize leading-tight">
-                      {item.val}
-                    </p>
-                    {item.sub && (
-                      <p className="text-xs text-neutral-400 mt-1 font-medium">
-                        {item.sub}
+                  <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full bg-lolo-pink/[0.06] blur-2xl group-hover:bg-lolo-pink/[0.09] transition-colors" />
+                  <div className="relative flex items-center gap-4">
+                    <item.icon size={24} className="text-lolo-pink shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-[0.2em] mb-1">
+                        {item.label}
                       </p>
-                    )}
+                      <p className="text-white font-extrabold text-xl capitalize leading-tight truncate">
+                        {item.val}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -636,30 +619,45 @@ const EventDetails: React.FC = () => {
                   }
                 />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-                {activeCoordinators.map((coord, idx) => (
-                  <div
-                    key={idx}
-                    // className="bg-white/[0.05] border-2 border-white/5 rounded-3xl p-5 hover:bg-white/[0.04] transition-colors group"
-                    className="border-l rounded-r-lg rounded-l-lg bg-white/1 border-l-lolo-pink p-4 transition-colors group flex flex-col items-center text-center gap-2"
-                  >
-                    <div className="w-12 h-12 bg-pink-500/10 rounded-full flex items-center justify-center text-lolo-pink mb-4 group-hover:scale-110 transition-transform">
-                      <User size={20} />
-                    </div>
-                    <h4 className="font-bold text-white text-lg">
-                      {coord.name}
-                    </h4>
-                    <p className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest mb-3">
-                      {coord.role.replace(/_/g, " ")}
-                    </p>
-                    <a
-                      href={`tel:${coord.phone}`}
-                      className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
+                {activeCoordinators.map((coord, idx) => {
+                  const initials = coord.name
+                    .split(" ")
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((w) => w[0])
+                    .join("")
+                    .toUpperCase();
+                  return (
+                    <div
+                      key={idx}
+                      className="group relative overflow-hidden rounded-2xl bg-white/[0.06] p-5 backdrop-blur-md transition-all duration-300 hover:bg-white/[0.08] hover:-translate-y-0.5"
                     >
-                      <Phone size={14} /> {coord.phone}
-                    </a>
-                  </div>
-                ))}
+                      <div className="flex items-center gap-4">
+                        <div
+                          className="w-12 h-12 rounded-full bg-gradient-to-br from-lolo-pink to-fuchsia-800 flex items-center justify-center text-white font-extrabold text-sm shrink-0 shadow-lg group-hover:scale-105 transition-transform"
+                          aria-hidden="true"
+                        >
+                          {initials || <User size={20} />}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-bold text-white text-base leading-snug truncate">
+                            {coord.name}
+                          </h4>
+                          <p className="mt-0.5 text-xs text-neutral-400 font-medium capitalize truncate">
+                            {coord.role.replace(/_/g, " ")}
+                          </p>
+                        </div>
+                      </div>
+                      <a
+                        href={`tel:${coord.phone}`}
+                        className="mt-4 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-white/10 text-sm font-semibold text-neutral-100 transition-all hover:bg-lolo-pink hover:text-white active:scale-[0.98]"
+                      >
+                        <Phone size={15} /> {coord.phone}
+                      </a>
+                    </div>
+                  );
+                })}
               </div>
             </motion.section>
           )}

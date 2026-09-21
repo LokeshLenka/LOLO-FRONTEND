@@ -21,6 +21,8 @@ interface CreditFormSheetProps {
   username: string;
   eventName: string;
   initialAmount?: number | string | null;
+  /** Overrides the sheet title (e.g. "Bulk Update" for batch edits). */
+  title?: string;
   onSubmit: (amount: number) => Promise<void>;
 }
 
@@ -31,6 +33,7 @@ export function CreditFormSheet({
   username,
   eventName,
   initialAmount,
+  title,
   onSubmit,
 }: CreditFormSheetProps) {
   const [amount, setAmount] = useState<string>("");
@@ -64,7 +67,7 @@ export function CreditFormSheet({
       >
         <SheetHeader className="border-b border-zinc-200 px-6 py-5 dark:border-[#344054]">
           <SheetTitle className="text-base font-semibold tracking-tight">
-            {mode === "create" ? "Assign Credit" : "Edit Credit"}
+            {title ?? (mode === "create" ? "Assign Credit" : "Edit Credit")}
           </SheetTitle>
           <SheetDescription className="text-sm text-zinc-500 dark:text-[#98A2B3]">
             {username} · {eventName}

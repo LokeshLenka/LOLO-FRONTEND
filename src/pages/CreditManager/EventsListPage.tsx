@@ -27,6 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TablePagination } from "@/components/pagination/TablePagination";
+import { CMBreadcrumb } from "@/components/credit-manager/CMBreadcrumb";
 import { useCMEvents } from "@/hooks/useCMEvents";
 
 const pageVariants: Variants = {
@@ -90,6 +91,12 @@ export default function EventsListPage() {
       animate="visible"
       className="space-y-6"
     >
+      <CMBreadcrumb
+        items={[
+          { label: "Dashboard", to: `/${username}/credit_manager/dashboard` },
+          { label: "Events" },
+        ]}
+      />
       <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-[#344054] md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">
@@ -162,7 +169,52 @@ export default function EventsListPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              {/* Mobile cards — no horizontal scroll, full-width tap targets */}
+              <div className="space-y-3 p-4 md:hidden">
+                {events.map((event) => (
+                  <div
+                    key={event.uuid}
+                    className="border border-zinc-200 bg-white p-4 dark:border-[#344054] dark:bg-[#1D2939]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 space-y-1">
+                        <p className="truncate font-medium text-zinc-950 dark:text-[#F2F4F7]">
+                          {event.name}
+                        </p>
+                        <p className="flex items-center gap-1 text-xs text-zinc-500 dark:text-[#98A2B3]">
+                          <CalendarRange className="h-3 w-3 shrink-0" />
+                          <span className="truncate">
+                            {event.venue ?? "Venue TBD"} ·{" "}
+                            {formatDate(event.end_date)}
+                          </span>
+                        </p>
+                      </div>
+                      {renderEventType(event.type)}
+                    </div>
+                    <div className="mt-3 flex items-center gap-1 text-sm text-zinc-600 dark:text-[#98A2B3]">
+                      <CircleDollarSign className="h-3.5 w-3.5" />
+                      Max credits:{" "}
+                      <span className="font-medium text-zinc-950 dark:text-[#F2F4F7]">
+                        {event.credits_awarded ?? "—"}
+                      </span>
+                    </div>
+                    <Button
+                      onClick={() =>
+                        navigate(
+                          `/${username}/credit_manager/events/${event.uuid}/registrations`,
+                        )
+                      }
+                      className="mt-3 min-h-[44px] w-full rounded-none bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
+                    >
+                      Manage
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden overflow-x-auto md:block">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-zinc-200 bg-zinc-50 hover:bg-zinc-50 dark:border-[#344054] dark:bg-[#1D2939] dark:hover:bg-[#253247]">

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 import { useCMDashboard } from "@/hooks/useCMDashboard";
+import { CMBreadcrumb } from "@/components/credit-manager/CMBreadcrumb";
 import { CreditStatsCard } from "@/components/credit-manager/CreditStatsCard";
 import { EventCreditProgressList } from "@/components/credit-manager/EventCreditProgress";
 import { RecentActivityFeed } from "@/components/credit-manager/RecentActivityFeed";
@@ -96,6 +97,7 @@ export default function CMDashboard() {
 
   return (
     <motion.div variants={pageVariants} initial="hidden" animate="visible" className="space-y-6">
+      <CMBreadcrumb items={[{ label: "Dashboard" }]} />
       <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 dark:border-[#344054] md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 dark:text-[#667085]">Credit Manager</p>
@@ -105,13 +107,13 @@ export default function CMDashboard() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => refresh()} className="rounded-none border-zinc-300 dark:border-[#344054]">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Button variant="outline" onClick={() => refresh()} className="min-h-[44px] w-full justify-center rounded-none border-zinc-300 sm:w-auto dark:border-[#344054]">
             Refresh
           </Button>
           <Button
             onClick={() => navigate(`/${username}/credit_manager/events`)}
-            className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
+            className="min-h-[44px] w-full justify-center rounded-none bg-zinc-900 text-white hover:bg-zinc-800 sm:w-auto dark:bg-[#7F56D9] dark:text-white dark:hover:bg-[#9E77ED]"
           >
             View Events
             <ArrowUpRight className="ml-2 h-4 w-4" />
