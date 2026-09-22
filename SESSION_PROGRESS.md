@@ -47,7 +47,7 @@ Frontend (`LOLO-FRONTEND`, branch `master`):
 ## Admin Dashboard (2026-09-21)
 
 **Palette evolution:**
-- Initial `#B0EBF8` family (`#B0EBF8 #73D5ED #CE7754 #1B7DAC #225E7B`) → Final `#EAF6F4` family (`#EAF6F4 #91E9D7 #3CCCB3 #1E8277 #17463C`) per user request. Injected in `src/index.css:131` as CSS vars + `.admin-theme` (light) + `.dark .admin-theme` (dark: bg #0F1F1A, card #14261F, border #1E3D32). Global overrides: `.admin-shell * { border-radius:0 !important }` + dark overrides for `bg-white`, `border-[#BFE9E0]`, `text-[#17463C]` etc. All admin components use `rounded-none` (only `rounded-full` pills kept).
+- Initial `#B0EBF8` family (`#B0EBF8 #73D5ED #CE7754 #1B7DAC #225E7B`) → `#EAF6F4` family (`#EAF6F4 #91E9D7 #3CCCB3 #1E8277 #17463C`) → Final neon palette (`#DF3FFA neon violet, #9F0202 oxblood, #494070 vintage grape, #030407 black, #D30000 brick ember`) per user request. Injected in `src/index.css:131` as CSS vars + `.admin-theme` (light: bg #FDF5FF, card #FFFFFF, border #D9CEF2, text #030407) + `.dark .admin-theme` (dark: bg #030407, card #120A1A, border #2A1A3A, primary #DF3FFA). Global overrides: `.admin-shell * { border-radius:0 !important }` + dark overrides for `bg-white`, `bg-[#EDE6F8]`, `border-[#D9CEF2]`, `text-[#030407]` etc. All admin components use `rounded-none` (only `rounded-full` pills kept). Gradients `linear-gradient(135deg,#DF3FFA,#030407)` light, `#DF3FFA→#D30000` dark; scrollbar thumb `var(--admin-1)` / `#494070` dark.
 
 **Layout (isolated, shadcn base only — no CM/MH/EBM reuse):**
 - `src/layouts/admin/AdminLayout.tsx:1` — Sanctum guard (`authToken`), `admin-shell dark` wrapper, collapsed 78/264px.
@@ -58,7 +58,7 @@ Frontend (`LOLO-FRONTEND`, branch `master`):
 
 **Hooks (data layer):** `src/hooks/admin/useAdminDashboard.ts:1` (`GET /admin/dashboard`), `useAdminUsers.ts:1` (`GET /admin/users` + server filters, promote/demote, approve/reject, delete, unlock), `useAdminResources.ts:1` (team-profile CRUD, user_approval read, events `GET /events` + `/admin/event` POST/PUT/DELETE, registrations all/club/music, `POST /admin/copy-records`, `PUT /verify-ticket/:code`, `view/stats`, `view/get-pending-approvals`, `view/get-users-role/:role`, `POST /admin/reset-password/:user`).
 
-**Pages — full `routes/api.php:279` admin coverage (all `rounded-none`, `BFE9E0`/`1E3D32`, dark):**
+**Pages — full `routes/api.php:279` admin coverage (all `rounded-none`, `D9CEF2`/`2A1A3A`, dark, neon palette):**
 - `src/pages/Admin/AdminDashboard.tsx:1` — hero (LIVE badge, Health #12B76A, Coverage), 8 KPIs (active/pending/approved/elevated + mgmt/music), Line (approval_trend 7d), vertical Bar (5 mgmt sub-roles), Pie (mgmt vs music, EBM/MH/CM), recent 6 users preview, quick actions.
 - `src/pages/Admin/AdminUsers.tsx:1` — server-filtered table, select-all, selection bar, export, pagination `per_page 15`, view Dialog (12 fields + approval), action Dialog (remarks for approve/reject, promote ebm/cm/mh, demote, unlock, delete), `Table` `Badge` `Checkbox` `Dialog`.
 - `src/pages/Admin/AdminAnalytics.tsx:1` — bar (Active/Inactive/Pending/Approved) + pie (Mgmt vs Music), note on export.
@@ -73,7 +73,7 @@ Frontend (`LOLO-FRONTEND`, branch `master`):
 
 **Routing:** `src/App.tsx:143` lazy imports + `src/App.tsx:391` `AdminLayout` group (`/admin/dashboard`, `/users`, `/analytics`, `/events`, `/approvals`, `/team`, `/user-approvals`, `/registrations`, `/tickets`, `/users-by-role`, `/settings` + aliases). Sidebar config `src/components/sidebar/config/admin.tsx:1`.
 
-**Build:** `npm run build` ✓ 30.97s (AdminDashboard 20.62kB, AdminUsers 15.02kB).
+**Build:** `npm run build` ✓ 30.97s → 42.48s after neon palette (AdminDashboard 20.62kB, AdminUsers 15.02kB).
 
 ## Verification
 
