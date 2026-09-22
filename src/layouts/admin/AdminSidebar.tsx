@@ -1,5 +1,20 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, ShieldCheck, CalendarDays, Ticket, LogOut, Menu, X, Settings, BarChart3, Layers, Sparkles, UsersRound, ClipboardList, Crown } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  ShieldCheck,
+  CalendarDays,
+  Ticket,
+  LogOut,
+  Menu,
+  X,
+  Settings,
+  BarChart3,
+  Layers,
+  UsersRound,
+  ClipboardList,
+  Crown,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 
@@ -17,53 +32,84 @@ const navItems = [
   { label: "Settings", to: "/admin/settings", icon: Settings },
 ];
 
-export function AdminSidebar({ collapsed, setCollapsed }: { collapsed: boolean; setCollapsed: (v: boolean)=>void }) {
+export function AdminSidebar({
+  collapsed,
+  setCollapsed,
+}: {
+  collapsed: boolean;
+  setCollapsed: (v: boolean) => void;
+}) {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const handleLogout = () => { logout(); navigate("/admin/login"); };
+  const handleLogout = () => {
+    logout();
+    navigate("/admin/login");
+  };
 
   return (
     <>
-      <button onClick={()=>setMobileOpen(!mobileOpen)} className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-none bg-white dark:bg-[#120A1A] border border-[#D9CEF2] dark:border-[#2A1A3A] shadow-md text-[#030407] dark:text-[#EDE6F8]">
-        {mobileOpen ? <X size={18}/> : <Menu size={18}/>}
+      <button
+        onClick={() => setMobileOpen(!mobileOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-none bg-[var(--admin-surface)] border border-[var(--admin-line)] text-[var(--admin-ink)]"
+      >
+        {mobileOpen ? <X size={18} /> : <Menu size={18} />}
       </button>
-      <aside className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r border-[#D9CEF2] dark:border-[#2A1A3A] bg-white dark:bg-[#120A1A] transition-all duration-300 ${collapsed ? "w-[78px]" : "w-[264px]"} ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
-        <div className="flex h-[64px] items-center gap-3 px-4 border-b border-[#D9CEF2] dark:border-[#2A1A3A]">
-          <div className="w-9 h-9 rounded-none flex items-center justify-center" style={{background:"linear-gradient(135deg,#DF3FFA,#030407)"}}>
-            <Sparkles size={16} className="text-white"/>
-          </div>
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r border-[var(--admin-line)] bg-[var(--admin-surface)] transition-all duration-300 ${collapsed ? "w-[78px]" : "w-[264px]"} ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+      >
+        <div className="flex h-[64px] items-center gap-3 px-4 border-b border-[var(--admin-line)]">
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <div className="text-[15px] font-bold tracking-tight text-[#030407] dark:text-[#EDE6F8] leading-none">LOLO Admin</div>
-              <div className="text-[11px] font-medium tracking-widest uppercase text-[#DF3FFA]">Control Centre</div>
+              <div
+                className="text-[15px] font-bold tracking-tight text-[var(--admin-ink)] leading-none"
+                style={{ letterSpacing: "0.04em" }}
+              >
+                LOLO ADMIN CONSOLE
+              </div>
             </div>
           )}
-          <button onClick={()=>setCollapsed(!collapsed)} className="hidden lg:flex w-7 h-7 items-center justify-center rounded-none border border-[#D9CEF2] dark:border-[#2A1A3A] text-[#494070] hover:bg-[#EDE6F8] dark:hover:bg-[#1A1025]">
-            <Menu size={14}/>
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="hidden lg:flex w-7 h-7 items-center justify-center rounded-none border border-[var(--admin-line)] text-[var(--admin-ink-muted)] hover:bg-[var(--admin-canvas)]"
+          >
+            <Menu size={14} />
           </button>
         </div>
 
         <nav className="flex-1 overflow-y-auto p-3 space-y-1 admin-scrollbar">
-          {navItems.map(item=>{
+          {navItems.map((item) => {
             return (
-              <NavLink key={item.to} to={item.to} className={({isActive})=> `flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-medium transition-all ${isActive ? "bg-[#DF3FFA] text-white shadow-sm" : "text-[#030407] dark:text-[#EDE6F8] hover:bg-[#EDE6F8] dark:hover:bg-[#1A1025]"}`}>
-                <item.icon size={18} className="shrink-0"/>
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-medium ${isActive ? "bg-[var(--admin-accent)] text-[var(--admin-accent-fg)]" : "text-[var(--admin-ink)] hover:bg-[var(--admin-canvas)]"}`
+                }
+              >
+                <item.icon size={18} className="shrink-0 " />
                 {!collapsed && <span className="truncate">{item.label}</span>}
               </NavLink>
             );
           })}
         </nav>
 
-        <div className="p-3 border-t border-[#D9CEF2] dark:border-[#2A1A3A] space-y-3">
+        <div className="p-3 border-t border-[var(--admin-line)] space-y-3">
           {!collapsed && (
-            <div className="rounded-none p-4 border border-[#D9CEF2] dark:border-[#2A1A3A]" style={{background:"linear-gradient(135deg,#EDE6F8 0%,#494070 60%,#DF3FFA 100%)"}}>
-              <div className="text-sm font-bold text-[#030407]">Need help?</div>
-              <div className="text-xs text-[#030407]/80 mt-1">Docs & audit logs in Settings.</div>
+            <div className="rounded-none p-4 border border-[var(--admin-line)] bg-[var(--admin-surface-raised)]">
+              <div className="text-sm font-bold text-[var(--admin-ink)]">
+                Need help?
+              </div>
+              <div className="text-xs text-[var(--admin-ink-muted)] mt-1">
+                Docs & audit logs in Settings.
+              </div>
             </div>
           )}
-          <button onClick={handleLogout} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-semibold border border-[#D9CEF2] dark:border-[#2A1A3A] text-[#030407] dark:text-[#EDE6F8] hover:bg-[#EDE6F8] dark:hover:bg-[#1A1025] transition-colors ${collapsed ? "justify-center" : ""}`}>
-            <LogOut size={16}/> {!collapsed && "Sign out"}
+          <button
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-medium border border-[var(--admin-line)] text-[var(--admin-ink)] hover:bg-[var(--admin-canvas)] ${collapsed ? "justify-center" : ""}`}
+          >
+            <LogOut size={16} /> {!collapsed && "Sign out"}
           </button>
         </div>
       </aside>

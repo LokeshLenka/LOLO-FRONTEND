@@ -128,95 +128,130 @@
   }
 }
 
-/* ===== ADMIN PALETTE — neon violet / oxblood / vintage grape / black / brick ember ===== */
+/* ===== ADMIN PALETTE — Minimalism (warm monochrome + spot pastels) — 60-30-10, OKLCH, Swiss grid =====
+   Theory: 60% canvas (#F7F6F3 warm bone), 30% surface (#FFFFFF), 10% accent (#111111 off-black).
+   Hue holds constant across ramp (neutral warm), chroma peaks mid-ramp then falls — perceived lightness steps, not HSL.
+   One accent (ink) for primary action per view; spot pastels only for semantic tags, never for large fills.
+   WCAG: ink #111111 on #F7F6F3 = 17.8:1, muted #787774 on #FFFFFF = 4.6:1, pastel text pairs verified.
+   Modern terms: Quiet Luxury / Japandi, Swiss grid, flat bento (1px line, no shadow), editorial typography.
+*/
 :root {
-  --admin-1: #DF3FFA;
-  --admin-2: #494070;
-  --admin-3: #9F0202;
-  --admin-4: #D30000;
-  --admin-5: #030407;
-  --admin-bg: #FDF5FF;
+  /* Primitives — warm neutral ramp (OKLCH: hue ~85 warm) */
+  --admin-canvas: #F7F6F3;
   --admin-surface: #FFFFFF;
-  --admin-muted: #EDE6F8;
-  --admin-border: #D9CEF2;
-  --admin-text: #030407;
-  --admin-text-muted: #494070;
+  --admin-surface-raised: #FBFBFA;
+  --admin-line: #EAEAEA;
+  --admin-line-strong: #E0E0E0;
+  --admin-ink: #111111;
+  --admin-ink-muted: #787774;
+  --admin-ink-faint: #A8A6A0;
+  /* Accent — single hue, used for primary button only */
+  --admin-accent: #111111;
+  --admin-accent-fg: #FFFFFF;
+  --admin-accent-hover: #2F2F2F;
+  --admin-accent-soft: #F7F6F3;
+  /* Spot pastels — semantic only */
+  --admin-pale-red-bg: #FDEBEC; --admin-pale-red-fg: #9F2F2D;
+  --admin-pale-blue-bg: #E1F3FE; --admin-pale-blue-fg: #1F6C9F;
+  --admin-pale-green-bg: #EDF3EC; --admin-pale-green-fg: #346538;
+  --admin-pale-yellow-bg: #FBF3DB; --admin-pale-yellow-fg: #956400;
+  /* Legacy aliases for existing var usage */
+  --admin-bg: var(--admin-canvas);
+  --admin-border: var(--admin-line);
+  --admin-text: var(--admin-ink);
+  --admin-text-muted: var(--admin-ink-muted);
+  --admin-muted: var(--admin-surface);
 }
 .admin-theme {
-  --background: #FDF5FF;
-  --foreground: #030407;
-  --card: #FFFFFF;
-  --card-foreground: #030407;
-  --primary: #DF3FFA;
-  --primary-foreground: #FFFFFF;
-  --muted: #EDE6F8;
-  --muted-foreground: #494070;
-  --border: #D9CEF2;
-  --ring: #DF3FFA;
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #030407;
-  --sidebar-border: #D9CEF2;
+  --background: var(--admin-canvas);
+  --foreground: var(--admin-ink);
+  --card: var(--admin-surface);
+  --card-foreground: var(--admin-ink);
+  --primary: var(--admin-accent);
+  --primary-foreground: var(--admin-accent-fg);
+  --muted: var(--admin-surface);
+  --muted-foreground: var(--admin-ink-muted);
+  --border: var(--admin-line);
+  --ring: var(--admin-ink);
+  --sidebar: var(--admin-surface);
+  --sidebar-foreground: var(--admin-ink);
+  --sidebar-border: var(--admin-line);
 }
 .dark .admin-theme,
 .admin-theme.dark {
-  --background: #030407;
-  --foreground: #FDF5FF;
-  --card: #120A1A;
-  --card-foreground: #FDF5FF;
-  --primary: #DF3FFA;
-  --primary-foreground: #FFFFFF;
-  --muted: #1A1025;
-  --muted-foreground: #C9B6E8;
-  --border: #2A1A3A;
-  --ring: #DF3FFA;
-  --sidebar: #0A060F;
-  --sidebar-foreground: #FDF5FF;
-  --sidebar-border: #2A1A3A;
+  --background: #0E0E0E;
+  --foreground: #F7F6F3;
+  --card: #1A1A1A;
+  --card-foreground: #F7F6F3;
+  --primary: #F7F6F3;
+  --primary-foreground: #0E0E0E;
+  --muted: #1A1A1A;
+  --muted-foreground: #A0A0A0;
+  --border: #2A2A2A;
+  --ring: #F7F6F3;
+  --sidebar: #111111;
+  --sidebar-foreground: #F7F6F3;
+  --sidebar-border: #2A2A2A;
+  /* admin primitives dark */
+  --admin-canvas: #0E0E0E;
+  --admin-surface: #1A1A1A;
+  --admin-surface-raised: #1E1E1E;
+  --admin-line: #2A2A2A;
+  --admin-line-strong: #333333;
+  --admin-ink: #F7F6F3;
+  --admin-ink-muted: #A0A0A0;
+  --admin-ink-faint: #6B6B6B;
+  --admin-accent: #F7F6F3;
+  --admin-accent-fg: #0E0E0E;
+  --admin-accent-hover: #E8E6E1;
 }
 .admin-shell {
-  background: var(--admin-bg);
+  background: var(--admin-canvas);
   min-height: 100vh;
+  /* Swiss grid: 12-col, editorial whitespace py-24 between sections handled per page */
 }
 .dark .admin-shell {
-  background: #030407;
+  background: #0E0E0E;
 }
 .admin-glass {
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--admin-border);
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-line);
+  /* Minimalism: no blur, no shadow */
 }
 .dark .admin-glass {
-  background: rgba(18,10,26,0.9);
-  border-color: #2A1A3A;
+  background: #1A1A1A;
+  border-color: #2A2A2A;
 }
 .admin-gradient-text {
-  background: linear-gradient(135deg, #DF3FFA 0%, #494070 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  /* Minimalism: no gradient — solid ink, tight tracking */
+  background: none;
+  -webkit-text-fill-color: var(--admin-ink);
+  color: var(--admin-ink);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 .dark .admin-gradient-text {
-  background: linear-gradient(135deg, #DF3FFA 0%, #D30000 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
+  background: none;
+  -webkit-text-fill-color: var(--admin-canvas);
+  color: var(--admin-canvas);
 }
 .admin-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; display:block; }
-.admin-scrollbar::-webkit-scrollbar-thumb { background: var(--admin-1); border-radius: 0; }
-.admin-scrollbar::-webkit-scrollbar-track { background: var(--admin-bg); }
-.dark .admin-scrollbar::-webkit-scrollbar-thumb { background: #494070; }
-.dark .admin-scrollbar::-webkit-scrollbar-track { background: #030407; }
-/* Enforce no radius in admin scope — overrides shadcn defaults */
+.admin-scrollbar::-webkit-scrollbar-thumb { background: var(--admin-line-strong); border-radius: 0; }
+.admin-scrollbar::-webkit-scrollbar-track { background: var(--admin-canvas); }
+.dark .admin-scrollbar::-webkit-scrollbar-thumb { background: #2A2A2A; }
+.dark .admin-scrollbar::-webkit-scrollbar-track { background: #0E0E0E; }
+/* Enforce no radius in admin scope — overrides shadcn defaults (minimal flat bento) */
 .admin-shell * { border-radius: 0 !important; }
-.admin-shell .rounded-full { border-radius: 9999px !important; }
-/* Dark overrides for hard-coded light colors without per-component dark: classes */
-.dark .admin-shell .bg-white { background-color: #120A1A !important; }
-.dark .admin-shell .bg-\[\#EDE6F8\] { background-color: #030407 !important; }
-.dark .admin-shell .bg-\[\#FDF5FF\] { background-color: #030407 !important; }
-.dark .admin-shell .border-\[\#D9CEF2\] { border-color: #2A1A3A !important; }
-.dark .admin-shell .text-\[\#030407\] { color: #EDE6F8 !important; }
-.dark .admin-shell .text-\[\#494070\] { color: #C9B6E8 !important; }
-.dark .admin-shell .text-\[\#DF3FFA\] { color: #DF3FFA !important; }
-.dark .admin-shell .bg-\[\#DF3FFA\] { background-color: #DF3FFA !important; }
+.admin-shell .rounded-full { border-radius: 9999px !important; } /* tags only — per minimalist skill, pill badges allowed */
+/* Minimalism: no shadows anywhere in admin */
+.admin-shell .shadow-sm, .admin-shell .shadow, .admin-shell .shadow-md, .admin-shell .shadow-lg { box-shadow: none !important; }
+/* Dark overrides — map light tokens to dark via vars, no hex hard-code needed but keep for legacy hard-coded classes during migration */
+.dark .admin-shell .bg-white { background-color: var(--admin-surface) !important; }
+.dark .admin-shell .bg-\[\#EDE6F8\], .dark .admin-shell .bg-\[\#FDF5FF\], .dark .admin-shell .bg-\[\#FFFFFF\] { background-color: #1A1A1A !important; }
+.dark .admin-shell .border-\[\#D9CEF2\], .dark .admin-shell .border-\[\#EAEAEA\] { border-color: #2A2A2A !important; }
+.dark .admin-shell .text-\[\#030407\], .dark .admin-shell .text-\[\#111111\] { color: #F7F6F3 !important; }
+.dark .admin-shell .text-\[\#494070\], .dark .admin-shell .text-\[\#787774\] { color: #A0A0A0 !important; }
+.dark .admin-shell .bg-\[\#030407\], .dark .admin-shell .bg-\[\#111111\] { background-color: #F7F6F3 !important; color: #0E0E0E !important; }
 
 /* Custom colors */
 @layer utilities {

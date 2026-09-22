@@ -47,18 +47,18 @@ Frontend (`LOLO-FRONTEND`, branch `master`):
 ## Admin Dashboard (2026-09-21)
 
 **Palette evolution:**
-- Initial `#B0EBF8` family (`#B0EBF8 #73D5ED #CE7754 #1B7DAC #225E7B`) → `#EAF6F4` family (`#EAF6F4 #91E9D7 #3CCCB3 #1E8277 #17463C`) → Final neon palette (`#DF3FFA neon violet, #9F0202 oxblood, #494070 vintage grape, #030407 black, #D30000 brick ember`) per user request. Injected in `src/index.css:131` as CSS vars + `.admin-theme` (light: bg #FDF5FF, card #FFFFFF, border #D9CEF2, text #030407) + `.dark .admin-theme` (dark: bg #030407, card #120A1A, border #2A1A3A, primary #DF3FFA). Global overrides: `.admin-shell * { border-radius:0 !important }` + dark overrides for `bg-white`, `bg-[#EDE6F8]`, `border-[#D9CEF2]`, `text-[#030407]` etc. All admin components use `rounded-none` (only `rounded-full` pills kept). Gradients `linear-gradient(135deg,#DF3FFA,#030407)` light, `#DF3FFA→#D30000` dark; scrollbar thumb `var(--admin-1)` / `#494070` dark.
+- Initial `#B0EBF8` family (`#B0EBF8 #73D5ED #CE7754 #1B7DAC #225E7B`) → `#EAF6F4` family (`#EAF6F4 #91E9D7 #3CCCB3 #1E8277 #17463C`) → neon (`#DF3FFA #9F0202 #494070 #030407 #D30000`) → **Minimalism** (warm monochrome + spot pastels, 60-30-10, OKLCH, Swiss grid, no shadows) per ui-skills `minimalist-skill` + `better-colors` + `better-ui`. Final vars in `src/index.css:131`: `--admin-canvas #F7F6F3`, `--admin-surface #FFFFFF`, `--admin-line #EAEAEA`, `--admin-ink #111111`, `--admin-ink-muted #787774`, `--admin-accent #111111` (single accent per view), spot pastels `--admin-pale-red #FDEBEC/#9F2F2D` etc. Light `.admin-theme` `--background var(--admin-canvas)` + Dark `.dark .admin-theme` `--background #0E0E0E --card #1A1A1A --border #2A2A2A` (primitives also overridden). Global `admin-shell *{border-radius:0 !important}` + `.shadow*{box-shadow:none !important}` + dark var overrides. All admin components `rounded-none` (only `rounded-full` pills for tags) and use `bg-[var(--admin-*)]` `border-[var(--admin-line)]` `text-[var(--admin-ink)]` — no hard-coded inline `style={{background:"#..."}}` (replaced with `bg-[var(--admin-accent)]` etc) and no `shadow`.
 
-**Layout (isolated, shadcn base only — no CM/MH/EBM reuse):**
-- `src/layouts/admin/AdminLayout.tsx:1` — Sanctum guard (`authToken`), `admin-shell dark` wrapper, collapsed 78/264px.
-- `src/layouts/admin/AdminSidebar.tsx:1` — 11 items (Overview/Users/Approvals/User Approvals/Team/Events/Registrations/Tickets/Analytics/By Role/Settings), gradient brand `linear-gradient(135deg,#1E8277,#17463C)`, mobile drawer, logout → `/admin/login`. Palette `BFE9E0` / `1E3D32` dark.
-- `src/layouts/admin/AdminHeader.tsx:1` — sticky `bg-white/90 dark:bg-[#14261F]/90`, search, Refresh, dark toggle (`useTheme()` Sun/Moon), bell, user. `border-[#BFE9E0] dark:border-[#1E3D32]`.
+**Layout (isolated, shadcn base only — no CM/MH/EBM reuse, minimal flat bento 1px line, no shadow, Swiss whitespace):**
+- `src/layouts/admin/AdminLayout.tsx:1` — Sanctum guard (`authToken`), `admin-shell` wrapper, collapsed 78/264px, loader `bg-[var(--admin-canvas)]` `text-[var(--admin-accent)]`.
+- `src/layouts/admin/AdminSidebar.tsx:1` — 11 items, solid `bg-[var(--admin-accent)] text-[var(--admin-accent-fg)]` brand (no gradient), `border-[var(--admin-line)]` `bg-[var(--admin-surface)]`, active `bg-[var(--admin-accent)]` else `hover:bg-[var(--admin-canvas)]`, help box `bg-[var(--admin-surface-raised)]` flat, no shadow.
+- `src/layouts/admin/AdminHeader.tsx:1` — sticky `bg-[var(--admin-surface)] border-[var(--admin-line)]`, search `bg-[var(--admin-canvas)]`, Refresh/bell `border-[var(--admin-line)]`, dark toggle Sun/Moon via `useTheme()`.
 
-**Components (shadcn only):** `src/components/admin/AdminStatsCard.tsx:1`, `AdminChartCard.tsx:1`, `AdminFilters.tsx:1` (search/role/status/branch/promoted + Clear), `AdminExportMenu.tsx:1` (CSV/Excel/JSON/Print, selection-aware via `flattenUser`), `adminExport.ts:1` (`toCSV`, `toJSONExport`).
+**Components (shadcn only, minimal, no shadow, var-based):** `src/components/admin/AdminStatsCard.tsx:1` (`border-[var(--admin-line)] bg-[var(--admin-surface)]`, `text-[var(--admin-ink-muted)]`, `bg-[var(--admin-canvas)]` trend pill, accent via `var(--admin-ink)`), `AdminChartCard.tsx:1` (`border-[var(--admin-line)] bg-[var(--admin-surface)]`), `AdminFilters.tsx:1` (`bg-[var(--admin-surface)] border-[var(--admin-line)]`, inputs `bg-[var(--admin-canvas)]`), `AdminExportMenu.tsx:1` (`bg-[var(--admin-accent)]`, var-based print header), `adminExport.ts:1`.
 
 **Hooks (data layer):** `src/hooks/admin/useAdminDashboard.ts:1` (`GET /admin/dashboard`), `useAdminUsers.ts:1` (`GET /admin/users` + server filters, promote/demote, approve/reject, delete, unlock), `useAdminResources.ts:1` (team-profile CRUD, user_approval read, events `GET /events` + `/admin/event` POST/PUT/DELETE, registrations all/club/music, `POST /admin/copy-records`, `PUT /verify-ticket/:code`, `view/stats`, `view/get-pending-approvals`, `view/get-users-role/:role`, `POST /admin/reset-password/:user`).
 
-**Pages — full `routes/api.php:279` admin coverage (all `rounded-none`, `D9CEF2`/`2A1A3A`, dark, neon palette):**
+**Pages — full `routes/api.php:279` admin coverage (all `rounded-none`, `var(--admin-line)`/`#2A2A2A`, dark, minimal warm monochrome):**
 - `src/pages/Admin/AdminDashboard.tsx:1` — hero (LIVE badge, Health #12B76A, Coverage), 8 KPIs (active/pending/approved/elevated + mgmt/music), Line (approval_trend 7d), vertical Bar (5 mgmt sub-roles), Pie (mgmt vs music, EBM/MH/CM), recent 6 users preview, quick actions.
 - `src/pages/Admin/AdminUsers.tsx:1` — server-filtered table, select-all, selection bar, export, pagination `per_page 15`, view Dialog (12 fields + approval), action Dialog (remarks for approve/reject, promote ebm/cm/mh, demote, unlock, delete), `Table` `Badge` `Checkbox` `Dialog`.
 - `src/pages/Admin/AdminAnalytics.tsx:1` — bar (Active/Inactive/Pending/Approved) + pie (Mgmt vs Music), note on export.
@@ -73,13 +73,13 @@ Frontend (`LOLO-FRONTEND`, branch `master`):
 
 **Routing:** `src/App.tsx:143` lazy imports + `src/App.tsx:391` `AdminLayout` group (`/admin/dashboard`, `/users`, `/analytics`, `/events`, `/approvals`, `/team`, `/user-approvals`, `/registrations`, `/tickets`, `/users-by-role`, `/settings` + aliases). Sidebar config `src/components/sidebar/config/admin.tsx:1`.
 
-**Build:** `npm run build` ✓ 30.97s → 42.48s after neon palette (AdminDashboard 20.62kB, AdminUsers 15.02kB).
+**Build:** `npm run build` ✓ 30.97s → 42.48s (neon) → 15.75s after minimalism+fix (AdminDashboard 21.38kB, AdminUsers 15.83kB, no shadows, var-based).
 
 ## Verification
 
 - `php -l` clean on every touched file; `npm run build` green on every commit.
 - Live API matrix vs TiDB (dummy.cm): unregistered mgmt assign 201; duplicate 422; over-max 422; unregistered music user 422; non-owner CM update denied; owner update 200; admin delete 200; dashboard + both tabs 200. Test artifacts removed (credit deleted, temp promotion reverted, tokens revoked).
-- Admin: `npm run build` 30.97s green; dark toggle (Sun/Moon) flips `html.dark`; all admin tables `rounded-none`, `BFE9E0` borders, export (CSV/Excel/JSON/Print) respects selection; no backend breaking changes.
+- Admin: `npm run build` 15.75s green after minimalism (was 30.97s/42.48s); dark toggle Sun/Moon flips `html.dark` via `ThemeContext.tsx:42`, vars switch ` --admin-canvas #F7F6F3 ↔ #0E0E0E`; all admin `rounded-none`, `border-[var(--admin-line)]`, `bg-[var(--admin-surface)]`, no `shadow`, no inline hard-coded hex (fixed `AdminUsers.tsx:95` `DF3FFAbleCell` corruption + `DF3FFAxs` etc), export respects selection; no backend breaking changes.
 
 ## Decisions & notes
 

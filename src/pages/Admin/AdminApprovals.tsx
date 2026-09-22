@@ -10,17 +10,17 @@ export default function AdminApprovals(){
     <div className="pb-10">
       <AdminHeader title="Approvals" subtitle="Pending approvals — approve/reject with remarks" onRefresh={refresh}/>
       <div className="px-4 lg:px-8 py-6">
-        <Card className="rounded-none border-[#D9CEF2] bg-white overflow-hidden">
+        <Card className="rounded-none border-[var(--admin-line)] bg-[var(--admin-surface)] overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-[#EDE6F8]"><TableRow><TableHead className="text-[#030407]">User</TableHead><TableHead className="text-[#030407]">Role</TableHead><TableHead className="text-[#030407]">Status</TableHead></TableRow></TableHeader>
+              <TableHeader className="bg-[var(--admin-canvas)]"><TableRow><TableHead className="text-[var(--admin-ink)]">User</TableHead><TableHead className="text-[var(--admin-ink)]">Role</TableHead><TableHead className="text-[var(--admin-ink)]">Status</TableHead></TableRow></TableHeader>
               <TableBody>
-                {pending.map(u=>{const p:any=u.profile||{}; return <TableRow key={u.uuid}><TableCell className="text-sm text-[#030407]">{p.first_name||u.username} • {u.email}</TableCell><TableCell><Badge className="rounded-full bg-[#EDE6F8] text-[#DF3FFA] border-0">{u.role}</Badge></TableCell><TableCell><Badge className="rounded-full bg-[#FFFAEB] text-[#B54708] border-[#FEDF89]">{u.user_approval?.status||"pending"}</Badge></TableCell></TableRow>})}
-                {pending.length===0 && <TableRow><TableCell colSpan={3} className="text-center py-8 text-[#494070]">No pending approvals — all caught up!</TableCell></TableRow>}
+                {pending.map(u=>{const p:any=u.profile||{}; return <TableRow key={u.uuid}><TableCell className="text-sm text-[var(--admin-ink)]">{p.first_name||u.username} • {u.email}</TableCell><TableCell><Badge className="rounded-full bg-[var(--admin-canvas)] text-[var(--admin-ink)] border-0">{u.role}</Badge></TableCell><TableCell><Badge className="rounded-full bg-[#FFFAEB] text-[#B54708] border-[#FEDF89]">{u.user_approval?.status||"pending"}</Badge></TableCell></TableRow>})}
+                {pending.length===0 && <TableRow><TableCell colSpan={3} className="text-center py-8 text-[var(--admin-ink-muted)]">No pending approvals — all caught up!</TableCell></TableRow>}
               </TableBody>
             </Table>
           </div>
-          <div className="p-3 border-t border-[#D9CEF2] bg-[#EDE6F8] text-xs text-[#494070]">Use the Users page for approve/reject actions with remarks. This view is filtered to pending only for focus.</div>
+          <div className="p-3 border-t border-[var(--admin-line)] bg-[var(--admin-canvas)] text-xs text-[var(--admin-ink-muted)]">Use the Users page for approve/reject actions with remarks. This view is filtered to pending only for focus.</div>
         </Card>
       </div>
     </div>
