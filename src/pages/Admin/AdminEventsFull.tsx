@@ -22,25 +22,25 @@ export default function AdminEventsFull(){
       <AdminHeader title="Events" subtitle="Admin event control — POST /admin/event (create_events) • PUT/DELETE /admin/event/:id (manage_events)" />
       <div className="px-4 lg:px-8 py-6 space-y-4">
         <div className="flex justify-between items-center">
-          <div className="text-sm text-[#4A7A6E] dark:text-[#91E9D7]">{events.length} events • create and manage</div>
-          <Button onClick={()=>{setEditing(null); setForm({title:"",description:"",venue:"",event_type:"club",start_date:"",end_date:"",max_participants:"100"}); setOpen(true);}} className="rounded-none bg-[#1E8277] hover:bg-[#17463C] text-white"><Plus size={14}/> Create event</Button>
+          <div className="text-sm text-[#494070] dark:text-[#494070]">{events.length} events • create and manage</div>
+          <Button onClick={()=>{setEditing(null); setForm({title:"",description:"",venue:"",event_type:"club",start_date:"",end_date:"",max_participants:"100"}); setOpen(true);}} className="rounded-none bg-[#DF3FFA] hover:bg-[#030407] text-white"><Plus size={14}/> Create event</Button>
         </div>
-        <Card className="rounded-none border-[#BFE9E0] dark:border-[#1E3D32] bg-white dark:bg-[#14261F] overflow-hidden">
+        <Card className="rounded-none border-[#D9CEF2] dark:border-[#2A1A3A] bg-white dark:bg-[#120A1A] overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-[#EAF6F4] dark:bg-[#0F1F1A]"><TableRow><TableHead className="text-[#17463C] dark:text-[#EAF6F4]">Title</TableHead><TableHead className="text-[#17463C] dark:text-[#EAF6F4]">Type</TableHead><TableHead className="text-[#17463C] dark:text-[#EAF6F4]">Venue</TableHead><TableHead className="text-[#17463C] dark:text-[#EAF6F4]">Dates</TableHead><TableHead className="text-right text-[#17463C] dark:text-[#EAF6F4]">Actions</TableHead></TableRow></TableHeader>
+              <TableHeader className="bg-[#EDE6F8] dark:bg-[#030407]"><TableRow><TableHead className="text-[#030407] dark:text-[#EDE6F8]">Title</TableHead><TableHead className="text-[#030407] dark:text-[#EDE6F8]">Type</TableHead><TableHead className="text-[#030407] dark:text-[#EDE6F8]">Venue</TableHead><TableHead className="text-[#030407] dark:text-[#EDE6F8]">Dates</TableHead><TableHead className="text-right text-[#030407] dark:text-[#EDE6F8]">Actions</TableHead></TableRow></TableHeader>
               <TableBody>
                 {isLoading ? <TableRow><TableCell colSpan={5} className="py-8 text-center">Loading…</TableCell></TableRow> :
-                 events.length===0 ? <TableRow><TableCell colSpan={5} className="py-8 text-center text-[#4A7A6E] dark:text-[#91E9D7]">No events — create one to manage.</TableCell></TableRow> :
+                 events.length===0 ? <TableRow><TableCell colSpan={5} className="py-8 text-center text-[#494070] dark:text-[#494070]">No events — create one to manage.</TableCell></TableRow> :
                  events.map((e:any)=>(
-                  <TableRow key={e.uuid||e.id} className="hover:bg-[#EAF6F4]/40 dark:hover:bg-[#1B342D]/40">
-                    <TableCell className="font-medium text-[#17463C] dark:text-[#EAF6F4]">{e.title||e.name||e.slug||"—"}</TableCell>
-                    <TableCell><Badge className="rounded-full bg-[#EAF6F4] dark:bg-[#1B342D] text-[#1E8277] border-0">{e.event_type||e.type||"club"}</Badge></TableCell>
-                    <TableCell className="text-xs text-[#4A7A6E] dark:text-[#91E9D7]">{e.venue||"—"}</TableCell>
-                    <TableCell className="text-xs text-[#4A7A6E] dark:text-[#91E9D7]">{(e.start_date||"").slice(0,10)} → {(e.end_date||"").slice(0,10)}</TableCell>
+                  <TableRow key={e.uuid||e.id} className="hover:bg-[#EDE6F8]/40 dark:hover:bg-[#1A1025]/40">
+                    <TableCell className="font-medium text-[#030407] dark:text-[#EDE6F8]">{e.title||e.name||e.slug||"—"}</TableCell>
+                    <TableCell><Badge className="rounded-full bg-[#EDE6F8] dark:bg-[#1A1025] text-[#DF3FFA] border-0">{e.event_type||e.type||"club"}</Badge></TableCell>
+                    <TableCell className="text-xs text-[#494070] dark:text-[#494070]">{e.venue||"—"}</TableCell>
+                    <TableCell className="text-xs text-[#494070] dark:text-[#494070]">{(e.start_date||"").slice(0,10)} → {(e.end_date||"").slice(0,10)}</TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button size="sm" variant="outline" onClick={()=>edit(e)} className="rounded-none border-[#BFE9E0] dark:border-[#1E3D32]"><Pencil size={12}/></Button>
-                      <Button size="sm" variant="outline" onClick={()=>deleteEvent(e.uuid||e.id)} className="rounded-none border-[#BFE9E0] text-red-600"><Trash2 size={12}/></Button>
+                      <Button size="sm" variant="outline" onClick={()=>edit(e)} className="rounded-none border-[#D9CEF2] dark:border-[#2A1A3A]"><Pencil size={12}/></Button>
+                      <Button size="sm" variant="outline" onClick={()=>deleteEvent(e.uuid||e.id)} className="rounded-none border-[#D9CEF2] text-red-600"><Trash2 size={12}/></Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -50,22 +50,22 @@ export default function AdminEventsFull(){
         </Card>
       </div>
       <Dialog open={open} onOpenChange={o=>!o&&setOpen(false)}>
-        <DialogContent className="rounded-none bg-white dark:bg-[#14261F] border-[#BFE9E0] dark:border-[#1E3D32] max-w-2xl">
-          <DialogHeader><DialogTitle className="text-[#17463C] dark:text-[#EAF6F4]">{editing?"Edit":"Create"} event</DialogTitle></DialogHeader>
+        <DialogContent className="rounded-none bg-white dark:bg-[#120A1A] border-[#D9CEF2] dark:border-[#2A1A3A] max-w-2xl">
+          <DialogHeader><DialogTitle className="text-[#030407] dark:text-[#EDE6F8]">{editing?"Edit":"Create"} event</DialogTitle></DialogHeader>
           <div className="grid gap-3">
-            <Input placeholder="Title" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} className="rounded-none bg-[#EAF6F4] dark:bg-[#0F1F1A] border-[#BFE9E0] dark:border-[#1E3D32]"/>
-            <Textarea placeholder="Description" value={form.description} onChange={e=>setForm({...form,description:e.target.value})} className="rounded-none bg-[#EAF6F4] dark:bg-[#0F1F1A] border-[#BFE9E0] dark:border-[#1E3D32]" rows={3}/>
+            <Input placeholder="Title" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} className="rounded-none bg-[#EDE6F8] dark:bg-[#030407] border-[#D9CEF2] dark:border-[#2A1A3A]"/>
+            <Textarea placeholder="Description" value={form.description} onChange={e=>setForm({...form,description:e.target.value})} className="rounded-none bg-[#EDE6F8] dark:bg-[#030407] border-[#D9CEF2] dark:border-[#2A1A3A]" rows={3}/>
             <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="Venue" value={form.venue} onChange={e=>setForm({...form,venue:e.target.value})} className="rounded-none bg-[#EAF6F4] dark:bg-[#0F1F1A] border-[#BFE9E0]"/>
-              <Input placeholder="Type (club/music)" value={form.event_type} onChange={e=>setForm({...form,event_type:e.target.value})} className="rounded-none bg-[#EAF6F4] dark:bg-[#0F1F1A] border-[#BFE9E0]"/>
+              <Input placeholder="Venue" value={form.venue} onChange={e=>setForm({...form,venue:e.target.value})} className="rounded-none bg-[#EDE6F8] dark:bg-[#030407] border-[#D9CEF2]"/>
+              <Input placeholder="Type (club/music)" value={form.event_type} onChange={e=>setForm({...form,event_type:e.target.value})} className="rounded-none bg-[#EDE6F8] dark:bg-[#030407] border-[#D9CEF2]"/>
               <Input type="datetime-local" value={form.start_date} onChange={e=>setForm({...form,start_date:e.target.value})} className="rounded-none"/>
               <Input type="datetime-local" value={form.end_date} onChange={e=>setForm({...form,end_date:e.target.value})} className="rounded-none"/>
               <Input placeholder="Max participants" value={form.max_participants} onChange={e=>setForm({...form,max_participants:e.target.value})} className="rounded-none"/>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={()=>setOpen(false)} className="rounded-none border-[#BFE9E0]">Cancel</Button>
-            <Button onClick={submit} className="rounded-none bg-[#1E8277] text-white">{editing?"Update":"Create"}</Button>
+            <Button variant="outline" onClick={()=>setOpen(false)} className="rounded-none border-[#D9CEF2]">Cancel</Button>
+            <Button onClick={submit} className="rounded-none bg-[#DF3FFA] text-white">{editing?"Update":"Create"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

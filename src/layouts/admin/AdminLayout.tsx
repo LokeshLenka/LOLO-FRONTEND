@@ -14,7 +14,7 @@ export default function AdminLayout() {
   },[loading, token, navigate]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-[#EAF6F4]"><Loader2 className="w-8 h-8 animate-spin text-[#1E8277]"/></div>;
+    return <div className="min-h-screen flex items-center justify-center bg-[#EDE6F8]"><Loader2 className="w-8 h-8 animate-spin text-[#DF3FFA]"/></div>;
   }
   if (!token) return null;
 

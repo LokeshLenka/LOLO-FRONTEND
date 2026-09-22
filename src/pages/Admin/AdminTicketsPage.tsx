@@ -26,21 +26,21 @@ export default function AdminTicketsPage(){
     <div className="pb-10">
       <AdminHeader title="Tickets — Gate Verification" subtitle="POST /admin/copy-records • PUT /verify-ticket/:code (valid_club_member)" />
       <div className="px-4 lg:px-8 py-6 space-y-4">
-        <Card className="rounded-none border-[#BFE9E0] dark:border-[#1E3D32] bg-white dark:bg-[#14261F]">
+        <Card className="rounded-none border-[#D9CEF2] dark:border-[#2A1A3A] bg-white dark:bg-[#120A1A]">
           <CardContent className="p-6 space-y-4">
-            <div className="text-sm font-bold text-[#17463C] dark:text-[#EAF6F4]">Copy public registrations → event tickets</div>
-            <p className="text-xs text-[#4A7A6E] dark:text-[#91E9D7]">One-click bulk copy via <code className="px-1 bg-[#EAF6F4] dark:bg-[#1B342D]">POST /admin/copy-records</code>. Chunked 100 at a time on server.</p>
-            <Button onClick={copyRecords} className="rounded-none bg-[#1E8277] hover:bg-[#17463C] text-white">Run copy-records</Button>
+            <div className="text-sm font-bold text-[#030407] dark:text-[#EDE6F8]">Copy public registrations → event tickets</div>
+            <p className="text-xs text-[#494070] dark:text-[#494070]">One-click bulk copy via <code className="px-1 bg-[#EDE6F8] dark:bg-[#1A1025]">POST /admin/copy-records</code>. Chunked 100 at a time on server.</p>
+            <Button onClick={copyRecords} className="rounded-none bg-[#DF3FFA] hover:bg-[#030407] text-white">Run copy-records</Button>
           </CardContent>
         </Card>
-        <Card className="rounded-none border-[#BFE9E0] dark:border-[#1E3D32] bg-white dark:bg-[#14261F]">
+        <Card className="rounded-none border-[#D9CEF2] dark:border-[#2A1A3A] bg-white dark:bg-[#120A1A]">
           <CardContent className="p-6 space-y-3">
-            <div className="text-sm font-bold text-[#17463C] dark:text-[#EAF6F4]">Verify ticket (gate)</div>
+            <div className="text-sm font-bold text-[#030407] dark:text-[#EDE6F8]">Verify ticket (gate)</div>
             <div className="flex gap-2">
-              <Input placeholder="Enter ticket code" value={ticket} onChange={e=>setTicket(e.target.value)} className="rounded-none bg-[#EAF6F4] dark:bg-[#0F1F1A] border-[#BFE9E0] dark:border-[#1E3D32]"/>
-              <Button onClick={verify} disabled={busy} className="rounded-none bg-[#1E8277] text-white">Verify</Button>
+              <Input placeholder="Enter ticket code" value={ticket} onChange={e=>setTicket(e.target.value)} className="rounded-none bg-[#EDE6F8] dark:bg-[#030407] border-[#D9CEF2] dark:border-[#2A1A3A]"/>
+              <Button onClick={verify} disabled={busy} className="rounded-none bg-[#DF3FFA] text-white">Verify</Button>
             </div>
-            <div className="text-xs text-[#4A7A6E] dark:text-[#91E9D7]">Requires <code className="px-1 bg-[#EAF6F4] dark:bg-[#1B342D]">valid_club_member</code> + Sanctum. Admin plus promoted leadership passes.</div>
+            <div className="text-xs text-[#494070] dark:text-[#494070]">Requires <code className="px-1 bg-[#EDE6F8] dark:bg-[#1A1025]">valid_club_member</code> + Sanctum. Admin plus promoted leadership passes.</div>
           </CardContent>
         </Card>
       </div>

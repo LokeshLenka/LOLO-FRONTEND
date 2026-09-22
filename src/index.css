@@ -128,94 +128,95 @@
   }
 }
 
-/* ===== ADMIN PALETTE — #EAF6F4 family ===== */
+/* ===== ADMIN PALETTE — neon violet / oxblood / vintage grape / black / brick ember ===== */
 :root {
-  --admin-1: #EAF6F4;
-  --admin-2: #91E9D7;
-  --admin-3: #3CCCB3;
-  --admin-4: #1E8277;
-  --admin-5: #17463C;
-  --admin-bg: #EAF6F4;
+  --admin-1: #DF3FFA;
+  --admin-2: #494070;
+  --admin-3: #9F0202;
+  --admin-4: #D30000;
+  --admin-5: #030407;
+  --admin-bg: #FDF5FF;
   --admin-surface: #FFFFFF;
-  --admin-muted: #DDF3EF;
-  --admin-border: #BFE9E0;
-  --admin-text: #17463C;
-  --admin-text-muted: #4A7A6E;
+  --admin-muted: #EDE6F8;
+  --admin-border: #D9CEF2;
+  --admin-text: #030407;
+  --admin-text-muted: #494070;
 }
 .admin-theme {
-  --background: #EAF6F4;
-  --foreground: #17463C;
+  --background: #FDF5FF;
+  --foreground: #030407;
   --card: #FFFFFF;
-  --card-foreground: #17463C;
-  --primary: #1E8277;
+  --card-foreground: #030407;
+  --primary: #DF3FFA;
   --primary-foreground: #FFFFFF;
-  --muted: #DDF3EF;
-  --muted-foreground: #4A7A6E;
-  --border: #BFE9E0;
-  --ring: #3CCCB3;
+  --muted: #EDE6F8;
+  --muted-foreground: #494070;
+  --border: #D9CEF2;
+  --ring: #DF3FFA;
   --sidebar: #FFFFFF;
-  --sidebar-foreground: #17463C;
-  --sidebar-border: #BFE9E0;
+  --sidebar-foreground: #030407;
+  --sidebar-border: #D9CEF2;
 }
 .dark .admin-theme,
 .admin-theme.dark {
-  --background: #0F1F1A;
-  --foreground: #EAF6F4;
-  --card: #14261F;
-  --card-foreground: #EAF6F4;
-  --primary: #3CCCB3;
-  --primary-foreground: #0F1F1A;
-  --muted: #1B342D;
-  --muted-foreground: #91E9D7;
-  --border: #1E3D32;
-  --ring: #1E8277;
-  --sidebar: #14261F;
-  --sidebar-foreground: #EAF6F4;
-  --sidebar-border: #1E3D32;
+  --background: #030407;
+  --foreground: #FDF5FF;
+  --card: #120A1A;
+  --card-foreground: #FDF5FF;
+  --primary: #DF3FFA;
+  --primary-foreground: #FFFFFF;
+  --muted: #1A1025;
+  --muted-foreground: #C9B6E8;
+  --border: #2A1A3A;
+  --ring: #DF3FFA;
+  --sidebar: #0A060F;
+  --sidebar-foreground: #FDF5FF;
+  --sidebar-border: #2A1A3A;
 }
 .admin-shell {
   background: var(--admin-bg);
   min-height: 100vh;
 }
 .dark .admin-shell {
-  background: #0F1F1A;
+  background: #030407;
 }
 .admin-glass {
-  background: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.92);
   backdrop-filter: blur(12px);
   border: 1px solid var(--admin-border);
 }
 .dark .admin-glass {
-  background: rgba(20,38,31,0.85);
-  border-color: #1E3D32;
+  background: rgba(18,10,26,0.9);
+  border-color: #2A1A3A;
 }
 .admin-gradient-text {
-  background: linear-gradient(135deg, #1E8277 0%, #17463C 100%);
+  background: linear-gradient(135deg, #DF3FFA 0%, #494070 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 .dark .admin-gradient-text {
-  background: linear-gradient(135deg, #3CCCB3 0%, #91E9D7 100%);
+  background: linear-gradient(135deg, #DF3FFA 0%, #D30000 100%);
   -webkit-background-clip: text;
   background-clip: text;
 }
 .admin-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; display:block; }
-.admin-scrollbar::-webkit-scrollbar-thumb { background: var(--admin-3); border-radius: 0; }
+.admin-scrollbar::-webkit-scrollbar-thumb { background: var(--admin-1); border-radius: 0; }
 .admin-scrollbar::-webkit-scrollbar-track { background: var(--admin-bg); }
-.dark .admin-scrollbar::-webkit-scrollbar-thumb { background: #1E8277; }
-.dark .admin-scrollbar::-webkit-scrollbar-track { background: #0F1F1A; }
+.dark .admin-scrollbar::-webkit-scrollbar-thumb { background: #494070; }
+.dark .admin-scrollbar::-webkit-scrollbar-track { background: #030407; }
 /* Enforce no radius in admin scope — overrides shadcn defaults */
 .admin-shell * { border-radius: 0 !important; }
 .admin-shell .rounded-full { border-radius: 9999px !important; }
 /* Dark overrides for hard-coded light colors without per-component dark: classes */
-.dark .admin-shell .bg-white { background-color: #14261F !important; }
-.dark .admin-shell .bg-\[\#EAF6F4\] { background-color: #0F1F1A !important; }
-.dark .admin-shell .bg-\[\#DDF3EF\] { background-color: #1B342D !important; }
-.dark .admin-shell .border-\[\#BFE9E0\] { border-color: #1E3D32 !important; }
-.dark .admin-shell .text-\[\#17463C\] { color: #EAF6F4 !important; }
-.dark .admin-shell .text-\[\#4A7A6E\] { color: #91E9D7 !important; }
-.dark .admin-shell .text-\[\#1E8277\] { color: #3CCCB3 !important; }
+.dark .admin-shell .bg-white { background-color: #120A1A !important; }
+.dark .admin-shell .bg-\[\#EDE6F8\] { background-color: #030407 !important; }
+.dark .admin-shell .bg-\[\#FDF5FF\] { background-color: #030407 !important; }
+.dark .admin-shell .border-\[\#D9CEF2\] { border-color: #2A1A3A !important; }
+.dark .admin-shell .text-\[\#030407\] { color: #EDE6F8 !important; }
+.dark .admin-shell .text-\[\#494070\] { color: #C9B6E8 !important; }
+.dark .admin-shell .text-\[\#DF3FFA\] { color: #DF3FFA !important; }
+.dark .admin-shell .bg-\[\#DF3FFA\] { background-color: #DF3FFA !important; }
 
 /* Custom colors */
 @layer utilities {

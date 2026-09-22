@@ -25,21 +25,21 @@ export function AdminSidebar({ collapsed, setCollapsed }: { collapsed: boolean; 
 
   return (
     <>
-      <button onClick={()=>setMobileOpen(!mobileOpen)} className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-none bg-white dark:bg-[#14261F] border border-[#BFE9E0] dark:border-[#1E3D32] shadow-md text-[#17463C] dark:text-[#EAF6F4]">
+      <button onClick={()=>setMobileOpen(!mobileOpen)} className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-none bg-white dark:bg-[#120A1A] border border-[#D9CEF2] dark:border-[#2A1A3A] shadow-md text-[#030407] dark:text-[#EDE6F8]">
         {mobileOpen ? <X size={18}/> : <Menu size={18}/>}
       </button>
-      <aside className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r border-[#BFE9E0] dark:border-[#1E3D32] bg-white dark:bg-[#14261F] transition-all duration-300 ${collapsed ? "w-[78px]" : "w-[264px]"} ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
-        <div className="flex h-[64px] items-center gap-3 px-4 border-b border-[#BFE9E0] dark:border-[#1E3D32]">
-          <div className="w-9 h-9 rounded-none flex items-center justify-center" style={{background:"linear-gradient(135deg,#1E8277,#17463C)"}}>
+      <aside className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r border-[#D9CEF2] dark:border-[#2A1A3A] bg-white dark:bg-[#120A1A] transition-all duration-300 ${collapsed ? "w-[78px]" : "w-[264px]"} ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
+        <div className="flex h-[64px] items-center gap-3 px-4 border-b border-[#D9CEF2] dark:border-[#2A1A3A]">
+          <div className="w-9 h-9 rounded-none flex items-center justify-center" style={{background:"linear-gradient(135deg,#DF3FFA,#030407)"}}>
             <Sparkles size={16} className="text-white"/>
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <div className="text-[15px] font-bold tracking-tight text-[#17463C] dark:text-[#EAF6F4] leading-none">LOLO Admin</div>
-              <div className="text-[11px] font-medium tracking-widest uppercase text-[#1E8277]">Control Centre</div>
+              <div className="text-[15px] font-bold tracking-tight text-[#030407] dark:text-[#EDE6F8] leading-none">LOLO Admin</div>
+              <div className="text-[11px] font-medium tracking-widest uppercase text-[#DF3FFA]">Control Centre</div>
             </div>
           )}
-          <button onClick={()=>setCollapsed(!collapsed)} className="hidden lg:flex w-7 h-7 items-center justify-center rounded-none border border-[#BFE9E0] dark:border-[#1E3D32] text-[#4A7A6E] hover:bg-[#EAF6F4] dark:hover:bg-[#1B342D]">
+          <button onClick={()=>setCollapsed(!collapsed)} className="hidden lg:flex w-7 h-7 items-center justify-center rounded-none border border-[#D9CEF2] dark:border-[#2A1A3A] text-[#494070] hover:bg-[#EDE6F8] dark:hover:bg-[#1A1025]">
             <Menu size={14}/>
           </button>
         </div>
@@ -47,7 +47,7 @@ export function AdminSidebar({ collapsed, setCollapsed }: { collapsed: boolean; 
         <nav className="flex-1 overflow-y-auto p-3 space-y-1 admin-scrollbar">
           {navItems.map(item=>{
             return (
-              <NavLink key={item.to} to={item.to} className={({isActive})=> `flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-medium transition-all ${isActive ? "bg-[#1E8277] text-white shadow-sm" : "text-[#17463C] dark:text-[#EAF6F4] hover:bg-[#EAF6F4] dark:hover:bg-[#1B342D]"}`}>
+              <NavLink key={item.to} to={item.to} className={({isActive})=> `flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-medium transition-all ${isActive ? "bg-[#DF3FFA] text-white shadow-sm" : "text-[#030407] dark:text-[#EDE6F8] hover:bg-[#EDE6F8] dark:hover:bg-[#1A1025]"}`}>
                 <item.icon size={18} className="shrink-0"/>
                 {!collapsed && <span className="truncate">{item.label}</span>}
               </NavLink>
@@ -55,14 +55,14 @@ export function AdminSidebar({ collapsed, setCollapsed }: { collapsed: boolean; 
           })}
         </nav>
 
-        <div className="p-3 border-t border-[#BFE9E0] dark:border-[#1E3D32] space-y-3">
+        <div className="p-3 border-t border-[#D9CEF2] dark:border-[#2A1A3A] space-y-3">
           {!collapsed && (
-            <div className="rounded-none p-4 border border-[#BFE9E0] dark:border-[#1E3D32]" style={{background:"linear-gradient(135deg,#EAF6F4 0%,#91E9D7 60%,#3CCCB3 100%)"}}>
-              <div className="text-sm font-bold text-[#17463C]">Need help?</div>
-              <div className="text-xs text-[#17463C]/80 mt-1">Docs & audit logs in Settings.</div>
+            <div className="rounded-none p-4 border border-[#D9CEF2] dark:border-[#2A1A3A]" style={{background:"linear-gradient(135deg,#EDE6F8 0%,#494070 60%,#DF3FFA 100%)"}}>
+              <div className="text-sm font-bold text-[#030407]">Need help?</div>
+              <div className="text-xs text-[#030407]/80 mt-1">Docs & audit logs in Settings.</div>
             </div>
           )}
-          <button onClick={handleLogout} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-semibold border border-[#BFE9E0] dark:border-[#1E3D32] text-[#17463C] dark:text-[#EAF6F4] hover:bg-[#EAF6F4] dark:hover:bg-[#1B342D] transition-colors ${collapsed ? "justify-center" : ""}`}>
+          <button onClick={handleLogout} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-semibold border border-[#D9CEF2] dark:border-[#2A1A3A] text-[#030407] dark:text-[#EDE6F8] hover:bg-[#EDE6F8] dark:hover:bg-[#1A1025] transition-colors ${collapsed ? "justify-center" : ""}`}>
             <LogOut size={16}/> {!collapsed && "Sign out"}
           </button>
         </div>
