@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { toast } from "sonner";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   CalendarClock,
   MapPin,
@@ -9,6 +10,7 @@ import {
   Ticket,
   Clock,
   Calendar,
+  Plus,
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -87,6 +89,8 @@ const columns = [
 ];
 
 export default function MyEvents() {
+  const navigate = useNavigate();
+  const { username } = useParams<{ username: string }>();
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
@@ -211,24 +215,31 @@ export default function MyEvents() {
               {event.type}
             </Chip>
           );
-        case "status":
+        case "status": {
+          const statusStyles: string =
+            event.status === "published"
+              ? "bg-green-50 text-green-700 border border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20"
+              : event.status === "completed"
+                ? "bg-zinc-100 text-zinc-600 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700"
+                : "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20";
           return (
             <Chip
               size="sm"
-              variant="dot"
+              startContent={
+                <div
+                  className={`w-1.5 h-1.5 rounded-full ml-1 ${event.status === "published" ? "bg-green-600 dark:bg-green-500" : event.status === "completed" ? "bg-zinc-400 dark:bg-zinc-500" : "bg-amber-600 dark:bg-amber-500"}`}
+                />
+              }
+              variant="flat"
               classNames={{
-                base: "border-none bg-transparent gap-1 px-0",
-                dot:
-                  event.status === "published"
-                    ? "bg-green-500"
-                    : "bg-gray-400 dark:bg-slate-500",
-                content:
-                  "font-medium capitalize text-gray-600 dark:text-slate-300",
+                base: statusStyles,
+                content: "font-bold capitalize pl-1",
               }}
             >
               {event.status}
             </Chip>
           );
+        }
         case "start_date":
           return (
             <div className="flex flex-col gap-0.5">
@@ -257,7 +268,7 @@ export default function MyEvents() {
             <div className="flex flex-col gap-1 min-w-[80px]">
               <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-500">
                 <Ticket size={12} />
-                <span>Fee: {event.fee > 0 ? `$${event.fee}` : "Free"}</span>
+                <span>Fee: {event.fee > 0 ? `₹${event.fee}` : "Free"}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Users
@@ -282,7 +293,8 @@ export default function MyEvents() {
                   isIconOnly
                   size="sm"
                   variant="flat"
-                  className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                  aria-label="View event details"
+                  className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 min-w-11 min-h-11"
                   onPress={() => {
                     handleEventClick(event.uuid);
                   }}
@@ -290,7 +302,7 @@ export default function MyEvents() {
                   <Calendar size={18} />
                 </Button>
               </Tooltip>
-              {/* <Tooltip
+              <Tooltip
                 content="View Event Registrations"
                 placement="bottom"
                 className="bg-black dark:bg-white text-white dark:text-black backdrop-blur-lg border"
@@ -299,21 +311,24 @@ export default function MyEvents() {
                   isIconOnly
                   size="sm"
                   variant="flat"
-                  className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                  aria-label="View event registrations"
+                  className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 dark:bg-green-500/10 dark:text-green-400 min-w-11 min-h-11"
                   onPress={() => {
-                    handleEventClick(event.uuid);
+                    navigate(
+                      `/${username}/executive_body_member/event-registrations?event=${event.uuid}`,
+                    );
                   }}
                 >
-                  <Users2 size={18} />
+                  <Users size={18} />
                 </Button>
-              </Tooltip> */}
+              </Tooltip>
             </div>
           );
         default:
           return null;
       }
     },
-    [handleEventClick],
+    [handleEventClick, navigate],
   );
 
   return (
@@ -332,7 +347,7 @@ export default function MyEvents() {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full md:w-auto">
             <Button
               variant="flat"
               startContent={
@@ -343,7 +358,7 @@ export default function MyEvents() {
               }
               onPress={() => fetchEvents()}
               isDisabled={isLoading}
-              className="font-semibold"
+              className="font-semibold min-h-[44px] flex-1 md:flex-none"
             >
               Refresh
             </Button>
@@ -384,9 +399,85 @@ export default function MyEvents() {
                 You haven't created any events yet. Start by creating your first
                 event to see it here.
               </p>
+              <Button
+                className="mt-6 min-h-12 px-6 font-semibold"
+                color="primary"
+                startContent={<Plus size={18} />}
+                onPress={() =>
+                  navigate(
+                    `/${username}/executive_body_member/create-event`,
+                  )
+                }
+              >
+                Create Event
+              </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            {/* Mobile cards (large touch targets, no horizontal scroll) */}
+            <div className="block md:hidden divide-y divide-gray-100 dark:divide-slate-800/50">
+              {events.map((event) => (
+                <div key={event.uuid} className="p-4 space-y-3 active:bg-gray-50 dark:active:bg-slate-800/40">
+                  <div>
+                    <p className="text-base font-bold text-gray-900 dark:text-slate-100 leading-snug">
+                      {event.name}
+                    </p>
+                    {event.description ? (
+                      <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+                        {event.description}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold capitalize px-2.5 py-1 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200 dark:bg-cyan-500/10 dark:text-cyan-400 dark:border-cyan-500/20">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-600 dark:bg-cyan-500" />
+                      {event.type}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold capitalize px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-600 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+                      {event.status}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div className="flex flex-col">
+                      <span className="font-bold uppercase tracking-wide text-[10px] text-gray-400 dark:text-slate-500">When</span>
+                      <span className="font-semibold text-gray-800 dark:text-slate-200 mt-0.5">{formatDate(event.start_date)}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold uppercase tracking-wide text-[10px] text-gray-400 dark:text-slate-500">Venue</span>
+                      <span className="font-semibold text-gray-800 dark:text-slate-200 mt-0.5 truncate">{event.venue || "TBD"}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold uppercase tracking-wide text-[10px] text-gray-400 dark:text-slate-500">Regs</span>
+                      <span className="font-semibold text-gray-800 dark:text-slate-200 mt-0.5">
+                        {event.registrations_count || 0} · {event.fee > 0 ? `₹${event.fee}` : "Free"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <Button
+                      variant="flat"
+                      className="min-h-12 font-semibold bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300"
+                      onPress={() => handleEventClick(event.uuid)}
+                    >
+                      Details
+                    </Button>
+                    <Button
+                      variant="flat"
+                      className="min-h-12 font-semibold bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300"
+                      onPress={() =>
+                        navigate(
+                          `/${username}/executive_body_member/event-registrations?event=${event.uuid}`,
+                        )
+                      }
+                    >
+                      Registrations
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="hidden md:block overflow-x-auto">
               <Table
                 aria-label="My Events Table"
                 selectionMode="none"
@@ -428,14 +519,15 @@ export default function MyEvents() {
                 </TableBody>
               </Table>
             </div>
+            </>
           )}
         </CardBody>
       </Card>
 
       <Divider className="opacity-0 pb-20" />
 
-      {/* 3. Floating Pagination Control */}
-      {currentPageData && totalItems > 0 && (
+      {/* 3. Floating Pagination Control (only when more than one page) */}
+      {currentPageData && totalItems > rowsPerPage && (
         <div className="fixed z-[99] bottom-8 w-full sm:w-[28%] flex right-0 sm:right-22 items-center py-3 rounded-xl bg-white/80 dark:bg-black/70 backdrop-blur-md border border-gray-200 dark:border-white/5 shadow-xl dark:shadow-2xl">
           <TablePagination
             component="div"

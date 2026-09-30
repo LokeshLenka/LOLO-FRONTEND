@@ -5,7 +5,7 @@ import {
   Tooltip, Modal, ModalContent, ModalBody,
   Select, SelectItem, Divider, useDisclosure,
 } from "@heroui/react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   Search, Download, Eye, CalendarDays, Users, LayoutDashboard,
   RefreshCcw, CheckCircle, XCircle, X, ArrowUpDown, ChevronUp,
@@ -98,6 +98,14 @@ function StatusChip({ status, type = "reg" }: { status: string; type?: "reg" | "
       {status}
     </Chip>
   );
+}
+
+// ─── UTR masking (privacy: full value lives only in the review modal) ────────
+
+function maskUtr(utr?: string | null): string {
+  if (!utr) return "—";
+  const clean = utr.replace(/\s+/g, "");
+  return clean.length <= 4 ? clean : `•••• •••• ${clean.slice(-4)}`;
 }
 
 // ─── Shared Small Components ──────────────────────────────────────────────────
@@ -207,7 +215,7 @@ function ReviewModal({
                 <StatusChip status={registration.registration_status} type="reg" />
                 <button
                   onClick={close}
-                  className="h-7 w-7 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
+                  className="h-9 w-9 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
                 >
                   <X size={13} />
                 </button>
@@ -288,14 +296,14 @@ function ReviewModal({
                   /* Step 1 — choose action */
                   <div className="flex gap-3">
                     <Button
-                      className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 font-medium h-10"
+                      className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 font-medium h-12"
                       onPress={close}
                       radius="none"
                     >
                       Close
                     </Button>
                     <Button
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold h-10"
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold h-12"
                       onPress={() => setConfirmType("reject")}
                       radius="none"
                       startContent={<XCircle size={15} />}
@@ -303,7 +311,7 @@ function ReviewModal({
                       Cancel
                     </Button>
                     <Button
-                      className="flex-1 bg-[#03a1b0] hover:bg-cyan-600 text-white font-semibold h-10"
+                      className="flex-1 bg-[#03a1b0] hover:bg-cyan-600 text-white font-semibold h-12"
                       onPress={() => setConfirmType("approve")}
                       radius="none"
                       startContent={<CheckCircle size={15} />}
@@ -326,7 +334,7 @@ function ReviewModal({
                     </p>
                     <div className="flex gap-3">
                       <Button
-                        className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 font-medium h-10"
+                        className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 font-medium h-12"
                         onPress={() => setConfirmType(null)}
                         radius="none"
                       >
@@ -334,7 +342,7 @@ function ReviewModal({
                       </Button>
                       <Button
                         className={clsx(
-                          "flex-1 text-white font-semibold h-10",
+                          "flex-1 text-white font-semibold h-12",
                           confirmType === "approve"
                             ? "bg-[#03a1b0] hover:bg-cyan-600"
                             : "bg-red-600 hover:bg-red-700"
@@ -353,7 +361,7 @@ function ReviewModal({
                 )
               ) : (
                 <Button
-                  className="w-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 font-medium h-10"
+                  className="w-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 font-medium h-12"
                   onPress={close}
                   radius="none"
                 >
@@ -370,7 +378,15 @@ function ReviewModal({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function EventRegistrationsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialEventUuid = searchParams.get("event");
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+
+  // Keep selection in the URL so the view survives refresh and can be shared
+  const handleSelectEvent = useCallback((e: Event) => {
+    setSelectedEvent(e);
+    setSearchParams({ event: e.uuid }, { replace: true });
+  }, [setSearchParams]);
 
   // ── resizable divider ────────────────────────────────────────────────────
   const [leftPct, setLeftPct] = useState(33);     // 20–60 %
@@ -453,7 +469,11 @@ export default function EventRegistrationsPage() {
         h-[38vh] lg:h-full
       "
           >
-            <EventsList selectedId={selectedEvent?.uuid} onSelect={setSelectedEvent} />
+            <EventsList
+              selectedId={selectedEvent?.uuid}
+              initialUuid={initialEventUuid}
+              onSelect={handleSelectEvent}
+            />
           </div>
 
           {/* Drag handle (desktop only) */}
@@ -496,7 +516,11 @@ export default function EventRegistrationsPage() {
 
 // ─── Events List ──────────────────────────────────────────────────────────────
 
-function EventsList({ selectedId, onSelect }: { selectedId?: string; onSelect: (e: Event) => void }) {
+function EventsList({ selectedId, initialUuid, onSelect }: {
+  selectedId?: string;
+  initialUuid?: string | null;
+  onSelect: (e: Event) => void;
+}) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
 
@@ -508,6 +532,19 @@ function EventsList({ selectedId, onSelect }: { selectedId?: string; onSelect: (
 
   const events = data?.data || [];
   const totalPages = data?.last_page || 1;
+  const total = data?.total || 0;
+
+  // Deep-link (?event=uuid) and single-event auto-select
+  useEffect(() => {
+    if (selectedId || events.length === 0) return;
+    if (initialUuid) {
+      const match = events.find((e) => e.uuid === initialUuid);
+      if (match) { onSelect(match); return; }
+    }
+    if (total === 1 && page === 1 && !search.trim()) {
+      onSelect(events[0]);
+    }
+  }, [events, total, page, search, selectedId, initialUuid, onSelect]);
 
   return (
     <Card className="h-full border border-zinc-200 dark:border-zinc-800 shadow-sm" radius="none" shadow="sm">
@@ -529,8 +566,9 @@ function EventsList({ selectedId, onSelect }: { selectedId?: string; onSelect: (
               ? <div className="text-center py-10 text-zinc-400 text-sm">No events found</div>
               : events.map((event) => (
                 <button key={event.uuid} onClick={() => onSelect(event)}
+                  aria-pressed={selectedId === event.uuid}
                   className={clsx(
-                    "text-left p-3 border-b border-zinc-100 dark:border-zinc-800 transition-all duration-150",
+                    "text-left p-3 border-b border-zinc-100 dark:border-zinc-800 transition-all duration-150 min-h-[60px]",
                     "border-l-4",
                     selectedId === event.uuid
                       ? "bg-gray-50 dark:bg-gray-950 !border-l-cyan-600 pl-[9px]"
@@ -572,7 +610,11 @@ function EventsList({ selectedId, onSelect }: { selectedId?: string; onSelect: (
 
         <div className="pt-2 flex justify-center border-t border-zinc-100 dark:border-zinc-800">
           <Pagination total={totalPages} page={page} onChange={setPage} size="sm" radius="none" showControls
-            classNames={{ cursor: "bg-cyan-600 text-white font-bold", item: "bg-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800" }}
+            classNames={{
+              cursor: "bg-cyan-600 text-white font-bold min-w-11 min-h-11",
+              item: "bg-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 min-w-11 min-h-11",
+              prev: "min-w-11 min-h-11", next: "min-w-11 min-h-11",
+            }}
           />
         </div>
       </CardBody>
@@ -831,7 +873,9 @@ function RegistrationsTable({ event }: { event: Event }) {
             <div className="flex flex-col gap-1">
               <StatusChip status={item.payment_status} type="pay" />
               {item.utr && (
-                <span className="text-[10px] text-zinc-400 font-mono">UTR: {item.utr}</span>
+                <span className="text-[10px] text-zinc-400 font-mono" title={`Full UTR: ${item.utr}`}>
+                  UTR: {maskUtr(item.utr)}
+                </span>
               )}
             </div>
           );
@@ -882,7 +926,7 @@ function RegistrationsTable({ event }: { event: Event }) {
     const key = col.uid as SortKey;
     return (
       <button
-        className="flex items-center gap-0.5 uppercase text-[10px] font-bold tracking-wider hover:text-cyan-600 transition-colors"
+        className="flex items-center gap-0.5 uppercase text-[10px] font-bold tracking-wider hover:text-cyan-600 transition-colors min-h-[40px]"
         onClick={() => handleSort(key)}
       >
         {col.name}
@@ -920,7 +964,7 @@ function RegistrationsTable({ event }: { event: Event }) {
             <Button
               startContent={<RefreshCcw size={14} className={isRefetching ? "animate-spin" : ""} />}
               size="sm" radius="none"
-              className="text-zinc-700 dark:text-zinc-200 font-medium px-3"
+              className="text-zinc-700 dark:text-zinc-200 font-medium px-3 min-h-[40px]"
               onPress={() => refetch()}
               isDisabled={isLoading || isRefetching}
             >
@@ -930,7 +974,7 @@ function RegistrationsTable({ event }: { event: Event }) {
             <Button
               startContent={<Download size={14} />}
               size="sm" radius="none"
-              className="bg-cyan-600 text-white font-semibold px-3 hover:bg-cyan-700"
+              className="bg-cyan-600 text-white font-semibold px-3 hover:bg-cyan-700 min-h-[40px]"
               onPress={handleExport}
             >
               <span className="hidden sm:inline">Export</span>
@@ -989,11 +1033,71 @@ function RegistrationsTable({ event }: { event: Event }) {
         </div>
       </div>
 
-      {/* ── Table ── */}
+      {/* ── Table (desktop) / Cards (mobile, large touch targets) ── */}
+      <div className="md:hidden flex-1 min-h-0 overflow-y-auto custom-scrollbar p-3 space-y-3">
+        {isLoading ? (
+          [...Array(4)].map((_, i) => <Skeleton key={i} className="h-36 w-full rounded-xl" />)
+        ) : filteredItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-14 text-zinc-400">
+            <Users size={44} className="mb-3 opacity-30" />
+            <p className="text-sm font-medium">No registrations found</p>
+            {(filterValue || statusFilter !== "all") && (
+              <button
+                onClick={() => { setFilterValue(""); setStatusFilter("all"); }}
+                className="mt-2 min-h-[44px] px-3 text-xs text-cyan-600 hover:underline"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        ) : (
+          filteredItems.map((item) => {
+            const u = item.public_user;
+            return (
+              <div
+                key={item.uuid}
+                className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-4 space-y-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
+                    <span className="text-sm font-bold text-zinc-500 dark:text-zinc-300">
+                      {u?.name?.charAt(0)?.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[15px] font-bold text-zinc-900 dark:text-white truncate">
+                      {u?.name}
+                    </p>
+                    <p className="text-xs text-zinc-400 font-mono truncate">{u?.reg_num}</p>
+                  </div>
+                  <StatusChip status={item.registration_status} type="reg" />
+                </div>
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <span className="text-zinc-400 font-mono" title={item.utr || undefined}>
+                    UTR: {maskUtr(item.utr)}
+                  </span>
+                  <span className="text-zinc-500 shrink-0">
+                    {format(new Date(item.created_at), "MMM d, yyyy · h:mm a")}
+                  </span>
+                </div>
+                <Button
+                  className="w-full min-h-12 font-semibold bg-cyan-600 text-white"
+                  radius="md"
+                  onPress={() => handleReview(item)}
+                  startContent={<Eye size={16} />}
+                >
+                  Review Registration
+                </Button>
+              </div>
+            );
+          })
+        )}
+      </div>
       <Table
         aria-label="Registrations table"
         isHeaderSticky
         radius="none"
+        className="hidden md:flex"
         classNames={{
           base: "flex-1 min-h-0 overflow-hidden",
           wrapper: "h-full p-0 rounded-none shadow-none border-none bg-transparent overflow-y-auto custom-scrollbar",
@@ -1027,7 +1131,7 @@ function RegistrationsTable({ event }: { event: Event }) {
               {(filterValue || statusFilter !== "all") && (
                 <button
                   onClick={() => { setFilterValue(""); setStatusFilter("all"); }}
-                  className="mt-2 text-xs text-cyan-600 hover:underline"
+                  className="mt-2 min-h-[44px] px-3 text-xs text-cyan-600 hover:underline"
                 >
                   Clear filters
                 </button>
