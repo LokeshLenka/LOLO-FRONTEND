@@ -62,7 +62,60 @@ export function useAdminRegistrations(tab: "all"|"club"|"music" = "all") {
   return { rows: Array.isArray(rows)?rows:[], isLoading, isError:!!error, refresh:mutate, updateClub, deleteClub, updateMusic, deleteMusic };
 }
 
-// TICKETS — copy-records
+// TICKETS — copy-records + list with filtering/sorting
+export interface AdminTicketQuery {
+  search?: string;
+  status?: "all" | "verified" | "unverified";
+  event_id?: number | string;
+  sort_by?: string;
+  sort_dir?: "asc" | "desc";
+  page?: number;
+  per_page?: number;
+}
+
+export function useAdminTicketsList(params: AdminTicketQuery = {}) {
+  const qs = new URLSearchParams();
+  if (params.search) qs.set("search", params.search);
+  if (params.status && params.status !== "all") qs.set("status", params.status);
+  if (params.event_id) {
+    const v = String(params.event_id);
+    // Event API hides numeric `id`, so uuids are the reliable key — backend accepts both.
+    if (v.includes("-")) qs.set("event_uuid", v);
+    else qs.set("event_id", v);
+  }
+  if (params.sort_by) qs.set("sort_by", params.sort_by);
+  if (params.sort_dir) qs.set("sort_dir", params.sort_dir);
+  qs.set("page", String(params.page ?? 1));
+  qs.set("per_page", String(params.per_page ?? 20));
+  const url = `${API}/admin/tickets?${qs.toString()}`;
+  const { data, error, isLoading, mutate } = useSWR(url, fetcher);
+  const payload = data?.data ?? data;
+  // Laravel paginator: { data: rows, current_page, last_page, total, ... } or plain array
+  const tickets: any[] = Array.isArray(payload) ? payload : (payload?.data ?? []);
+  const meta = Array.isArray(payload)
+    ? { current_page: 1, last_page: 1, total: payload.length, per_page: payload.length }
+    : {
+        current_page: payload?.current_page ?? 1,
+        last_page: payload?.last_page ?? 1,
+        total: payload?.total ?? tickets.length,
+        per_page: payload?.per_page ?? (params.per_page ?? 20),
+        from: payload?.from ?? null,
+        to: payload?.to ?? null,
+      };
+  const verifyTicket = async (ticketCode: string) => {
+    try {
+      const r = await axios.put(`${API}/verify-ticket/${ticketCode}`, {}, { headers: h() });
+      toast.success(r.data?.message || "Ticket verified");
+      mutate();
+      return r.data;
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || "Verify failed");
+      throw e;
+    }
+  };
+  return { tickets, meta, isLoading, isError: !!error, refresh: mutate, verifyTicket };
+}
+
 export function useAdminTickets() {
   const copyRecords = async () => {
     try { const r = await axios.post(`${API}/admin/copy-records`, {}, { headers: h() }); toast.success(`Copied: ${r.data.created ?? 0} created, ${r.data.skipped ?? 0} skipped`); return r.data; } catch(e:any){ toast.error(e.response?.data?.message||"Copy failed"); throw e; }

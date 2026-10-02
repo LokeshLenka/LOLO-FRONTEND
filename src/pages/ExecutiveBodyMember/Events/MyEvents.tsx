@@ -328,7 +328,7 @@ export default function MyEvents() {
           return null;
       }
     },
-    [handleEventClick, navigate],
+    [handleEventClick, navigate, username],
   );
 
   return (

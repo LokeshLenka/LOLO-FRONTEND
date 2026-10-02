@@ -331,17 +331,19 @@ export const UtrPublicUserSignUp: React.FC = () => {
                           <div className="w-48 h-48 bg-white flex items-center justify-center rounded-xl mb-5 p-2 shadow-[0_0_20px_rgba(236,72,153,0.15)]">
                             {qrCodeUrl ? (
                               <img
-                                src="/qr/lolo_paatashaala_qr.png"
+                                src={qrCodeUrl}
                                 alt="Payment QR Code"
                                 className="w-full h-full object-contain rounded-lg"
                               />
                             ) : (
-                              <div className="text-center text-neutral-400">
-                                <img
-                                  src="/qr/lolo_paatashaala_qr.png"
-                                  alt="Payment QR Code"
-                                  className="w-full h-full object-contain rounded-lg"
-                                />
+                              <div className="text-center text-neutral-400 px-4">
+                                <p className="text-sm font-semibold text-neutral-300">
+                                  Payment QR unavailable
+                                </p>
+                                <p className="text-xs mt-1">
+                                  Please contact the event coordinator for
+                                  payment details before entering your UTR.
+                                </p>
                               </div>
                             )}
                           </div>
