@@ -43,8 +43,8 @@ const NotFound = lazy(() => import("./pages/OtherPages/NotFound"));
 
 // --- Auth & Registration Pages (lazy) ---
 const Login = lazy(() => import("./pages/App/Authentication/Login"));
-const SignUp = lazy(() => import("./pages/App/Authentication/SignUp"));
-// import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
+// const SignUp = lazy(() => import("./pages/App/Authentication/SignUp"));
+import SignupsClosed from "./pages/App/Authentication/SignUpsClosed";
 const AdminLogin = lazy(() => import("./pages/Admin/AdminLogin"));
 const SuccessRegistration = lazy(
   () => import("./pages/App/Authentication/SuccessRegistration"),
@@ -66,9 +66,7 @@ const FailedEventRegistration = lazy(() =>
   })),
 );
 const TicketVerifier = lazy(() => import("./pages/User/TicketVerifier"));
-const MemberTicketsPage = lazy(
-  () => import("./pages/User/MemberTicketsPage"),
-);
+const MemberTicketsPage = lazy(() => import("./pages/User/MemberTicketsPage"));
 
 // --- Standard User Components (lazy) ---
 const UserDashboard = lazy(() => import("./pages/User/UserDashboard"));
@@ -106,8 +104,7 @@ const ApplicantDetailsPage = lazy(
   () => import("./pages/ExecutiveBodyMember/Users/ApplicationDetails"),
 );
 const ApprovalHistoryDetailsPage = lazy(
-  () =>
-    import("./pages/ExecutiveBodyMember/Users/ApprovalHistoryDetailsPage"),
+  () => import("./pages/ExecutiveBodyMember/Users/ApprovalHistoryDetailsPage"),
 );
 // import EbmDeskSale from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmDeskSale";
 // import EbmCollectionsList from "./pages/ExecutiveBodyMember/DeskRegistrations/EbmCollectionsList";
@@ -150,8 +147,12 @@ const AdminAnalytics = lazy(() => import("./pages/Admin/AdminAnalytics"));
 const AdminEventsFull = lazy(() => import("./pages/Admin/AdminEventsFull"));
 const AdminApprovals = lazy(() => import("./pages/Admin/AdminApprovals"));
 const AdminTeam = lazy(() => import("./pages/Admin/AdminTeam"));
-const AdminUserApprovalMgmt = lazy(() => import("./pages/Admin/AdminUserApprovalMgmt"));
-const AdminRegistrationsFull = lazy(() => import("./pages/Admin/AdminRegistrationsFull"));
+const AdminUserApprovalMgmt = lazy(
+  () => import("./pages/Admin/AdminUserApprovalMgmt"),
+);
+const AdminRegistrationsFull = lazy(
+  () => import("./pages/Admin/AdminRegistrationsFull"),
+);
 const AdminTicketsPage = lazy(() => import("./pages/Admin/AdminTicketsPage"));
 const AdminUsersByRole = lazy(() => import("./pages/Admin/AdminUsersByRole"));
 const AdminSettings = lazy(() => import("./pages/Admin/AdminSettings"));
@@ -186,137 +187,149 @@ function App() {
 
       <AnimatePresence mode="wait">
         <Suspense fallback={<RouteFallback />}>
-        <Routes location={location} key={location.pathname}>
-          {/* ================= PUBLIC ROUTES ================= */}
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<Homev1 />} />
-            <Route path="home" element={<Homev1 />} />
-            <Route path="homev1" element={<Homev1 />} />
-            {/* Feature Pages */}
-            <Route path="events" element={<Events />} />
-            {/* <Route path="concerts" element={<Concerts />} /> */}
-            <Route path="publications" element={<Publication />} />
-            {/* <Route path="team" element={<Team />} /> */}
-            <Route path="gallery" element={<Gallery />} />
-            {/* Info Pages */}
-            <Route path="about" element={<AboutUs />} />
-            <Route path="contact" element={<ContactUs />} />
-            <Route path="faq" element={<FAQ />} />
-            <Route path="terms-of-service" element={<TermsOfServicePage />} />
-            <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
-            <Route path="refund-policy" element={<RefundPolicyPage />} />
+          <Routes location={location} key={location.pathname}>
+            {/* ================= PUBLIC ROUTES ================= */}
+            <Route path="/" element={<MainLayout />}>
+              <Route index element={<Homev1 />} />
+              <Route path="home" element={<Homev1 />} />
+              <Route path="homev1" element={<Homev1 />} />
+              {/* Feature Pages */}
+              <Route path="events" element={<Events />} />
+              {/* <Route path="concerts" element={<Concerts />} /> */}
+              <Route path="publications" element={<Publication />} />
+              {/* <Route path="team" element={<Team />} /> */}
+              <Route path="gallery" element={<Gallery />} />
+              {/* Info Pages */}
+              <Route path="about" element={<AboutUs />} />
+              <Route path="contact" element={<ContactUs />} />
+              <Route path="faq" element={<FAQ />} />
+              <Route path="terms-of-service" element={<TermsOfServicePage />} />
+              <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="refund-policy" element={<RefundPolicyPage />} />
 
-            {/* Technical Pages */}
-            {/* <Route path="tech-team" element={<TechTeam />} />
+              {/* Technical Pages */}
+              {/* <Route path="tech-team" element={<TechTeam />} />
             <Route path="api-docs" element={<DeveloperHub />} />
             <Route path="timeline-detail" element={<Home />} /> */}
-          </Route>
-          {/* ================= INDEPENDENT PUBLIC PAGES ================= */}
-          {/* Details Pages (Full Screen or different layout) */}
-          <Route path="/events/:id" element={<EventDetails />} />
-          <Route path="/concerts/:id" element={<ConcertDetails />} />
-          <Route path="/publications/:id" element={<PublicationDetails />} />
-          <Route path="/team/:id" element={<TeamDetails />} />
-          {/* ----------------------------------------------------------------- */}
-          {/* Auth & Status Pages */}
-          {/* ----------------------------------------------------------------- */}
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/success" element={<SuccessRegistration />} />
-          <Route path="/registration-status" element={<RegistrationStatus />} />
-          {/* For Public users(not a part of club) */}
-          {/* <Route path="/public-user/register" element={<PublicUserSignUp />} /> */}
-          <Route
-            path="/events/:eventuuid/public-user/register"
-            element={<UtrPublicUserSignUp />}
-          />
-          <Route
-            path="/success-event-registration"
-            element={<SuccessURTEventRegistration />}
-          />
-          <Route
-            path="/failed-event-registration"
-            element={<FailedEventRegistration />}
-          />
-          <Route path="/verify-ticket" element={<TicketVerifier />} />
-          {/* Test Route */}
-          {/* <Route path="/test/music" element={<MusicProfile />} /> */}
+            </Route>
+            {/* ================= INDEPENDENT PUBLIC PAGES ================= */}
+            {/* Details Pages (Full Screen or different layout) */}
+            <Route path="/events/:id" element={<EventDetails />} />
+            <Route path="/concerts/:id" element={<ConcertDetails />} />
+            <Route path="/publications/:id" element={<PublicationDetails />} />
+            <Route path="/team/:id" element={<TeamDetails />} />
+            {/* ----------------------------------------------------------------- */}
+            {/* Auth & Status Pages */}
+            {/* ----------------------------------------------------------------- */}
+            <Route path="/signup" element={<SignupsClosed />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/success" element={<SuccessRegistration />} />
+            <Route
+              path="/registration-status"
+              element={<RegistrationStatus />}
+            />
+            {/* For Public users(not a part of club) */}
+            {/* <Route path="/public-user/register" element={<PublicUserSignUp />} /> */}
+            <Route
+              path="/events/:eventuuid/public-user/register"
+              element={<UtrPublicUserSignUp />}
+            />
+            <Route
+              path="/success-event-registration"
+              element={<SuccessURTEventRegistration />}
+            />
+            <Route
+              path="/failed-event-registration"
+              element={<FailedEventRegistration />}
+            />
+            <Route path="/verify-ticket" element={<TicketVerifier />} />
+            {/* Test Route */}
+            {/* <Route path="/test/music" element={<MusicProfile />} /> */}
 
-          {/* ================= PROTECTED DASHBOARD ROUTES ================= */}
+            {/* ================= PROTECTED DASHBOARD ROUTES ================= */}
 
-          <Route element={<PrivateRoute />}>
-            <Route element={<AppLayout />}>
-              {/* Standard User Dashboard */}
-              <Route path="/:username/dashboard" element={<UserDashboard />} />
-              {/* Shared Pages */}
-              <Route
-                path="/:username/event-registrations"
-                element={<UserEventRegistrationCards />}
-              />
-              <Route
-                path="/:username/event-registrations/:uuid"
-                element={<ShowEventRegistrationPage />}
-              />
-              <Route path="/:username/credits" element={<CreditsPage />} />
-              <Route
-                path="/:username/credits/:uuid"
-                element={<ShowCreditPage />}
-              />
-              <Route path="/:username/profile" element={<UserProfilePage />} />
-              <Route path="/:username/tickets" element={<MemberTicketsPage />} />
-              <Route
-                path="/:username/verify-ticket"
-                element={<TicketVerifier />}
-              />
+            <Route element={<PrivateRoute />}>
+              <Route element={<AppLayout />}>
+                {/* Standard User Dashboard */}
+                <Route
+                  path="/:username/dashboard"
+                  element={<UserDashboard />}
+                />
+                {/* Shared Pages */}
+                <Route
+                  path="/:username/event-registrations"
+                  element={<UserEventRegistrationCards />}
+                />
+                <Route
+                  path="/:username/event-registrations/:uuid"
+                  element={<ShowEventRegistrationPage />}
+                />
+                <Route path="/:username/credits" element={<CreditsPage />} />
+                <Route
+                  path="/:username/credits/:uuid"
+                  element={<ShowCreditPage />}
+                />
+                <Route
+                  path="/:username/profile"
+                  element={<UserProfilePage />}
+                />
+                <Route
+                  path="/:username/tickets"
+                  element={<MemberTicketsPage />}
+                />
+                <Route
+                  path="/:username/verify-ticket"
+                  element={<TicketVerifier />}
+                />
 
-              {/* EBM Routes */}
-              <Route
-                path="/:username/executive_body_member/dashboard"
-                element={<EBMDashboard />}
-              />
-              <Route
-                path="/:username/executive_body_member/create-event"
-                element={<CreateEvent />}
-              />
-              <Route
-                path="/:username/executive_body_member/my-events"
-                element={<MyEvents />}
-              />
-              <Route
-                path="/:username/executive_body_member/event-registrations"
-                element={<EventRegistrationsPage />}
-              />
-              {/* <Route
+                {/* EBM Routes */}
+                <Route
+                  path="/:username/executive_body_member/dashboard"
+                  element={<EBMDashboard />}
+                />
+                <Route
+                  path="/:username/executive_body_member/create-event"
+                  element={<CreateEvent />}
+                />
+                <Route
+                  path="/:username/executive_body_member/my-events"
+                  element={<MyEvents />}
+                />
+                <Route
+                  path="/:username/executive_body_member/event-registrations"
+                  element={<EventRegistrationsPage />}
+                />
+                {/* <Route
                 path="/:username/executive_body_member/event-registrations/:uuid"
                 element={<ShowUTREventRegistrations />}
               /> */}
 
-              <Route
-                path="/:username/executive_body_member/register-member"
-                // element={}
-              />
-              <Route
-                path="/:username/executive_body_member/my-registrations"
-                // element={<MyRegistrations />}
-              />
-              <Route
-                path="/:username/executive_body_member/pending-approvals/view-application/user/:uuid"
-                element={<ApplicantDetailsPage />}
-              />
-              <Route
-                path="/:username/executive_body_member/dashboard/pending-approvals"
-                element={<EBMPendingApprovals />}
-              />
-              <Route
-                path="/:username/executive_body_member/approvals-history/"
-                element={<ApprovalHistoryDetailsPage />}
-              />
-              <Route
-                path="/:username/executive_body_member/verify-ticket"
-                element={<TicketVerifier />}
-              />
-              {/* <Route
+                <Route
+                  path="/:username/executive_body_member/register-member"
+                  // element={}
+                />
+                <Route
+                  path="/:username/executive_body_member/my-registrations"
+                  // element={<MyRegistrations />}
+                />
+                <Route
+                  path="/:username/executive_body_member/pending-approvals/view-application/user/:uuid"
+                  element={<ApplicantDetailsPage />}
+                />
+                <Route
+                  path="/:username/executive_body_member/dashboard/pending-approvals"
+                  element={<EBMPendingApprovals />}
+                />
+                <Route
+                  path="/:username/executive_body_member/approvals-history/"
+                  element={<ApprovalHistoryDetailsPage />}
+                />
+                <Route
+                  path="/:username/executive_body_member/verify-ticket"
+                  element={<TicketVerifier />}
+                />
+                {/* <Route
                 path="/:username/executive_body_member/desk-sale"
                 element={<EbmDeskSale />}
               />
@@ -329,61 +342,61 @@ function App() {
                 element={<EbmTicketSuccess />}
               /> */}
 
-              {/* Credit Manager (CM) Routes */}
-              <Route
-                path="/:username/credit_manager/dashboard"
-                element={<CMDashboard />}
-              />
-              <Route
-                path="/:username/credit_manager/events"
-                element={<EventsListPage />}
-              />
-              <Route
-                path="/:username/credit_manager/registrations/:registrationUuid"
-                element={<RegistrationDetailPage />}
-              />
-              <Route
-                path="/:username/credit_manager/events/:eventUuid/registrations"
-                element={<CreditEventRegistrationsPage />}
-              />
-              <Route
-                path="/:username/credit_manager/verify-ticket"
-                element={<TicketVerifier />}
-              />
-            </Route>
+                {/* Credit Manager (CM) Routes */}
+                <Route
+                  path="/:username/credit_manager/dashboard"
+                  element={<CMDashboard />}
+                />
+                <Route
+                  path="/:username/credit_manager/events"
+                  element={<EventsListPage />}
+                />
+                <Route
+                  path="/:username/credit_manager/registrations/:registrationUuid"
+                  element={<RegistrationDetailPage />}
+                />
+                <Route
+                  path="/:username/credit_manager/events/:eventUuid/registrations"
+                  element={<CreditEventRegistrationsPage />}
+                />
+                <Route
+                  path="/:username/credit_manager/verify-ticket"
+                  element={<TicketVerifier />}
+                />
+              </Route>
 
-            {/* Management Head (MH) Routes */}
-            <Route element={<MHAppLayout />}>
-              <Route
-                path="/:username/membership_head/dashboard"
-                element={<MHDashboard />}
-              />
-              <Route
-                path="/:username/membership_head/pending-approvals"
-                element={<PendingApprovals />}
-              />
-              <Route
-                path="/:username/membership_head/approval-history"
-                element={<MyApprovals />}
-              />
-              <Route
-                path="/:username/membership_head/users"
-                element={<MHUserManagement />}
-              />
-              <Route
-                path="/:username/membership_head/user-stats"
-                element={<UserStatsCards />}
-              />
-              <Route
-                path="/:username/membership_head/verify-ticket"
-                element={<TicketVerifier />}
-              />
-              {/* <Route path="/:username/mh/approvals" element={<MHApprovals />} /> */}
-              {/* Credit Manager (CM) Routes */}
-              {/* <Route path="/:username/cm/dashboard" element={<CMDashboard />} /> */}
-              {/* <Route path="/:username/cm/credits" element={<CMCreditsPage />} /> */}
-            </Route>
-            {/* <Route element={<MHAppLayout />}>
+              {/* Management Head (MH) Routes */}
+              <Route element={<MHAppLayout />}>
+                <Route
+                  path="/:username/membership_head/dashboard"
+                  element={<MHDashboard />}
+                />
+                <Route
+                  path="/:username/membership_head/pending-approvals"
+                  element={<PendingApprovals />}
+                />
+                <Route
+                  path="/:username/membership_head/approval-history"
+                  element={<MyApprovals />}
+                />
+                <Route
+                  path="/:username/membership_head/users"
+                  element={<MHUserManagement />}
+                />
+                <Route
+                  path="/:username/membership_head/user-stats"
+                  element={<UserStatsCards />}
+                />
+                <Route
+                  path="/:username/membership_head/verify-ticket"
+                  element={<TicketVerifier />}
+                />
+                {/* <Route path="/:username/mh/approvals" element={<MHApprovals />} /> */}
+                {/* Credit Manager (CM) Routes */}
+                {/* <Route path="/:username/cm/dashboard" element={<CMDashboard />} /> */}
+                {/* <Route path="/:username/cm/credits" element={<CMCreditsPage />} /> */}
+              </Route>
+              {/* <Route element={<MHAppLayout />}>
               <Route
                 path="/:username/credit_manager/dashboard"
                 element={<CMDashboard />}
@@ -400,28 +413,40 @@ function App() {
               />
 
             </Route> */}
-          </Route>
-          {/* ================= ADMIN ROUTES — full api.php coverage ================= */}
-          <Route element={<AdminLayout />}>
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/analytics" element={<AdminAnalytics />} />
-            <Route path="/admin/events" element={<AdminEventsFull />} />
-            <Route path="/admin/approvals" element={<AdminApprovals />} />
-            <Route path="/admin/team" element={<AdminTeam />} />
-            <Route path="/admin/user-approvals" element={<AdminUserApprovalMgmt />} />
-            <Route path="/admin/registrations" element={<AdminRegistrationsFull />} />
-            <Route path="/admin/tickets" element={<AdminTicketsPage />} />
-            <Route path="/admin/users-by-role" element={<AdminUsersByRole />} />
-            <Route path="/admin/settings" element={<AdminSettings />} />
-            {/* legacy aliases */}
-            <Route path="/admin/team-profiles" element={<AdminTeam />} />
-            <Route path="/admin/event-registrations" element={<AdminRegistrationsFull />} />
-          </Route>
+            </Route>
+            {/* ================= ADMIN ROUTES — full api.php coverage ================= */}
+            <Route element={<AdminLayout />}>
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/analytics" element={<AdminAnalytics />} />
+              <Route path="/admin/events" element={<AdminEventsFull />} />
+              <Route path="/admin/approvals" element={<AdminApprovals />} />
+              <Route path="/admin/team" element={<AdminTeam />} />
+              <Route
+                path="/admin/user-approvals"
+                element={<AdminUserApprovalMgmt />}
+              />
+              <Route
+                path="/admin/registrations"
+                element={<AdminRegistrationsFull />}
+              />
+              <Route path="/admin/tickets" element={<AdminTicketsPage />} />
+              <Route
+                path="/admin/users-by-role"
+                element={<AdminUsersByRole />}
+              />
+              <Route path="/admin/settings" element={<AdminSettings />} />
+              {/* legacy aliases */}
+              <Route path="/admin/team-profiles" element={<AdminTeam />} />
+              <Route
+                path="/admin/event-registrations"
+                element={<AdminRegistrationsFull />}
+              />
+            </Route>
 
-          {/* ================= 404 FALLBACK ================= */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            {/* ================= 404 FALLBACK ================= */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </Suspense>
       </AnimatePresence>
 
