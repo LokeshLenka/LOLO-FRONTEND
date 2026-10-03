@@ -1,23 +1,26 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import React, { useState, useCallback, useMemo, useEffect, useLayoutEffect, useRef } from "react";
 import {
   Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,
-  Input, Button, Chip, Pagination, Card, CardBody, Skeleton,
+  Input, Button, Pagination, Skeleton,
   Tooltip, Modal, ModalContent, ModalBody,
-  Select, SelectItem, Divider, useDisclosure,
+  Select, SelectItem, useDisclosure,
 } from "@heroui/react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import {
   Search, Download, Eye, CalendarDays, Users, LayoutDashboard,
-  RefreshCcw, CheckCircle, XCircle, X, ArrowUpDown, ChevronUp,
-  ChevronDown, Filter, Hash, Mail, Phone, Building2, CreditCard,
-  User, Home, GraduationCap,
+  RefreshCcw, CheckCircle, CheckCircle2, XCircle, X, ArrowUpDown, ChevronUp,
+  ChevronDown, Filter, MapPin, AlertCircle, AlertTriangle, Lock,
+  RotateCcw, Clock, Ban, PauseCircle, Circle, Copy, Check,
+  CreditCard, User, Hash, Mail, Phone, GraduationCap, Building2, Home,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useQuery, useMutation, keepPreviousData } from "@tanstack/react-query";
 import axios from "axios";
 import { format } from "date-fns";
 import clsx from "clsx";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { useDebounce } from "../../../hooks/useDebounce";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,66 +44,257 @@ type Registration = {
   public_user: PublicUser; event: { uuid: string; name: string };
 };
 
-type SortKey = "name" | "reg_num" | "registration_status" | "payment_status" | "created_at";
+type SortKey = "name" | "reg_num" | "registration_status" | "created_at";
 type SortDir = "asc" | "desc";
 
-// ─── API ──────────────────────────────────────────────────────────────────────
+type UpdateParams = (updates: Record<string, string | undefined>) => void;
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+const DEFAULT_LEFT_PCT = 22;
+const MIN_LEFT_PCT = 20;
+const MAX_LEFT_PCT = 60;
+// Sensible default rail width in px — converted to % of the measured container.
+const DEFAULT_RAIL_PX = 320;
+
+const STATUS_FILTER_OPTIONS = ["all", "pending", "confirmed", "cancelled", "rejected"];
+
+// Solid, opaque surfaces for every filter dropdown — the popover must never
+// let table content show through.
+const FILTER_SELECT_CLASSES = {
+  trigger: "bg-zinc-100 dark:bg-slate-800 min-h-10 shadow-none",
+  value: "text-zinc-900 dark:text-zinc-100",
+  popoverContent: "bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-slate-700 shadow-xl",
+};
+
+// Statuses that have been decided — no further reviewer actions are allowed.
+// Only an admin can edit a registration once it reaches one of these.
+const PROCESSED_STATUSES = new Set(["confirmed", "cancelled", "rejected"]);
+
+const isProcessedStatus = (status: string) => PROCESSED_STATUSES.has(status);
+
+// ─── API ──────────────────────────────────────────────────────────────────────
+
 type EventsResponse = { data: Event[]; last_page: number; current_page: number; total: number };
 
+const EMPTY_EVENTS_PAGE: EventsResponse = { data: [], last_page: 1, current_page: 1, total: 0 };
+
 const fetchEvents = async (page: number, search: string): Promise<EventsResponse> => {
-  try {
-    const { data } = await axios.get(`${API_BASE_URL}/events`, {
-      params: { page, per_page: 8, search },
-    });
-    return data?.data || { data: [], last_page: 1, current_page: 1, total: 0 };
-  } catch { return { data: [], last_page: 1, current_page: 1, total: 0 }; }
+  // Network/API failures throw so the UI can show a real error state instead
+  // of a misleading "No events found".
+  const { data } = await axios.get(`${API_BASE_URL}/events`, {
+    params: { page, per_page: 8, search },
+  });
+  return data?.data ?? EMPTY_EVENTS_PAGE;
 };
 
 const fetchRegistrations = async (eventUuid: string): Promise<Registration[]> => {
-  try {
-    const { data } = await axios.get(
-      `${API_BASE_URL}/ebm/event-registrations/public/event/${eventUuid}`
-    );
-    return data?.data || [];
-  } catch { return []; }
+  const { data } = await axios.get(
+    `${API_BASE_URL}/ebm/event-registrations/public/event/${eventUuid}`
+  );
+  return Array.isArray(data?.data) ? data.data : [];
 };
 
-// ─── Status Config ────────────────────────────────────────────────────────────
+function apiErrorMessage(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const serverMessage = (error.response?.data as { message?: string } | undefined)?.message;
+    if (typeof serverMessage === "string" && serverMessage.trim()) return serverMessage;
+    if (error.response) return `${fallback} (HTTP ${error.response.status})`;
+    return "Could not reach the server. Check your connection and try again.";
+  }
+  return fallback;
+}
 
-const REG_STATUS_CONFIG: Record<string, { bg: string; text: string }> = {
-  approved: { bg: "bg-emerald-100 dark:bg-emerald-900/20", text: "text-emerald-700 dark:text-emerald-400" },
-  confirmed: { bg: "bg-emerald-100 dark:bg-emerald-900/20", text: "text-emerald-700 dark:text-emerald-400" },
-  pending: { bg: "bg-amber-100 dark:bg-amber-900/20", text: "text-amber-700 dark:text-amber-400" },
-  rejected: { bg: "bg-red-100 dark:bg-red-900/20", text: "text-red-700 dark:text-red-400" },
-  cancelled: { bg: "bg-red-100 dark:bg-red-900/20", text: "text-red-700 dark:text-red-400" },
+// ─── Status system ────────────────────────────────────────────────────────────
+// One vocabulary for registration status: a pill with a dot AND a text label
+// (never colour alone). Payment is demoted to quiet sub-text (audit F7).
+
+const REG_STATUS_CONFIG: Record<string, { label: string; box: string; dot: string }> = {
+  confirmed: {
+    label: "Confirmed",
+    box: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20",
+    dot: "bg-emerald-600 dark:bg-emerald-400",
+  },
+  pending: {
+    label: "Pending",
+    box: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
+    dot: "bg-amber-600 dark:bg-amber-400",
+  },
+  cancelled: {
+    // Withdrawn/inactive — neutral zinc so it never reads as a rejection.
+    label: "Cancelled",
+    box: "bg-zinc-100 text-zinc-600 border-zinc-300 dark:bg-slate-800 dark:text-zinc-300 dark:border-slate-700",
+    dot: "bg-zinc-500 dark:bg-zinc-400",
+  },
+  rejected: {
+    label: "Rejected",
+    box: "bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20",
+    dot: "bg-red-600 dark:bg-red-400",
+  },
+  waitlisted: {
+    label: "Waitlisted",
+    box: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/10 dark:text-sky-400 dark:border-sky-500/20",
+    dot: "bg-sky-600 dark:bg-sky-400",
+  },
+  approved: {
+    label: "Approved",
+    box: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20",
+    dot: "bg-emerald-600 dark:bg-emerald-400",
+  },
 };
 
-const PAY_STATUS_CONFIG: Record<string, { bg: string; text: string }> = {
-  paid: { bg: "bg-blue-100 dark:bg-blue-900/20", text: "text-blue-700 dark:text-blue-400" },
-  success: { bg: "bg-blue-100 dark:bg-blue-900/20", text: "text-blue-700 dark:text-blue-400" },
-  pending: { bg: "bg-orange-100 dark:bg-orange-900/20", text: "text-orange-700 dark:text-orange-400" },
-  failed: { bg: "bg-red-100 dark:bg-red-900/20", text: "text-red-700 dark:text-red-400" },
-  not_paid: { bg: "bg-zinc-100 dark:bg-zinc-800", text: "text-zinc-600 dark:text-zinc-400" },
+const FALLBACK_STATUS_CONFIG = {
+  box: "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-slate-800 dark:text-zinc-300 dark:border-slate-700",
+  dot: "bg-zinc-400 dark:bg-zinc-500",
 };
 
-function StatusChip({ status, type = "reg" }: { status: string; type?: "reg" | "pay" }) {
-  const fallback = { bg: "bg-zinc-100 dark:bg-zinc-800", text: "text-zinc-600 dark:text-zinc-300" };
-  const conf = (type === "reg" ? REG_STATUS_CONFIG : PAY_STATUS_CONFIG)[status] ?? fallback;
+const REG_TEXT_TONE: Record<string, string> = {
+  confirmed: "text-emerald-700 dark:text-emerald-400",
+  approved: "text-emerald-700 dark:text-emerald-400",
+  pending: "text-amber-700 dark:text-amber-400",
+  waitlisted: "text-sky-700 dark:text-sky-400",
+  cancelled: "text-zinc-600 dark:text-zinc-300",
+  rejected: "text-red-600 dark:text-red-400",
+};
+
+// Glyphs replace the old status dots everywhere (table, badges, rail, modal).
+const REG_STATUS_ICON: Record<string, LucideIcon> = {
+  confirmed: CheckCircle2,
+  approved: CheckCircle2,
+  pending: Clock,
+  waitlisted: PauseCircle,
+  cancelled: Ban,
+  rejected: XCircle,
+};
+
+function regIcon(status: string): LucideIcon {
+  return REG_STATUS_ICON[status] ?? Circle;
+}
+
+function regTone(status: string): string {
+  return REG_TEXT_TONE[status] ?? "text-zinc-600 dark:text-zinc-300";
+}
+
+function regLabel(status: string): string {
+  const cfg = REG_STATUS_CONFIG[status];
+  if (cfg) return cfg.label;
+  return status ? status.charAt(0).toUpperCase() + status.slice(1) : "Unknown";
+}
+
+/** Badge-free status for the table: glyph + registration status, payment beneath. No UTR here. */
+function StatusText({ registration }: { registration: Registration }) {
+  const Icon = regIcon(registration.registration_status);
   return (
-    <Chip
-      className={clsx("border-none", conf.bg)}
-      classNames={{ content: clsx("font-bold capitalize text-xs", conf.text) }}
-      size="sm" radius="none" variant="flat"
-    >
-      {status}
-    </Chip>
+    <span className="flex flex-col items-start gap-0.5 leading-tight">
+      <span className={clsx("inline-flex items-center gap-1.5 text-[13px] font-semibold", regTone(registration.registration_status))}>
+        <Icon size={14} className="shrink-0" aria-hidden="true" />
+        {regLabel(registration.registration_status)}
+      </span>
+      <span className={clsx("pl-5 text-xs", paymentTone(registration.payment_status))}>
+        {paymentLabel(registration.payment_status)}
+      </span>
+    </span>
   );
 }
 
-// ─── UTR masking (privacy: full value lives only in the review modal) ────────
+const STATUS_CHIP_TONE: Record<string, string> = {
+  confirmed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+  approved: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+  pending: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+  waitlisted: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300",
+  cancelled: "bg-zinc-200/70 text-zinc-600 dark:bg-slate-800 dark:text-zinc-300",
+  rejected: "bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300",
+};
+
+/** Solid text-only status chip for the review dialog header. */
+function StatusChip({ status }: { status: string }) {
+  return (
+    <span className={clsx("shrink-0 rounded-md px-2.5 py-1 text-xs font-bold", STATUS_CHIP_TONE[status] ?? STATUS_CHIP_TONE.cancelled)}>
+      {regLabel(status)}
+    </span>
+  );
+}
+
+/** Small bordered fact card (payment status / registered / ticket). */
+function MiniCard({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="min-w-0 rounded-xl border border-zinc-200 bg-white p-3 dark:border-slate-800 dark:bg-zinc-950/50">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{label}</p>
+      <div className="mt-1 min-w-0">{children}</div>
+    </div>
+  );
+}
+
+/** Attendee fact row: glyph + stacked label/value, hairline below. */
+function AttendeeItem({ icon: Icon, label, mono, children }: {
+  icon: LucideIcon;
+  label: string;
+  mono?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex min-w-0 items-start gap-2 border-b border-zinc-100 pb-2.5 dark:border-slate-800/60">
+      <Icon size={14} className="mt-0.5 shrink-0 text-zinc-400 dark:text-zinc-500" aria-hidden="true" />
+      <div className="min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{label}</p>
+        <p className={clsx("mt-0.5 break-words text-sm text-zinc-900 dark:text-zinc-100", mono && "font-mono text-[13px]")}>
+          {children ?? <span className="italic text-zinc-400 dark:text-zinc-500">—</span>}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function StatusBadge({ status, className }: { status: string; className?: string }) {
+  const cfg = REG_STATUS_CONFIG[status];
+  const label = regLabel(status);
+  const Icon = regIcon(status);
+  return (
+    <span
+      className={clsx(
+        "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold",
+        cfg?.box ?? FALLBACK_STATUS_CONFIG.box,
+        className
+      )}
+    >
+      <Icon size={12} className="shrink-0" aria-hidden="true" />
+      {label}
+    </span>
+  );
+}
+
+function paymentLabel(status: string): string {
+  switch (status) {
+    case "paid":
+    case "success":
+      return "Paid";
+    case "pending":
+      return "Payment pending";
+    case "failed":
+      return "Payment failed";
+    case "not_paid":
+      return "Not paid";
+    default:
+      if (!status) return "No payment info";
+      return status.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+  }
+}
+
+const PAYMENT_TEXT_TONE: Record<string, string> = {
+  paid: "text-emerald-700 dark:text-emerald-400",
+  success: "text-emerald-700 dark:text-emerald-400",
+  pending: "text-amber-700 dark:text-amber-400",
+  failed: "text-red-600 dark:text-red-400",
+  not_paid: "text-zinc-500 dark:text-zinc-400",
+};
+
+function paymentTone(status: string): string {
+  return PAYMENT_TEXT_TONE[status] ?? "text-zinc-500 dark:text-zinc-400";
+}
+
+// ─── UTR masking (privacy: full value lives behind an explicit reveal) ───────
 
 function maskUtr(utr?: string | null): string {
   if (!utr) return "—";
@@ -108,50 +302,145 @@ function maskUtr(utr?: string | null): string {
   return clean.length <= 4 ? clean : `•••• •••• ${clean.slice(-4)}`;
 }
 
-// ─── Shared Small Components ──────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function ActionIconButton({
-  tooltip, placement = "top", onPress, className, children,
-}: {
-  tooltip: string; placement?: "top" | "bottom" | "left" | "right";
-  onPress?: () => void; className: string; children: React.ReactNode;
-}) {
-  return (
-    <Tooltip content={tooltip} placement={placement} size="sm"
-      classNames={{ base: "z-[99999]", content: "bg-zinc-900 text-white text-xs font-semibold rounded-md px-2 py-1 shadow-lg" }}
-    >
-      <Button isIconOnly size="sm" radius="md" onPress={onPress} className={className}>
-        {children}
-      </Button>
-    </Tooltip>
-  );
+function safeFormat(date: string | null | undefined, pattern: string): string {
+  if (!date) return "—";
+  try {
+    return format(new Date(date), pattern);
+  } catch {
+    return "—";
+  }
 }
 
-function DetailRow({ icon, label, value, mono = false }: {
-  icon: React.ReactNode; label: string; value: React.ReactNode; mono?: boolean;
+// ─── Shared components ────────────────────────────────────────────────────────
+
+function PaneErrorState({
+  title,
+  message,
+  onRetry,
+  isRetrying,
+}: {
+  title: string;
+  message: string;
+  onRetry: () => void;
+  isRetrying?: boolean;
 }) {
   return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-zinc-100 dark:border-zinc-800 last:border-0">
-      <div className="mt-0.5 text-zinc-400 shrink-0">{icon}</div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">{label}</p>
-        <div className={clsx("text-sm text-zinc-900 dark:text-zinc-100 break-all", mono && "font-mono")}>
-          {value ?? <span className="text-zinc-400 italic">—</span>}
-        </div>
+    <div
+      role="alert"
+      className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center"
+    >
+      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10">
+        <AlertCircle size={20} className="text-red-600 dark:text-red-400" aria-hidden="true" />
+      </span>
+      <div className="space-y-1">
+        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</p>
+        <p className="mx-auto max-w-sm text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">{message}</p>
       </div>
+      <Button
+        size="sm"
+        radius="md"
+        variant="flat"
+        startContent={<RefreshCcw size={14} className={isRetrying ? "animate-spin" : ""} />}
+        isDisabled={isRetrying}
+        onPress={onRetry}
+        className="min-h-10 bg-zinc-100 font-semibold text-zinc-700 dark:bg-slate-800 dark:text-zinc-200"
+      >
+        {isRetrying ? "Retrying…" : "Retry"}
+      </Button>
     </div>
   );
 }
 
-function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; sortDir: SortDir }) {
-  if (col !== sortKey) return <ArrowUpDown size={11} className="ml-1 opacity-40" />;
-  return sortDir === "asc"
-    ? <ChevronUp size={11} className="ml-1 text-cyan-600" />
-    : <ChevronDown size={11} className="ml-1 text-cyan-600" />;
+function Note({ tone, icon, children }: {
+  tone: "warning" | "info";
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <p
+      className={clsx(
+        "flex items-start gap-2 rounded-lg border px-3 py-2.5 text-xs leading-relaxed",
+        tone === "warning"
+          ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300"
+          : "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-slate-700 dark:bg-zinc-900 dark:text-zinc-300"
+      )}
+    >
+      <span className="mt-px shrink-0" aria-hidden="true">{icon}</span>
+      <span>{children}</span>
+    </p>
+  );
 }
 
-// ─── View Details Modal ───────────────────────────────────────────────────────
-// ─── Review Modal (Details + Actions in one place) ────────────────────────────
+function StatItem({ label, value, icon: Icon, chipClassName, className }: {
+  label: string;
+  value: number;
+  icon: LucideIcon;
+  chipClassName?: string;
+  className?: string;
+}) {
+  return (
+    <span className="inline-flex items-center gap-2 sm:border-l sm:border-zinc-200 sm:pl-5 sm:first:border-l-0 sm:first:pl-0 dark:sm:border-slate-800">
+      <span aria-hidden="true" className={clsx("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg", chipClassName)}>
+        <Icon size={15} aria-hidden="true" />
+      </span>
+      <span className="inline-flex min-w-0 flex-col gap-0.5 leading-none">
+        <span className={clsx("text-xl font-extrabold tabular-nums tracking-tight", className)}>{value}</span>
+        <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">{label}</span>
+      </span>
+    </span>
+  );
+}
+
+/** Quiet payment line: payment status as sub-text plus masked UTR (audit F7/F8). */
+function PaymentNote({ registration, className }: { registration: Registration; className?: string }) {
+  return (
+    <span className={clsx("flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs leading-tight", className)}>
+      <span className={clsx("font-semibold", paymentTone(registration.payment_status))}>
+        {paymentLabel(registration.payment_status)}
+      </span>
+      {registration.utr && (
+        <span className="font-mono text-zinc-500 dark:text-zinc-400">
+          UTR {maskUtr(registration.utr)}
+        </span>
+      )}
+    </span>
+  );
+}
+
+function EmptyState({ title, hint, actionLabel, onAction }: {
+  title: string;
+  hint?: string;
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
+      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-zinc-100 dark:bg-slate-800">
+        <Users size={20} className="text-zinc-400 dark:text-zinc-500" aria-hidden="true" />
+      </span>
+      <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">{title}</p>
+      {hint && <p className="max-w-xs text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">{hint}</p>}
+      {actionLabel && onAction && (
+        <Button
+          size="sm"
+          radius="md"
+          variant="flat"
+          onPress={onAction}
+          className="mt-1 min-h-10 bg-zinc-100 font-semibold text-zinc-700 dark:bg-slate-800 dark:text-zinc-200"
+        >
+          {actionLabel}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+// ─── Review modal ─────────────────────────────────────────────────────────────
+// Sections: identity → Registration → Payment → Attendee, then a guarded
+// two-step confirmation for the irreversible approve/reject action.
+
 function ReviewModal({
   registration,
   isOpen,
@@ -168,19 +457,36 @@ function ReviewModal({
   isLoading: boolean;
 }) {
   const [confirmType, setConfirmType] = useState<"approve" | "reject" | null>(null);
+  const [copied, setCopied] = useState(false);
 
-  // Reset inner state when modal closes
   useEffect(() => {
-    if (!isOpen) setConfirmType(null);
+    if (!isOpen) {
+      setConfirmType(null);
+      setCopied(false);
+    }
   }, [isOpen]);
+
+  const copyUtr = useCallback(async () => {
+    if (!registration?.utr) return;
+    try {
+      await navigator.clipboard.writeText(registration.utr);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error("Could not copy the UTR.");
+    }
+  }, [registration?.utr]);
 
   if (!registration) return null;
 
   const u = registration.public_user;
-  const isPending =
-    registration.registration_status !== "confirmed" &&
-    registration.registration_status !== "cancelled" &&
-    registration.registration_status !== "rejected";
+  const processed = isProcessedStatus(registration.registration_status);
+
+  const requestAction = (type: "approve" | "reject") => {
+    if (isLoading) return; // no duplicate submissions while a request is in flight
+    if (type === "approve") onApprove(registration);
+    else onReject(registration);
+  };
 
   return (
     <Modal
@@ -191,182 +497,210 @@ function ReviewModal({
       backdrop="opaque"
       hideCloseButton
       scrollBehavior="inside"
+      aria-labelledby="review-modal-title"
       classNames={{
         backdrop: "bg-white/80 dark:bg-black/80 z-[99]",
-        base: "bg-white dark:bg-[#000000] border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl z-[10001] backdrop-blur-2xl",
+              base: "bg-white dark:bg-black border border-zinc-200 dark:border-slate-800 rounded-xl shadow-2xl z-[10001] max-w-[92vw] sm:max-w-lg",
         wrapper: "z-[10000]",
         body: "p-0",
       }}
     >
       <ModalContent>
         {(close) => (
-          <div className="flex flex-col max-h-[85vh] backdrop-blur-2xl rounded-2xl">
-            {/* ── Header ── */}
-            <div className="px-6 pt-5 pb-4 border-b border-zinc-100 dark:border-zinc-800 flex items-start justify-between gap-4 shrink-0">
-              <div>
-                <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+          <div className="flex max-h-[85vh] flex-col">
+            {/* Header */}
+            <div className="flex shrink-0 items-start justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-slate-800">
+              <div className="min-w-0">
+                <h3 id="review-modal-title" className="text-lg font-bold tracking-tight text-zinc-900 dark:text-white">
                   Registration Review
                 </h3>
-                <p className="text-[11px] text-zinc-400 font-mono mt-0.5 truncate">
+                <p className="mt-0.5 truncate font-mono text-xs text-zinc-400 dark:text-zinc-500" title={registration.uuid}>
                   {registration.uuid}
                 </p>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <StatusChip status={registration.registration_status} type="reg" />
+              <div className="flex shrink-0 items-center gap-2">
+                <StatusChip status={registration.registration_status} />
                 <button
+                  type="button"
                   onClick={close}
-                  className="h-9 w-9 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
+                  aria-label="Close dialog"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-100 text-zinc-500 transition-colors hover:bg-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/60 dark:bg-slate-800 dark:text-zinc-400 dark:hover:bg-slate-700"
                 >
-                  <X size={13} />
+                  <X size={15} aria-hidden="true" />
                 </button>
               </div>
             </div>
 
-            {/* ── Scrollable Body ── */}
-            <ModalBody className="overflow-y-auto custom-scrollbar px-6 py-4 space-y-4 flex-1">
-
-              {/* UTR — shown first and prominently if present */}
-              {registration.utr ? (
-                <div className="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-1 flex items-center gap-1">
-                    <CreditCard size={11} /> Payment Reference (UTR)
+            {/* Body */}
+            <ModalBody className="custom-scrollbar flex-1 space-y-4 overflow-y-auto px-5 py-4">
+              {/* UTR hero — the number payments are verified against */}
+              <div className="rounded-xl border border-amber-300/60 bg-amber-50 p-4 dark:border-amber-500/25 dark:bg-amber-500/10">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                    <CreditCard size={12} className="shrink-0" aria-hidden="true" />
+                    Payment reference (UTR)
                   </p>
-                  <p className="font-mono text-lg font-bold text-zinc-900 dark:text-zinc-100 tracking-wider">
-                    {registration.utr}
-                  </p>
-                  <p className="text-[11px] text-zinc-500 mt-1">
-                    Verify this UTR against your payment gateway records before approving.
-                  </p>
+                  {registration.utr && (
+                    <button
+                      type="button"
+                      onClick={copyUtr}
+                      aria-live="polite"
+                      className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold text-amber-700 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 dark:text-amber-300"
+                    >
+                      {copied ? (
+                        <><Check size={13} aria-hidden="true" /> Copied</>
+                      ) : (
+                        <><Copy size={13} aria-hidden="true" /> Copy</>
+                      )}
+                    </button>
+                  )}
                 </div>
-              ) : (
-                <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-400 italic">
-                  No payment reference (UTR) provided for this registration.
-                </div>
-              )}
-
-              {/* Payment status row */}
-              <div className="flex gap-3">
-                <div className="flex-1 p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl">
-                  <p className="text-[9px] text-zinc-400 uppercase tracking-wide mb-1.5">Payment Status</p>
-                  <StatusChip status={registration.payment_status} type="pay" />
-                </div>
-                <div className="flex-1 p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl">
-                  <p className="text-[9px] text-zinc-400 uppercase tracking-wide mb-1">Registered</p>
-                  <p className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">
-                    {format(new Date(registration.created_at), "MMM d, yyyy")}
-                  </p>
-                  <p className="text-[11px] text-zinc-400 font-mono">
-                    {format(new Date(registration.created_at), "h:mm a")}
-                  </p>
-                </div>
-                {registration.ticket_code && (
-                  <div className="flex-1 p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl">
-                    <p className="text-[9px] text-zinc-400 uppercase tracking-wide mb-1">Ticket Code</p>
-                    <p className="text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-200 break-all">
-                      {registration.ticket_code}
-                    </p>
-                  </div>
-                )}
+                <p className="mt-1 break-all font-mono text-xl font-extrabold tracking-wide text-zinc-900 tabular-nums dark:text-amber-100">
+                  {registration.utr ? registration.utr : <span className="font-sans text-sm font-normal italic text-zinc-400">—</span>}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+                  {registration.utr
+                    ? "Verify this UTR against your payment gateway records before approving."
+                    : "No payment reference (UTR) provided for this registration."}
+                </p>
               </div>
 
-              <Divider />
+              {/* Fact mini-cards */}
+              <div className="grid grid-cols-3 gap-2.5">
+                <MiniCard label="Payment status">
+                  <span className={clsx("text-sm font-semibold", paymentTone(registration.payment_status))}>
+                    {paymentLabel(registration.payment_status)}
+                  </span>
+                </MiniCard>
+                <MiniCard label="Registered">
+                  <p className="text-sm font-semibold text-zinc-900 tabular-nums dark:text-zinc-100">
+                    {safeFormat(registration.created_at, "MMM d, yyyy")}
+                  </p>
+                  <p className="text-xs text-zinc-500 tabular-nums dark:text-zinc-400">
+                    {safeFormat(registration.created_at, "h:mm a")}
+                  </p>
+                </MiniCard>
+                <MiniCard label="Ticket code">
+                  <p className="break-all font-mono text-xs text-zinc-900 dark:text-zinc-100">
+                    {registration.ticket_code || <span className="font-sans italic text-zinc-400">—</span>}
+                  </p>
+                </MiniCard>
+              </div>
 
-              {/* Attendee info */}
+              {/* Attendee details */}
               <section>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-cyan-600 mb-2">
-                  Attendee
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 divide-y divide-zinc-100 dark:divide-zinc-800 sm:divide-y-0">
-                  <DetailRow icon={<User size={13} />} label="Full Name" value={u.name} />
-                  <DetailRow icon={<Hash size={13} />} label="Reg Number" value={u.reg_num} mono />
-                  <DetailRow icon={<Mail size={13} />} label="Email" value={u.email} mono />
-                  <DetailRow icon={<Phone size={13} />} label="Phone" value={u.phone_no} mono />
-                  <DetailRow icon={<User size={13} />} label="Gender" value={<span className="capitalize">{u.gender}</span>} />
-                  <DetailRow icon={<GraduationCap size={13} />} label="Year" value={<span className="capitalize">{u.year}</span>} />
-                  <DetailRow icon={<Building2 size={13} />} label="Branch" value={<span className="uppercase">{u.branch}</span>} />
-                  <DetailRow icon={<Home size={13} />} label="Hostel" value={u.college_hostel_status ? "Hosteller" : "Day Scholar"} />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400">Attendee</h4>
+                <div className="mt-2.5 grid grid-cols-1 gap-x-6 gap-y-2.5 min-[400px]:grid-cols-2">
+                  <AttendeeItem icon={User} label="Full name">
+                    <span className="font-semibold">{u.name || <span className="font-normal italic text-zinc-400">—</span>}</span>
+                  </AttendeeItem>
+                  <AttendeeItem icon={Hash} label="Reg number" mono>{u.reg_num}</AttendeeItem>
+                  <AttendeeItem icon={Mail} label="Email">{u.email}</AttendeeItem>
+                  <AttendeeItem icon={Phone} label="Phone" mono>{u.phone_no}</AttendeeItem>
+                  <AttendeeItem icon={User} label="Gender">
+                    {u.gender ? <span className="capitalize">{u.gender}</span> : undefined}
+                  </AttendeeItem>
+                  <AttendeeItem icon={GraduationCap} label="Year">
+                    {u.year ? <span className="capitalize">{u.year}</span> : undefined}
+                  </AttendeeItem>
+                  <AttendeeItem icon={Building2} label="Branch">
+                    {u.branch ? <span className="uppercase">{u.branch}</span> : undefined}
+                  </AttendeeItem>
+                  <AttendeeItem icon={Home} label="Hostel">{u.college_hostel_status ? "Hosteller" : "Day Scholar"}</AttendeeItem>
                 </div>
               </section>
+
+              {processed && (
+                <Note tone="info" icon={<Lock size={13} />}>
+                  This registration has been processed. Only an admin can edit it now — no further actions are available here.
+                </Note>
+              )}
             </ModalBody>
 
-            {/* ── Footer: action buttons ── */}
-            <div className="px-6 py-4 border-t border-zinc-100 dark:border-zinc-800 shrink-0">
-              {isPending ? (
-                confirmType === null ? (
-                  /* Step 1 — choose action */
+            {/* Footer */}
+            <div className="shrink-0 border-t border-zinc-100 px-5 py-4 dark:border-slate-800">
+              {confirmType === null ? (
+                processed ? (
+                  <Button
+                    className="h-12 w-full bg-zinc-100 font-semibold text-zinc-700 dark:bg-slate-800 dark:text-zinc-200"
+                    radius="md"
+                    onPress={close}
+                  >
+                    Close
+                  </Button>
+                ) : (
                   <div className="flex gap-3">
                     <Button
-                      className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 font-medium h-12"
+                      className="h-12 flex-1 bg-zinc-100 font-medium text-zinc-700 dark:bg-slate-800 dark:text-zinc-200"
+                      radius="md"
                       onPress={close}
-                      radius="none"
+                      isDisabled={isLoading}
                     >
                       Close
                     </Button>
                     <Button
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold h-12"
+                      className="h-12 flex-1 border border-red-300 bg-transparent font-semibold text-red-600 hover:bg-red-50 dark:border-red-500/40 dark:text-red-400 dark:hover:bg-red-500/10"
+                      radius="md"
+                      startContent={<XCircle size={15} aria-hidden="true" />}
                       onPress={() => setConfirmType("reject")}
-                      radius="none"
-                      startContent={<XCircle size={15} />}
+                      isDisabled={isLoading}
                     >
-                      Cancel
+                      Reject
                     </Button>
                     <Button
-                      className="flex-1 bg-[#03a1b0] hover:bg-cyan-600 text-white font-semibold h-12"
+                      className="h-12 flex-1 bg-cyan-600 font-semibold text-white hover:bg-cyan-700"
+                      radius="md"
+                      startContent={<CheckCircle size={15} aria-hidden="true" />}
                       onPress={() => setConfirmType("approve")}
-                      radius="none"
-                      startContent={<CheckCircle size={15} />}
+                      isDisabled={isLoading}
                     >
                       Approve
                     </Button>
                   </div>
-                ) : (
-                  /* Step 2 — confirm chosen action */
-                  <div className="space-y-3">
-                    <p className={clsx(
-                      "text-sm font-semibold text-center",
-                      confirmType === "approve"
-                        ? "text-emerald-700 dark:text-emerald-400"
-                        : "text-red-600 dark:text-red-400"
-                    )}>
-                      {confirmType === "approve"
-                        ? "Confirm approval for this registration?"
-                        : "Confirm cancellation for this registration?"}
-                    </p>
-                    <div className="flex gap-3">
-                      <Button
-                        className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 font-medium h-12"
-                        onPress={() => setConfirmType(null)}
-                        radius="none"
-                      >
-                        ← Back
-                      </Button>
-                      <Button
-                        className={clsx(
-                          "flex-1 text-white font-semibold h-12",
-                          confirmType === "approve"
-                            ? "bg-[#03a1b0] hover:bg-cyan-600"
-                            : "bg-red-600 hover:bg-red-700"
-                        )}
-                        onPress={() => {
-                          if (confirmType === "approve") onApprove(registration);
-                          else onReject(registration);
-                        }}
-                        isLoading={isLoading}
-                        radius="none"
-                      >
-                        {confirmType === "approve" ? "Yes, Approve" : "Yes, Cancel"}
-                      </Button>
-                    </div>
-                  </div>
                 )
               ) : (
-                <Button
-                  className="w-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 font-medium h-12"
-                  onPress={close}
-                  radius="none"
-                >
-                  Close
-                </Button>
+                /* Step 2 — explicit, detail-rich confirmation for an irreversible action */
+                <div className="space-y-3">
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-slate-800 dark:bg-zinc-900">
+                    <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      {u.name} <span className="font-mono text-xs font-normal text-zinc-500">({u.reg_num || "—"})</span>
+                    </p>
+                    <p className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                      Status:
+                      <StatusBadge status={registration.registration_status} />
+                      <span aria-hidden="true" className="text-zinc-400">→</span>
+                      <StatusBadge status={confirmType === "approve" ? "confirmed" : "cancelled"} />
+                    </p>
+                  </div>
+                  <Note tone="warning" icon={<AlertTriangle size={13} />}>
+                    {confirmType === "approve"
+                      ? "Confirm approval — this cannot be undone. Registrations cannot be changed after this action; only an admin can edit a registration once it has been processed."
+                      : "Confirm rejection — this cannot be undone. Registrations cannot be changed after this action; only an admin can edit a registration once it has been processed."}
+                  </Note>
+                  <div className="flex gap-3">
+                    <Button
+                      className="h-12 flex-1 bg-zinc-100 font-medium text-zinc-700 dark:bg-slate-800 dark:text-zinc-200"
+                      radius="md"
+                      onPress={() => setConfirmType(null)}
+                      isDisabled={isLoading}
+                    >
+                      ← Back
+                    </Button>
+                    <Button
+                      className={clsx(
+                        "h-12 flex-1 font-semibold text-white",
+                        confirmType === "approve"
+                          ? "bg-cyan-600 hover:bg-cyan-700"
+                          : "bg-red-600 hover:bg-red-700"
+                      )}
+                      radius="md"
+                      isLoading={isLoading}
+                      onPress={() => requestAction(confirmType)}
+                    >
+                      {confirmType === "approve" ? "Confirm Approval" : "Confirm Rejection"}
+                    </Button>
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -376,136 +710,276 @@ function ReviewModal({
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Main page ────────────────────────────────────────────────────────────────
+
 export default function EventRegistrationsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+
   const initialEventUuid = searchParams.get("event");
+  const initialQ = searchParams.get("q") ?? "";
+  const statusParam = searchParams.get("status") ?? "all";
+  const initialStatus = STATUS_FILTER_OPTIONS.includes(statusParam) ? statusParam : "all";
+  const initialBranch = searchParams.get("branch") ?? "all";
+  const initialYear = searchParams.get("year") ?? "all";
+  const epageRaw = Number.parseInt(searchParams.get("epage") ?? "1", 10);
+  const initialEPage = Number.isFinite(epageRaw) && epageRaw > 0 ? epageRaw : 1;
+  const initialESearch = searchParams.get("esearch") ?? "";
+
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  // Keep selection in the URL so the view survives refresh and can be shared
-  const handleSelectEvent = useCallback((e: Event) => {
-    setSelectedEvent(e);
-    setSearchParams({ event: e.uuid }, { replace: true });
-  }, [setSearchParams]);
+  // Update only the given params — every unrelated query param is preserved.
+  const updateParams = useCallback<UpdateParams>(
+    (updates) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          for (const [key, value] of Object.entries(updates)) {
+            if (value === undefined || value === "") next.delete(key);
+            else next.set(key, value);
+          }
+          return next;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
 
-  // ── resizable divider ────────────────────────────────────────────────────
-  const [leftPct, setLeftPct] = useState(33);     // 20–60 %
-  const isDragging = useRef(false);
+  const handleSelectEvent = useCallback(
+    (e: Event) => {
+      setSelectedEvent(e);
+      updateParams({ event: e.uuid });
+    },
+    [updateParams]
+  );
+
+  // ── resizable panels ───────────────────────────────────────────────────────
+  const [leftPct, setLeftPct] = useState(DEFAULT_LEFT_PCT);
+  const draggingRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Exact fit: the workspace fills the viewport below the app header + layout
+  // padding, so the page never scrolls — each pane scrolls internally and the
+  // registration toolbar stays visible. Measured, not magic-numbered.
+  const [fitH, setFitH] = useState<number | null>(null);
 
-  const onDragStart = useCallback(() => {
-    isDragging.current = true;
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const measure = () => {
+      const top = root.getBoundingClientRect().top;
+      const bottomPad = window.innerWidth >= 768 ? 24 : 16; // layout md:p-6 / py-4
+      const h = Math.round(window.innerHeight - top - bottomPad);
+      setFitH(h >= 480 ? h : null);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    const header = document.querySelector("header");
+    const ro = header && typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+    if (header && ro) ro.observe(header);
+    return () => {
+      window.removeEventListener("resize", measure);
+      ro?.disconnect();
+    };
   }, []);
 
-  const onDragMove = useCallback((e: MouseEvent) => {
-    if (!isDragging.current || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const raw = ((e.clientX - rect.left) / rect.width) * 100;
-    setLeftPct(Math.min(Math.max(raw, 20), 60));
+  // Sensible default rail width: 320px worth of the measured container.
+  const computeDefaultPct = useCallback(() => {
+    const w = containerRef.current?.getBoundingClientRect().width ?? 0;
+    if (w <= 0) return DEFAULT_LEFT_PCT;
+    const pct = (DEFAULT_RAIL_PX / w) * 100;
+    return Math.min(Math.max(pct, MIN_LEFT_PCT), MAX_LEFT_PCT);
   }, []);
 
-  const onDragEnd = useCallback(() => {
-    isDragging.current = false;
+  // Apply the measured default once the container exists.
+  const [defaultPct, setDefaultPct] = useState(DEFAULT_LEFT_PCT);
+  useEffect(() => {
+    const d = computeDefaultPct();
+    setDefaultPct(d);
+    setLeftPct(d);
+  }, [computeDefaultPct]);
+
+  // Dragging updates the CSS var directly (rAF-throttled, no React re-render
+  // per mousemove — that was re-rendering all rows and felt laggy). State is
+  // committed once on release so reset/Home/aria stay in sync.
+  const pendingPctRef = useRef<number | null>(null);
+  const rafRef = useRef(0);
+
+  const finishDrag = useCallback(() => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+    }
+    if (pendingPctRef.current != null) {
+      setLeftPct(pendingPctRef.current);
+      pendingPctRef.current = null;
+    }
     document.body.style.cursor = "";
     document.body.style.userSelect = "";
   }, []);
 
-  useEffect(() => {
-    window.addEventListener("mousemove", onDragMove);
-    window.addEventListener("mouseup", onDragEnd);
-    return () => {
-      window.removeEventListener("mousemove", onDragMove);
-      window.removeEventListener("mouseup", onDragEnd);
-    };
-  }, [onDragMove, onDragEnd]);
-  // ────────────────────────────────────────────────────────────────────────
+  const onSeparatorPointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      draggingRef.current = true;
+      pendingPctRef.current = null;
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch { /* capture is best-effort */ }
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    },
+    []
+  );
+
+  const onSeparatorPointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!draggingRef.current || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      if (rect.width === 0) return;
+      const raw = ((e.clientX - rect.left) / rect.width) * 100;
+      pendingPctRef.current = Math.min(Math.max(raw, MIN_LEFT_PCT), MAX_LEFT_PCT);
+      if (!rafRef.current) {
+        rafRef.current = requestAnimationFrame(() => {
+          rafRef.current = 0;
+          if (pendingPctRef.current != null && containerRef.current) {
+            containerRef.current.style.setProperty("--left", `${pendingPctRef.current}%`);
+          }
+        });
+      }
+    },
+    []
+  );
+
+  const onSeparatorPointerUp = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch { /* released already */ }
+      finishDrag();
+    },
+    [finishDrag]
+  );
+
+  const onSeparatorKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      const step = e.shiftKey ? 10 : 2;
+      switch (e.key) {
+        case "ArrowLeft":
+          e.preventDefault();
+          setLeftPct((p) => Math.max(MIN_LEFT_PCT, p - step));
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          setLeftPct((p) => Math.min(MAX_LEFT_PCT, p + step));
+          break;
+        case "Home":
+          e.preventDefault();
+          setLeftPct(computeDefaultPct());
+          break;
+        default:
+          break;
+      }
+    },
+    [computeDefaultPct]
+  );
+
+  // Reset the cursor (and any pending frame) if the component unmounts mid-drag.
+  useEffect(
+    () => () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      finishDrag();
+    },
+    [finishDrag]
+  );
+
+  const resetWidth = useCallback(() => setLeftPct(computeDefaultPct()), [computeDefaultPct]);
 
   return (
-    <div className="w-full min-h-screen bg-white dark:bg-gray-900 text-zinc-900 dark:text-zinc-100 selection:bg-cyan-500/30">
-
-      {/* Header */}
-      <div className="w-full bg-white dark:bg-transparent py-5 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto px-6 lg:px-8 flex flex-col gap-2">
-          {/* <Breadcrumbs radius="none"
-            itemClasses={{
-              item: "text-zinc-500 data-[current=true]:text-cyan-600 data-[current=true]:font-semibold",
-              separator: "text-zinc-400",
-            }}
-          >
-            <BreadcrumbItem>Dashboard</BreadcrumbItem>
-            <BreadcrumbItem>Events</BreadcrumbItem>
-            <BreadcrumbItem>Registrations</BreadcrumbItem>
-          </Breadcrumbs> */}
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-cyan-600/90">
-              <LayoutDashboard className="text-white h-5 w-5 sm:h-6 sm:w-6" />
-            </div>
-            <h1 className="font-bold tracking-tight text-xl sm:text-2xl truncate">
-              Event Registrations
-            </h1>
-          </div>
+    <div
+      ref={rootRef}
+      style={fitH ? { height: fitH, minHeight: 0 } : undefined}
+      className={clsx(
+        "flex min-h-screen w-full flex-col bg-white text-zinc-900 selection:bg-cyan-500/30 dark:bg-gray-900 dark:text-zinc-100",
+        fitH ? "overflow-hidden" : "overflow-visible"
+      )}
+    >
+      {/* Compact page header */}
+      <div className="shrink-0 border-b border-zinc-200 bg-white dark:border-slate-800 dark:bg-transparent">
+        <div className="flex items-center gap-2.5 px-4 py-3 sm:px-6">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-cyan-600" aria-hidden="true">
+            <LayoutDashboard className="h-4 w-4 text-white" />
+          </span>
+          <h1 className="truncate text-lg font-bold tracking-tight">Event Registrations</h1>
         </div>
       </div>
 
-      {/* Content */}
-      {/* Content */}
-      <div className="mx-auto px-4 py-4 h-auto lg:h-[calc(100vh-80px)] overflow-visible lg:overflow-hidden">
+      {/* Workspace: one connected container, events rail + registrations console */}
+      <div className="min-h-0 flex-1 overflow-hidden px-4 py-4 sm:px-6">
         <div
           ref={containerRef}
-          // column layout on small, row layout on lg+
-          className="flex flex-col lg:flex-row gap-3 lg:gap-0 h-auto lg:h-full min-h-0 overflow-visible lg:overflow-hidden"
-          // expose width percentage as a CSS var so Tailwind can use it responsively
-          style={{ ["--left" as any]: `${leftPct}%` }}
+          style={{ ["--left" as string]: `${leftPct}%` }}
+          className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-slate-800 dark:bg-[#101828] xl:h-full xl:flex-row"
         >
-          {/* Left panel (events) */}
-          <div
-            className="
-        w-full
-        lg:w-[var(--left)]
-        lg:shrink-0
-        min-h-0
-        h-[38vh] lg:h-full
-      "
-          >
+          {/* Events rail — side-by-side from xl; stacked below with a capped height */}
+          <div className="flex max-h-[38vh] min-h-0 flex-col border-b border-zinc-200 dark:border-slate-800 xl:h-full xl:max-h-none xl:w-[var(--left)] xl:shrink-0 xl:border-b-0">
             <EventsList
               selectedId={selectedEvent?.uuid}
               initialUuid={initialEventUuid}
+              initialPage={initialEPage}
+              initialSearch={initialESearch}
               onSelect={handleSelectEvent}
+              updateParams={updateParams}
+              onResetWidth={resetWidth}
+              canResetWidth={leftPct !== defaultPct}
             />
           </div>
 
-          {/* Drag handle (desktop only) */}
+          {/* Resize separator: pointer + keyboard operable */}
           <div
-            onMouseDown={onDragStart}
-            className={clsx(
-              "hidden lg:flex w-1.5 mx-1 shrink-0 items-center justify-center cursor-col-resize group",
-              "hover:bg-cyan-600/30 transition-colors rounded-full select-none"
-            )}
-            title="Drag to resize"
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize events and registrations panels"
+            aria-valuenow={Math.round(leftPct)}
+            aria-valuemin={MIN_LEFT_PCT}
+            aria-valuemax={MAX_LEFT_PCT}
+            aria-valuetext={`${Math.round(leftPct)} percent events panel`}
+            tabIndex={0}
+            title="Drag to resize — arrow keys adjust, Home resets"
+            onPointerDown={onSeparatorPointerDown}
+            onPointerMove={onSeparatorPointerMove}
+            onPointerUp={onSeparatorPointerUp}
+            onPointerCancel={onSeparatorPointerUp}
+            onKeyDown={onSeparatorKeyDown}
+            className="group hidden w-3 shrink-0 touch-none select-none items-center justify-center cursor-col-resize focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-500/70 xl:flex"
           >
-            <div className="w-0.5 h-10 bg-zinc-300 dark:bg-zinc-700 rounded-full group-hover:bg-cyan-500 transition-colors" />
+            <div className="h-12 w-px bg-zinc-300 transition-colors group-hover:bg-cyan-600 group-focus-visible:bg-cyan-600 dark:bg-slate-700" />
           </div>
 
-          {/* Right panel (registrations) */}
-          <div className="w-full flex flex-col min-h-0 lg:flex-1 overflow-hidden">
-            <Card
-              className="h-[62vh] lg:h-full border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden"
-              radius="none"
-              shadow="sm"
-            >
-              <CardBody className="p-0 h-full flex flex-col overflow-hidden">
-                {selectedEvent ? (
-                  <RegistrationsTable event={selectedEvent} />
-                ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-zinc-400">
-                    <Users size={64} className="mb-4 opacity-20" />
-                    <p className="text-lg font-medium">Select an event to view registrations</p>
-                  </div>
-                )}
-              </CardBody>
-            </Card>
+          {/* Registrations console */}
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            {selectedEvent ? (
+              <RegistrationsTable
+                event={selectedEvent}
+                updateParams={updateParams}
+                initialQ={initialQ}
+                initialStatus={initialStatus}
+                initialBranch={initialBranch}
+                initialYear={initialYear}
+              />
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center gap-2 p-8 text-center">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-slate-800">
+                  <Users size={22} className="text-zinc-400 dark:text-zinc-500" aria-hidden="true" />
+                </span>
+                <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                  Select an event to view registrations
+                </p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Choose one from the events list.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -513,162 +987,309 @@ export default function EventRegistrationsPage() {
   );
 }
 
+// ─── Events list ──────────────────────────────────────────────────────────────
 
-// ─── Events List ──────────────────────────────────────────────────────────────
-
-function EventsList({ selectedId, initialUuid, onSelect }: {
+function EventsList({
+  selectedId,
+  initialUuid,
+  initialPage,
+  initialSearch,
+  onSelect,
+  updateParams,
+  onResetWidth,
+  canResetWidth,
+}: {
   selectedId?: string;
   initialUuid?: string | null;
+  initialPage: number;
+  initialSearch: string;
   onSelect: (e: Event) => void;
+  updateParams: UpdateParams;
+  onResetWidth: () => void;
+  canResetWidth: boolean;
 }) {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(initialPage);
+  const [search, setSearch] = useState(initialSearch);
+  // Debounced so typing does not fire a request per keystroke.
+  const debouncedSearch = useDebounce(search, 300);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["events-list", page, search],
-    queryFn: () => fetchEvents(page, search),
-    placeholderData: keepPreviousData,
+  const { data, isLoading, isError, isFetching, error, refetch } = useQuery({
+    queryKey: ["events-list", page, debouncedSearch],
+    queryFn: () => fetchEvents(page, debouncedSearch),
+    placeholderData: keepPreviousData, // keep previous results visible while searching
   });
 
-  const events = data?.data || [];
+  const events = useMemo(() => data?.data || [], [data]);
   const totalPages = data?.last_page || 1;
   const total = data?.total || 0;
+
+  const goToPage = useCallback(
+    (next: number) => {
+      setPage(next);
+      updateParams({ epage: next > 1 ? String(next) : undefined });
+    },
+    [updateParams]
+  );
+
+  // A restored ?epage beyond the last page would otherwise show an empty list.
+  useEffect(() => {
+    if (data && data.last_page >= 1 && page > data.last_page) {
+      goToPage(data.last_page);
+    }
+  }, [data, page, goToPage]);
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearch(value);
+      setPage(1);
+      updateParams({ esearch: value || undefined, epage: undefined });
+    },
+    [updateParams]
+  );
 
   // Deep-link (?event=uuid) and single-event auto-select
   useEffect(() => {
     if (selectedId || events.length === 0) return;
     if (initialUuid) {
       const match = events.find((e) => e.uuid === initialUuid);
-      if (match) { onSelect(match); return; }
+      if (match) {
+        onSelect(match);
+        return;
+      }
     }
     if (total === 1 && page === 1 && !search.trim()) {
       onSelect(events[0]);
     }
   }, [events, total, page, search, selectedId, initialUuid, onSelect]);
 
+  const clearSearch = useCallback(() => handleSearchChange(""), [handleSearchChange]);
+
   return (
-    <Card className="h-full border border-zinc-200 dark:border-zinc-800 shadow-sm" radius="none" shadow="sm">
-      <CardBody className="p-4 flex flex-col gap-3 h-full">
+    <div className="flex h-full min-h-0 flex-col">
+      {/* Heading + total count + width reset */}
+      <div className="flex items-center justify-between gap-2 border-b border-zinc-200 px-3.5 py-2.5 dark:border-slate-800">
+        <div className="flex min-w-0 items-center gap-2">
+          <h2 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Events</h2>
+          <span
+            aria-live="polite"
+            aria-label={`${total} events`}
+            className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-bold tabular-nums text-zinc-600 dark:bg-slate-800 dark:text-zinc-300"
+          >
+            {isLoading ? "…" : total}
+          </span>
+        </div>
+        <Tooltip content="Reset panel width" placement="bottom" size="sm"
+          classNames={{ base: "z-[99999]", content: "bg-black text-white text-xs font-semibold rounded-md px-2 py-1" }}
+        >
+          <Button
+            isIconOnly
+            size="sm"
+            radius="md"
+            aria-label="Reset panel width"
+            isDisabled={!canResetWidth}
+            onPress={onResetWidth}
+            className="hidden bg-zinc-100 text-zinc-500 hover:bg-zinc-200 disabled:opacity-40 xl:inline-flex dark:bg-slate-800 dark:text-zinc-400 dark:hover:bg-slate-700"
+          >
+            <RotateCcw size={14} aria-hidden="true" />
+          </Button>
+        </Tooltip>
+      </div>
+
+      {/* Search */}
+      <div className="border-b border-zinc-200 px-3 py-2 dark:border-slate-800">
         <Input
+          aria-label="Search events"
           placeholder="Search events..."
           value={search}
-          onValueChange={(v) => { setSearch(v); setPage(1); }}
+          onValueChange={handleSearchChange}
           isClearable
-          startContent={<Search className="text-zinc-400" size={15} />}
           size="sm"
-          classNames={{ inputWrapper: "bg-zinc-100 dark:bg-zinc-800" }}
+          startContent={<Search className="text-zinc-400" size={14} aria-hidden="true" />}
+          classNames={{
+            inputWrapper: "bg-zinc-100 dark:bg-slate-800 rounded-md min-h-10",
+          }}
         />
+      </div>
 
-        <div className="flex-1 overflow-y-auto min-h-0 flex flex-col custom-scrollbar">
-          {isLoading
-            ? [...Array(5)].map((_, i) => <Skeleton key={i} className="h-20 w-full mb-2 rounded" />)
-            : events.length === 0
-              ? <div className="text-center py-10 text-zinc-400 text-sm">No events found</div>
-              : events.map((event) => (
-                <button key={event.uuid} onClick={() => onSelect(event)}
-                  aria-pressed={selectedId === event.uuid}
+      {/* List */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto custom-scrollbar">
+        {isLoading ? (
+          <div className="space-y-2 p-3">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-14 w-full rounded-md bg-zinc-100 dark:bg-slate-800" />
+            ))}
+          </div>
+        ) : isError ? (
+          <PaneErrorState
+            title="Couldn't load events"
+            message={apiErrorMessage(error, "Failed to load events.")}
+            onRetry={() => refetch()}
+            isRetrying={isFetching}
+          />
+        ) : events.length === 0 ? (
+          search.trim() ? (
+            <EmptyState
+              title="No events match your search"
+              hint={`Nothing found for “${search.trim()}”.`}
+              actionLabel="Clear search"
+              onAction={clearSearch}
+            />
+          ) : (
+            <EmptyState
+              title="No events found"
+              hint="Events you create will appear here."
+            />
+          )
+        ) : (
+          <div className={clsx("transition-opacity", isFetching && "opacity-60")} aria-busy={isFetching}>
+            {events.map((event) => {
+              const active = selectedId === event.uuid;
+              const statusTone =
+                event.status === "published"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
+                  : event.status === "completed"
+                    ? "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-slate-800 dark:text-zinc-300 dark:border-slate-700"
+                    : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20";
+              const StatusGlyph =
+                event.status === "published"
+                  ? CheckCircle2
+                  : event.status === "completed"
+                    ? Circle
+                    : Clock;
+              return (
+                <button
+                  key={event.uuid}
+                  type="button"
+                  onClick={() => onSelect(event)}
+                  aria-pressed={active}
                   className={clsx(
-                    "text-left p-3 border-b border-zinc-100 dark:border-zinc-800 transition-all duration-150 min-h-[60px]",
-                    "border-l-4",
-                    selectedId === event.uuid
-                      ? "bg-gray-50 dark:bg-gray-950 !border-l-cyan-600 pl-[9px]"
-                      : "bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-gray-950 !border-l-transparent"
+                    "flex w-full min-h-12 flex-col justify-center gap-0.5 border-b border-l-[3px] border-b-zinc-100 px-3.5 py-1.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-500 dark:border-b-zinc-800/70",
+                    active
+                      ? "border-l-cyan-600 bg-cyan-50/70 dark:border-l-cyan-500 dark:bg-cyan-950/30"
+                      : "border-l-transparent hover:bg-zinc-50 dark:hover:bg-slate-800/60"
                   )}
                 >
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className={clsx("font-semibold text-sm line-clamp-1",
-                      selectedId === event.uuid ? "text-cyan-700 dark:text-cyan-400" : "text-zinc-900 dark:text-zinc-200"
-                    )}>
+                  <span className="flex items-start justify-between gap-2">
+                    <span
+                      className={clsx(
+                        "min-w-0 flex-1 truncate text-sm font-semibold leading-snug",
+                        active
+                          ? "text-cyan-800 dark:text-cyan-300"
+                          : "text-zinc-900 dark:text-zinc-100"
+                      )}
+                    >
                       {event.name}
-                    </h3>
+                    </span>
                     {event.status && (
-                      <Chip size="sm" variant="flat" radius="none"
-                        classNames={{
-                          base: event.status === "published"
-                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                            : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-                          content: "font-bold text-[10px] uppercase px-1",
-                        }}
+                      <span
+                        className={clsx(
+                          "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-bold capitalize",
+                          statusTone
+                        )}
                       >
+                        <StatusGlyph size={10} className="shrink-0" aria-hidden="true" />
                         {event.status}
-                      </Chip>
+                      </span>
                     )}
-                  </div>
-                  <div className="flex justify-between items-center text-xs text-zinc-500 dark:text-zinc-400 mt-1.5">
-                    <span className="flex items-center gap-1">
-                      <CalendarDays size={11} />
-                      {format(new Date(event.start_date), "MMM d, yyyy")}
+                  </span>
+                  <span className="flex items-center justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                    <span className="inline-flex items-center gap-1 tabular-nums">
+                      <CalendarDays size={11} aria-hidden="true" />
+                      {safeFormat(event.start_date, "MMM d, yyyy")}
                     </span>
                     {event.type && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider">{event.type}</span>
+                      <span className="truncate text-[10px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400">
+                        {event.type}
+                      </span>
                     )}
-                  </div>
+                  </span>
                 </button>
-              ))
-          }
-        </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
-        <div className="pt-2 flex justify-center border-t border-zinc-100 dark:border-zinc-800">
-          <Pagination total={totalPages} page={page} onChange={setPage} size="sm" radius="none" showControls
+      {/* Pagination only when there is more than one page */}
+      {totalPages > 1 && (
+        <div className="flex justify-center border-t border-zinc-200 px-2 py-2 dark:border-slate-800">
+          <Pagination
+            total={totalPages}
+            page={page}
+            onChange={goToPage}
+            size="sm"
+            radius="none"
+            showControls
+            aria-label="Events pages"
             classNames={{
               cursor: "bg-cyan-600 text-white font-bold min-w-11 min-h-11",
-              item: "bg-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 min-w-11 min-h-11",
-              prev: "min-w-11 min-h-11", next: "min-w-11 min-h-11",
+              item: "bg-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-slate-800 min-w-11 min-h-11",
+              prev: "min-w-11 min-h-11",
+              next: "min-w-11 min-h-11",
             }}
           />
         </div>
-      </CardBody>
-    </Card>
+      )}
+    </div>
   );
 }
 
-// ─── Registrations Table ──────────────────────────────────────────────────────
+// ─── Registrations ────────────────────────────────────────────────────────────
 
-const SORTABLE_COLUMNS: { name: string; uid: SortKey | "actions" }[] = [
+const SORTABLE_COLUMNS: { name: string; uid: SortKey | "actions"; width?: number }[] = [
   { name: "ATTENDEE", uid: "name" },
-  { name: "REG NO.", uid: "reg_num" },
-  { name: "STATUS", uid: "registration_status" },
-  { name: "PAYMENT", uid: "payment_status" },
-  { name: "REGISTERED AT", uid: "created_at" },
-  { name: "ACTIONS", uid: "actions" },
+  { name: "REG NO.", uid: "reg_num", width: 112 },
+  { name: "STATUS", uid: "registration_status", width: 160 },
+  { name: "REGISTERED", uid: "created_at", width: 120 },
+  { name: "ACTIONS", uid: "actions", width: 72 },
 ];
 
-// ─── Registrations Table ──────────────────────────────────────────────────────
+function RegistrationsTable({
+  event,
+  updateParams,
+  initialQ,
+  initialStatus,
+  initialBranch,
+  initialYear,
+}: {
+  event: Event;
+  updateParams: UpdateParams;
+  initialQ: string;
+  initialStatus: string;
+  initialBranch: string;
+  initialYear: string;
+}) {
+  // search + filters (state mirrors URL so refresh/share restore the view)
+  const [filterValue, setFilterValue] = useState(initialQ);
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
+  const [branchFilter, setBranchFilter] = useState(initialBranch);
+  const [yearFilter, setYearFilter] = useState(initialYear);
 
-function RegistrationsTable({ event }: { event: Event }) {
-  const navigate = useNavigate();
-  const { username } = useParams<{ username: string }>();
-
-  // search + filters
-  const [filterValue, setFilterValue] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-
-  // sorting
+  // sorting — HeroUI native sort (aria-sort + keyboard accessible headers)
   const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
-  // // modals
-  // const confirmModal = useDisclosure();
-  // const detailModal = useDisclosure();
-
   const reviewModal = useDisclosure();
+  const exportModal = useDisclosure();
   const [reviewItem, setReviewItem] = useState<Registration | null>(null);
 
-  const handleReview = useCallback((item: Registration) => {
-    setReviewItem(item);
-    reviewModal.onOpen();
-  }, [reviewModal]);
+  const handleReview = useCallback(
+    (item: Registration) => {
+      setReviewItem(item);
+      reviewModal.onOpen();
+    },
+    [reviewModal]
+  );
 
-  // const [selectedAction, setSelectedAction] = useState<{
-  //   item: Registration | null;
-  //   actionType: "approve" | "reject";
-  // }>({ item: null, actionType: "approve" });
-
-  // const [detailItem, setDetailItem] = useState<Registration | null>(null);
-
-  // ── data ──────────────────────────────────────────────────────────────────
-
-  const { data: registrations = [], isLoading, refetch, isRefetching } = useQuery({
+  // ── data ────────────────────────────────────────────────────────────────────
+  const {
+    data: registrations = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isRefetching,
+  } = useQuery({
     queryKey: ["registrations", event.uuid],
     queryFn: () => fetchRegistrations(event.uuid),
     enabled: !!event.uuid,
@@ -681,22 +1302,82 @@ function RegistrationsTable({ event }: { event: Event }) {
       }),
     onSuccess: (_, variables) => {
       toast.success(
-        `Registration ${variables.status === "confirmed" ? "approved" : "cancelled"} successfully!`
+        variables.status === "confirmed" ? "Registration approved." : "Registration rejected."
       );
       refetch();
       reviewModal.onClose();
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to update registration status.");
+    onError: (err) => {
+      toast.error(apiErrorMessage(err, "Failed to update the registration."));
     },
   });
 
-  // ── filter + sort ─────────────────────────────────────────────────────────
+  const handleFilterChange = useCallback(
+    (value: string) => {
+      setFilterValue(value);
+      updateParams({ q: value || undefined });
+    },
+    [updateParams]
+  );
 
+  const handleStatusChange = useCallback(
+    (value: string) => {
+      setStatusFilter(value);
+      updateParams({ status: value === "all" ? undefined : value });
+    },
+    [updateParams]
+  );
+
+  const handleBranchChange = useCallback(
+    (value: string) => {
+      setBranchFilter(value);
+      updateParams({ branch: value === "all" ? undefined : value });
+    },
+    [updateParams]
+  );
+
+  const handleYearChange = useCallback(
+    (value: string) => {
+      setYearFilter(value);
+      updateParams({ year: value === "all" ? undefined : value });
+    },
+    [updateParams]
+  );
+
+  const hasActiveFilters =
+    filterValue.trim().length > 0 || statusFilter !== "all" || branchFilter !== "all" || yearFilter !== "all";
+
+  const clearFilters = useCallback(() => {
+    setFilterValue("");
+    setStatusFilter("all");
+    setBranchFilter("all");
+    setYearFilter("all");
+    updateParams({ q: undefined, status: undefined, branch: undefined, year: undefined });
+  }, [updateParams]);
+
+  // Branch / year options come from the loaded registrations.
+  const branchOptions = useMemo(() => {
+    const set = new Set<string>();
+    registrations.forEach((r) => {
+      const b = r.public_user?.branch?.trim();
+      if (b) set.add(b);
+    });
+    return [...set].sort((a, b) => a.localeCompare(b));
+  }, [registrations]);
+
+  const yearOptions = useMemo(() => {
+    const set = new Set<string>();
+    registrations.forEach((r) => {
+      const y = r.public_user?.year?.trim();
+      if (y) set.add(y);
+    });
+    return [...set].sort((a, b) => a.localeCompare(b));
+  }, [registrations]);
+
+  // ── filter + sort ───────────────────────────────────────────────────────────
   const filteredItems = useMemo(() => {
     let items = registrations;
 
-    // text search across name, reg_num, utr
     if (filterValue.trim()) {
       const q = filterValue.toLowerCase();
       items = items.filter((item) => {
@@ -707,12 +1388,18 @@ function RegistrationsTable({ event }: { event: Event }) {
       });
     }
 
-    // status filter
     if (statusFilter !== "all") {
       items = items.filter((item) => item.registration_status === statusFilter);
     }
 
-    // sort
+    if (branchFilter !== "all") {
+      items = items.filter((item) => (item.public_user?.branch?.trim() || "") === branchFilter);
+    }
+
+    if (yearFilter !== "all") {
+      items = items.filter((item) => (item.public_user?.year?.trim() || "") === yearFilter);
+    }
+
     return [...items].sort((a, b) => {
       let valA: string | number = "";
       let valB: string | number = "";
@@ -730,10 +1417,6 @@ function RegistrationsTable({ event }: { event: Event }) {
           valA = a.registration_status || "";
           valB = b.registration_status || "";
           break;
-        case "payment_status":
-          valA = a.payment_status || "";
-          valB = b.payment_status || "";
-          break;
         case "created_at":
           valA = new Date(a.created_at).getTime();
           valB = new Date(b.created_at).getTime();
@@ -744,59 +1427,33 @@ function RegistrationsTable({ event }: { event: Event }) {
       if (valA > valB) return sortDir === "asc" ? 1 : -1;
       return 0;
     });
-  }, [registrations, filterValue, statusFilter, sortKey, sortDir]);
+  }, [registrations, filterValue, statusFilter, branchFilter, yearFilter, sortKey, sortDir]);
 
-  // ── stats ─────────────────────────────────────────────────────────────────
+  // ── stats ───────────────────────────────────────────────────────────────────
+  const stats = useMemo(
+    () => ({
+      total: registrations.length,
+      confirmed: registrations.filter((r) => r.registration_status === "confirmed").length,
+      pending: registrations.filter((r) => r.registration_status === "pending").length,
+      cancelled: registrations.filter((r) => r.registration_status === "cancelled").length,
+    }),
+    [registrations]
+  );
 
-  const stats = useMemo(() => ({
-    total: registrations.length,
-    confirmed: registrations.filter((r) => r.registration_status === "confirmed").length,
-    pending: registrations.filter((r) => r.registration_status === "pending").length,
-    cancelled: registrations.filter((r) => r.registration_status === "cancelled").length,
-  }), [registrations]);
-
-  // ── sort handler ──────────────────────────────────────────────────────────
-
-  const handleSort = useCallback((key: SortKey) => {
-    if (key === sortKey) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+  // ── refresh ─────────────────────────────────────────────────────────────────
+  const handleRefresh = useCallback(async () => {
+    const result = await refetch();
+    if (result.isError) {
+      toast.error(apiErrorMessage(result.error, "Failed to refresh registrations."));
     } else {
-      setSortKey(key);
-      setSortDir("asc");
+      toast.success("Registrations refreshed.");
     }
-  }, [sortKey]);
+  }, [refetch]);
 
-  // ── action handlers ───────────────────────────────────────────────────────
-
-  // const handleActionClick = useCallback(
-  //   (item: Registration, type: "approve" | "reject") => {
-  //     setSelectedAction({ item, actionType: type });
-  //     confirmModal.onOpen();
-  //   },
-  //   [confirmModal]
-  // );
-
-  // const handleViewDetails = useCallback(
-  //   (item: Registration) => {
-  //     setDetailItem(item);
-  //     detailModal.onOpen();
-  //   },
-  //   [detailModal]
-  // );
-
-  // const handleConfirmAction = useCallback(() => {
-  //   if (!selectedAction.item) return;
-  //   updateMutation.mutate({
-  //     regUuid: selectedAction.item.uuid,
-  //     status: selectedAction.actionType === "approve" ? "confirmed" : "cancelled",
-  //   });
-  // }, [selectedAction, updateMutation]);
-
-  // ── export ────────────────────────────────────────────────────────────────
-
-  const handleExport = useCallback(() => {
+  // ── export (Excel keeps full UTRs for reconciliation — confirm first) ──────
+  const runExport = useCallback(() => {
     if (filteredItems.length === 0) {
-      toast.error("No data to export.");
+      toast.error("No registrations to export.");
       return;
     }
 
@@ -814,7 +1471,7 @@ function RegistrationsTable({ event }: { event: Event }) {
       "Is Paid": item.is_paid || "",
       "UTR": item.utr || "",
       "Ticket Code": item.ticket_code || "",
-      "Registered At": format(new Date(item.created_at), "MMM d, yyyy h:mm a"),
+      "Registered At": safeFormat(item.created_at, "MMM d, yyyy h:mm a"),
       "Event": item.event?.name || "",
     }));
 
@@ -822,342 +1479,489 @@ function RegistrationsTable({ event }: { event: Event }) {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Registrations");
 
-    // Auto-fit column widths
     const colWidths = Object.keys(rows[0]).map((key) => ({
-      wch: Math.max(key.length, ...rows.map((r) => String((r as any)[key]).length)) + 2,
+      wch: Math.max(key.length, ...rows.map((r) => String((r as Record<string, unknown>)[key] ?? "").length)) + 2,
     }));
     ws["!cols"] = colWidths;
 
     XLSX.writeFile(wb, `${event.name}-registrations-${format(new Date(), "yyyy-MM-dd")}.xlsx`);
-    toast.success(`Exported ${rows.length} registrations as Excel.`);
-  }, [filteredItems, event.name]);
+    toast.success(`Exported ${rows.length} registrations — the file includes full payment UTRs.`);
+    exportModal.onClose();
+  }, [filteredItems, event.name, exportModal]);
 
-  // ── render cell ───────────────────────────────────────────────────────────
-
+  // ── render cell ─────────────────────────────────────────────────────────────
   const renderCell = useCallback(
     (item: Registration, columnKey: React.Key) => {
       switch (columnKey) {
-
         case "name": {
           const u = item.public_user;
           return (
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-300">
-                  {u?.name?.charAt(0)?.toUpperCase()}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold text-zinc-900 dark:text-white leading-tight">
-                  {u?.name}
-                </span>
-                <span className="text-[11px] text-zinc-400 font-mono leading-tight">{u?.email}</span>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span
+                aria-hidden="true"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-[11px] font-bold text-zinc-500 dark:bg-slate-800 dark:text-zinc-300"
+              >
+                {u?.name?.charAt(0)?.toUpperCase()}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold leading-tight text-zinc-900 dark:text-white">
+                  {u?.name || "—"}
+                </p>
+                <p className="truncate text-xs leading-tight text-zinc-500 dark:text-zinc-400">
+                  {u?.email || "—"}
+                </p>
               </div>
             </div>
           );
         }
 
-        case "reg_num": {
+        case "reg_num":
           return (
-            <span className="font-mono text-xs text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
+            <span className="whitespace-nowrap rounded bg-zinc-100 px-2 py-0.5 font-mono text-xs text-zinc-700 dark:bg-slate-800 dark:text-zinc-300">
               {item.public_user?.reg_num || "—"}
             </span>
           );
-        }
 
         case "registration_status":
-          return <StatusChip status={item.registration_status} type="reg" />;
-
-        case "payment_status":
-          return (
-            <div className="flex flex-col gap-1">
-              <StatusChip status={item.payment_status} type="pay" />
-              {item.utr && (
-                <span className="text-[10px] text-zinc-400 font-mono" title={`Full UTR: ${item.utr}`}>
-                  UTR: {maskUtr(item.utr)}
-                </span>
-              )}
-            </div>
-          );
+          return <StatusText registration={item} />;
 
         case "created_at":
           return (
-            <div className="flex flex-col">
-              <span className="text-xs font-medium text-zinc-900 dark:text-zinc-200">
-                {format(new Date(item.created_at), "MMM d, yyyy")}
+            <div className="flex flex-col whitespace-nowrap text-right tabular-nums">
+              <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                {safeFormat(item.created_at, "MMM d, yyyy")}
               </span>
-              <span className="text-[11px] text-zinc-400 font-mono">
-                {format(new Date(item.created_at), "h:mm a")}
+              <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                {safeFormat(item.created_at, "h:mm a")}
               </span>
             </div>
           );
 
-        case "actions": {
+        case "actions":
           return (
-            <div className="flex justify-end items-center overflow-hidden">
-              <ActionIconButton
-                tooltip="Review Registration"
+            <div className="flex justify-end">
+              <Tooltip
+                content="Review registration"
                 placement="left"
-                onPress={() => handleReview(item)}
-                className={clsx(
-                  "font-medium text-xs px-3 w-auto",
-                  item.registration_status === "pending"
-                    ? "bg-cyan-50 text-cyan-700 hover:bg-cyan-100 dark:bg-cyan-900/20 dark:text-cyan-400"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
-                )}
+                size="sm"
+                classNames={{ base: "z-[99999]", content: "bg-black text-white text-xs font-semibold rounded-md px-2 py-1" }}
               >
-                <Eye size={15} />
-              </ActionIconButton>
+                <Button
+                  isIconOnly
+                  size="sm"
+                  radius="md"
+                  aria-label={`Review registration for ${item.public_user?.name || "attendee"}`}
+                  onPress={() => handleReview(item)}
+                  className={clsx(
+                    "min-h-10 w-10",
+                    item.registration_status === "pending"
+                      ? "bg-cyan-50 text-cyan-700 hover:bg-cyan-100 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/30"
+                      : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-slate-800 dark:text-zinc-400 dark:hover:bg-slate-700"
+                  )}
+                >
+                  <Eye size={16} aria-hidden="true" />
+                </Button>
+              </Tooltip>
             </div>
           );
-        }
 
         default:
           return null;
       }
     },
-    [navigate, username]
+    [handleReview]
   );
 
-  // ── column header with sort ───────────────────────────────────────────────
+  // ── loading / error / empty ─────────────────────────────────────────────────
+  const listEmptyContent = (
+    <EmptyState
+      title={hasActiveFilters ? "No registrations match your filters" : "No registrations yet"}
+      hint={
+        hasActiveFilters
+          ? "Try a different search or clear the current filters."
+          : "Registrations for this event will appear here."
+      }
+      actionLabel={hasActiveFilters ? "Clear filters" : undefined}
+      onAction={hasActiveFilters ? clearFilters : undefined}
+    />
+  );
 
-  const renderHeader = (col: typeof SORTABLE_COLUMNS[number]) => {
-    if (col.uid === "actions") return <span>{col.name}</span>;
-    const key = col.uid as SortKey;
-    return (
-      <button
-        className="flex items-center gap-0.5 uppercase text-[10px] font-bold tracking-wider hover:text-cyan-600 transition-colors min-h-[40px]"
-        onClick={() => handleSort(key)}
-      >
-        {col.name}
-        <SortIcon col={key} sortKey={sortKey} sortDir={sortDir} />
-      </button>
-    );
-  };
-
-  // ── render ────────────────────────────────────────────────────────────────
+  const cardsEmpty = (
+    <div className="flex min-h-0 flex-1 flex-col">{listEmptyContent}</div>
+  );
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-transparent">
-
-      {/* ── Toolbar ── */}
-      <div className="px-4 pt-4 pb-3 border-b border-zinc-200 dark:border-zinc-800 space-y-3">
-
-        {/* Title row */}
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div>
-            <h2 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2 flex-wrap">
-              {event.name}
-              <Chip size="sm" variant="flat" radius="none"
-                className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold"
-              >
-                {filteredItems.length}
-              </Chip>
-            </h2>
-            <p className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
-              <span className="font-semibold text-cyan-600">Venue:</span> {event.venue}
-            </p>
-          </div>
-
-          {/* Refresh + Export */}
-          <div className="flex gap-2 shrink-0">
-            <Button
-              startContent={<RefreshCcw size={14} className={isRefetching ? "animate-spin" : ""} />}
-              size="sm" radius="none"
-              className="text-zinc-700 dark:text-zinc-200 font-medium px-3 min-h-[40px]"
-              onPress={() => refetch()}
-              isDisabled={isLoading || isRefetching}
-            >
-              <span className="hidden sm:inline">{isRefetching ? "Refreshing..." : "Refresh"}</span>
-            </Button>
-
-            <Button
-              startContent={<Download size={14} />}
-              size="sm" radius="none"
-              className="bg-cyan-600 text-white font-semibold px-3 hover:bg-cyan-700 min-h-[40px]"
-              onPress={handleExport}
-            >
-              <span className="hidden sm:inline">Export</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Stats pills */}
-        {!isLoading && (
-          <div className="flex items-center gap-2 flex-wrap">
-            {[
-              { label: "Total", val: stats.total, bg: "bg-zinc-100 dark:bg-zinc-800", text: "text-zinc-600 dark:text-zinc-300" },
-              { label: "Confirmed", val: stats.confirmed, bg: "bg-emerald-50 dark:bg-emerald-900/20", text: "text-emerald-700 dark:text-emerald-400" },
-              { label: "Pending", val: stats.pending, bg: "bg-amber-50 dark:bg-amber-900/20", text: "text-amber-700 dark:text-amber-400" },
-              { label: "Cancelled", val: stats.cancelled, bg: "bg-red-50 dark:bg-red-900/20", text: "text-red-700 dark:text-red-400" },
-            ].map(({ label, val, bg, text }) => (
-              <span
-                key={label}
-                className={clsx("inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-semibold", bg, text)}
-              >
-                {label}: {val}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Search + Status filter */}
-        <div className="flex gap-2 flex-wrap">
-          <Input
-            isClearable
-            className="flex-1 min-w-[180px] max-w-xs"
-            placeholder="Search by name, reg no. or UTR..."
-            startContent={<Search className="text-zinc-400" size={14} />}
-            value={filterValue}
-            onValueChange={setFilterValue}
-            size="sm"
-            classNames={{ inputWrapper: "bg-zinc-100 dark:bg-zinc-800 rounded" }}
-          />
-
-          <Select
-            size="sm"
-            radius="none"
-            placeholder="All Statuses"
-            startContent={<Filter size={13} className="text-zinc-400" />}
-            className="w-40"
-            classNames={{ trigger: "bg-zinc-100 dark:bg-zinc-800 border-none" }}
-            selectedKeys={[statusFilter]}
-            onSelectionChange={(keys) => setStatusFilter(String([...keys][0] ?? "all"))}
-          >
-            <SelectItem key="all">All Statuses</SelectItem>
-            <SelectItem key="pending">Pending</SelectItem>
-            <SelectItem key="confirmed">Confirmed</SelectItem>
-            <SelectItem key="cancelled">Cancelled</SelectItem>
-            <SelectItem key="rejected">Rejected</SelectItem>
-          </Select>
-        </div>
-      </div>
-
-      {/* ── Table (desktop) / Cards (mobile, large touch targets) ── */}
-      <div className="md:hidden flex-1 min-h-0 overflow-y-auto custom-scrollbar p-3 space-y-3">
-        {isLoading ? (
-          [...Array(4)].map((_, i) => <Skeleton key={i} className="h-36 w-full rounded-xl" />)
-        ) : filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-14 text-zinc-400">
-            <Users size={44} className="mb-3 opacity-30" />
-            <p className="text-sm font-medium">No registrations found</p>
-            {(filterValue || statusFilter !== "all") && (
-              <button
-                onClick={() => { setFilterValue(""); setStatusFilter("all"); }}
-                className="mt-2 min-h-[44px] px-3 text-xs text-cyan-600 hover:underline"
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
-        ) : (
-          filteredItems.map((item) => {
-            const u = item.public_user;
-            return (
-              <div
-                key={item.uuid}
-                className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-4 space-y-3"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                    <span className="text-sm font-bold text-zinc-500 dark:text-zinc-300">
-                      {u?.name?.charAt(0)?.toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-bold text-zinc-900 dark:text-white truncate">
-                      {u?.name}
-                    </p>
-                    <p className="text-xs text-zinc-400 font-mono truncate">{u?.reg_num}</p>
-                  </div>
-                  <StatusChip status={item.registration_status} type="reg" />
-                </div>
-                <div className="flex items-center justify-between gap-2 text-xs">
-                  <span className="text-zinc-400 font-mono" title={item.utr || undefined}>
-                    UTR: {maskUtr(item.utr)}
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white dark:bg-transparent">
+      {isError ? (
+        <PaneErrorState
+          title="Couldn't load registrations"
+          message={apiErrorMessage(error, "Failed to load registrations for this event.")}
+          onRetry={() => refetch()}
+          isRetrying={isRefetching}
+        />
+      ) : (
+        <>
+          {/* ── Section A: selected event + actions ── */}
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-zinc-200 px-4 py-2.5 dark:border-slate-800 sm:items-center">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h2 className="truncate text-sm font-bold text-zinc-900 dark:text-white sm:text-base">
+                  {event.name}
+                </h2>
+                {!isLoading && (
+                  <span
+                    className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-bold tabular-nums text-zinc-600 dark:bg-slate-800 dark:text-zinc-300"
+                    aria-label={`${stats.total} registrations`}
+                  >
+                    {stats.total}
                   </span>
-                  <span className="text-zinc-500 shrink-0">
-                    {format(new Date(item.created_at), "MMM d, yyyy · h:mm a")}
-                  </span>
-                </div>
-                <Button
-                  className="w-full min-h-12 font-semibold bg-cyan-600 text-white"
-                  radius="md"
-                  onPress={() => handleReview(item)}
-                  startContent={<Eye size={16} />}
-                >
-                  Review Registration
-                </Button>
+                )}
               </div>
-            );
-          })
-        )}
-      </div>
-      <Table
-        aria-label="Registrations table"
-        isHeaderSticky
-        radius="none"
-        className="hidden md:flex"
-        classNames={{
-          base: "flex-1 min-h-0 overflow-hidden",
-          wrapper: "h-full p-0 rounded-none shadow-none border-none bg-transparent overflow-y-auto custom-scrollbar",
-          table: "min-w-full",
-          th: "bg-white dark:bg-zinc-950 text-zinc-500 font-bold uppercase text-[10px] tracking-wider border-b border-zinc-200 dark:border-zinc-800 z-10 px-3",
-          td: "border-b border-zinc-100 dark:border-zinc-800/50 group-last:border-none py-2.5 px-3",
-          tr: "hover:bg-zinc-50 dark:hover:bg-zinc-900/60 transition-colors",
-        }}
-
-      >
-        <TableHeader columns={SORTABLE_COLUMNS}>
-          {(col) => (
-            <TableColumn key={col.uid} align={col.uid === "actions" ? "end" : "start"}>
-              {renderHeader(col)}
-            </TableColumn>
-          )}
-        </TableHeader>
-
-        <TableBody
-          items={filteredItems}
-          isLoading={isLoading}
-          loadingContent={
-            <div className="flex flex-col gap-2 p-4">
-              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full rounded" />)}
+              <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                <span className="inline-flex min-w-0 items-center gap-1">
+                  <MapPin size={11} className="shrink-0" aria-hidden="true" />
+                  <span className="truncate">{event.venue || "TBD"}</span>
+                </span>
+                <span className="inline-flex items-center gap-1 tabular-nums">
+                  <CalendarDays size={11} aria-hidden="true" />
+                  {safeFormat(event.start_date, "MMM d, yyyy")}
+                </span>
+                {event.type && (
+                  <span className="font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400">
+                    {event.type}
+                  </span>
+                )}
+              </p>
             </div>
-          }
-          emptyContent={
-            <div className="flex flex-col items-center justify-center py-14 text-zinc-400">
-              <Users size={44} className="mb-3 opacity-30" />
-              <p className="text-sm font-medium">No registrations found</p>
-              {(filterValue || statusFilter !== "all") && (
-                <button
-                  onClick={() => { setFilterValue(""); setStatusFilter("all"); }}
-                  className="mt-2 min-h-[44px] px-3 text-xs text-cyan-600 hover:underline"
+
+            <div className="flex shrink-0 items-center gap-2">
+              <Tooltip
+                content="Reload registrations"
+                placement="bottom"
+                size="sm"
+                classNames={{ base: "z-[99999]", content: "bg-black text-white text-xs font-semibold rounded-md px-2 py-1" }}
+              >
+                <Button
+                  size="sm"
+                  radius="md"
+                  aria-label="Refresh registrations"
+                  startContent={<RefreshCcw size={14} className={isRefetching ? "animate-spin" : ""} aria-hidden="true" />}
+                  isDisabled={isLoading || isRefetching}
+                  onPress={handleRefresh}
+                  className="min-h-10 gap-2 bg-zinc-100 px-3 font-semibold text-zinc-700 dark:bg-slate-800 dark:text-zinc-200"
                 >
-                  Clear filters
-                </button>
+                  <span className="hidden sm:inline">{isRefetching ? "Refreshing…" : "Refresh"}</span>
+                </Button>
+              </Tooltip>
+              <Tooltip
+                content="Export to Excel — includes full payment UTRs"
+                placement="bottom"
+                size="sm"
+                classNames={{ base: "z-[99999]", content: "bg-black text-white text-xs font-semibold rounded-md px-2 py-1" }}
+              >
+                <Button
+                  size="sm"
+                  radius="md"
+                  aria-label="Export registrations to Excel"
+                  startContent={<Download size={14} aria-hidden="true" />}
+                  onPress={() => {
+                    if (filteredItems.length === 0) {
+                      toast.error("No registrations to export.");
+                      return;
+                    }
+                    exportModal.onOpen();
+                  }}
+                  className="min-h-10 gap-2 bg-cyan-600 px-3 font-semibold text-white hover:bg-cyan-700"
+                >
+                  <span className="hidden sm:inline">Export</span>
+                </Button>
+              </Tooltip>
+            </div>
+          </div>
+
+          {/* ── Section B: statistics ── */}
+          {!isLoading && (
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-zinc-200 px-4 py-2.5 dark:border-slate-800 sm:flex sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-2 sm:py-2">
+              <StatItem label="Total" value={stats.total} icon={Users} chipClassName="bg-zinc-100 text-zinc-500 dark:bg-slate-800 dark:text-zinc-300" className="text-zinc-800 dark:text-zinc-100" />
+              <StatItem label="Confirmed" value={stats.confirmed} icon={CheckCircle2} chipClassName="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" className="text-emerald-700 dark:text-emerald-400" />
+              <StatItem label="Pending" value={stats.pending} icon={Clock} chipClassName="bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400" className="text-amber-700 dark:text-amber-400" />
+              <StatItem label="Cancelled" value={stats.cancelled} icon={Ban} chipClassName="bg-zinc-100 text-zinc-500 dark:bg-slate-800 dark:text-zinc-300" className="text-zinc-600 dark:text-zinc-300" />
+              {hasActiveFilters && (
+                <span
+                  aria-live="polite"
+                  className="col-span-2 rounded-md bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-600 tabular-nums sm:col-span-1 sm:ml-auto dark:bg-slate-800 dark:text-zinc-300"
+                >
+                  Showing {filteredItems.length} of {stats.total}
+                </span>
               )}
             </div>
-          }
-        >
-          {(item) => (
-            <TableRow key={item.uuid}>
-              {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-            </TableRow>
           )}
-        </TableBody>
-      </Table>
 
-      {/* ── Modals ── */}
-      <ReviewModal
-        registration={reviewItem}
-        isOpen={reviewModal.isOpen}
-        onClose={reviewModal.onClose}
-        onApprove={(reg) => updateMutation.mutate({ regUuid: reg.uuid, status: "confirmed" })}
-        onReject={(reg) => updateMutation.mutate({ regUuid: reg.uuid, status: "cancelled" })}
-        isLoading={updateMutation.isPending}
-      />
+          {/* ── Section C: search + status filter ── */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-zinc-200 px-4 py-2 dark:border-slate-800">
+            <Input
+              aria-label="Search registrations by name, registration number, or UTR"
+              isClearable
+              className="min-w-[180px] flex-1 sm:max-w-xs"
+              placeholder="Name, reg no., UTR…"
+              startContent={<Search className="text-zinc-400" size={14} aria-hidden="true" />}
+              value={filterValue}
+              onValueChange={handleFilterChange}
+              size="sm"
+              classNames={{ inputWrapper: "bg-zinc-100 dark:bg-slate-800 rounded-md min-h-10" }}
+            />
 
+            <Select
+              aria-label="Filter by registration status"
+              size="sm"
+              radius="md"
+              placeholder="All Statuses"
+              startContent={<Filter size={13} className="text-zinc-400" aria-hidden="true" />}
+              className="w-full sm:w-40"
+              classNames={FILTER_SELECT_CLASSES}
+              selectedKeys={[statusFilter]}
+              onSelectionChange={(keys) => handleStatusChange(String([...keys][0] ?? "all"))}
+            >
+              <SelectItem key="all">All Statuses</SelectItem>
+              <SelectItem key="pending">Pending</SelectItem>
+              <SelectItem key="confirmed">Confirmed</SelectItem>
+              <SelectItem key="cancelled">Cancelled</SelectItem>
+              <SelectItem key="rejected">Rejected</SelectItem>
+            </Select>
+
+            <Select
+              aria-label="Filter by branch"
+              size="sm"
+              radius="md"
+              placeholder="All Branches"
+              className="w-full sm:w-40"
+              classNames={FILTER_SELECT_CLASSES}
+              selectedKeys={[branchFilter]}
+              onSelectionChange={(keys) => handleBranchChange(String([...keys][0] ?? "all"))}
+            >
+              {["all", ...branchOptions].map((b) => (
+                <SelectItem key={b}>{b === "all" ? "All Branches" : b.toUpperCase()}</SelectItem>
+              ))}
+            </Select>
+
+            <Select
+              aria-label="Filter by year"
+              size="sm"
+              radius="md"
+              placeholder="All Years"
+              className="w-full sm:w-40"
+              classNames={FILTER_SELECT_CLASSES}
+              selectedKeys={[yearFilter]}
+              onSelectionChange={(keys) => handleYearChange(String([...keys][0] ?? "all"))}
+            >
+              {["all", ...yearOptions].map((y) => (
+                <SelectItem key={y}>{y === "all" ? "All Years" : y.charAt(0).toUpperCase() + y.slice(1)}</SelectItem>
+              ))}
+            </Select>
+          </div>
+
+          {/* ── Mobile cards ── */}
+          <div className="custom-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto p-3 md:hidden">
+            {isLoading ? (
+              [...Array(4)].map((_, i) => <Skeleton key={i} className="h-36 w-full rounded-lg bg-zinc-100 dark:bg-slate-800" />)
+            ) : filteredItems.length === 0 ? (
+              cardsEmpty
+            ) : (
+              filteredItems.map((item) => {
+                const u = item.public_user;
+                return (
+                  <article
+                    key={item.uuid}
+                    className="space-y-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-slate-800 dark:bg-zinc-950/50"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-bold text-zinc-500 dark:bg-slate-800 dark:text-zinc-300"
+                      >
+                        {u?.name?.charAt(0)?.toUpperCase()}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[15px] font-bold text-zinc-900 dark:text-white">{u?.name || "—"}</p>
+                        <p className="truncate font-mono text-xs text-zinc-500 dark:text-zinc-400">{u?.reg_num || "—"}</p>
+                      </div>
+                      <StatusBadge status={item.registration_status} />
+                    </div>
+
+                    {/* Both statuses on mobile (audit requirement) */}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <PaymentNote registration={item} />
+                      <span className="shrink-0 text-xs text-zinc-500 tabular-nums dark:text-zinc-400">
+                        {safeFormat(item.created_at, "MMM d, yyyy · h:mm a")}
+                      </span>
+                    </div>
+
+                    <Button
+                      className="min-h-12 w-full bg-cyan-600 font-semibold text-white hover:bg-cyan-700"
+                      radius="md"
+                      onPress={() => handleReview(item)}
+                      startContent={<Eye size={18} aria-hidden="true" />}
+                      aria-label={`Review registration for ${u?.name || "attendee"}`}
+                    >
+                      Review Registration
+                    </Button>
+                  </article>
+                );
+              })
+            )}
+          </div>
+
+          {/* ── Desktop table (native accessible sorting) ── */}
+          <Table
+            aria-label={`Registrations for ${event.name}`}
+            isHeaderSticky
+            radius="none"
+            className="hidden md:flex"
+            sortDescriptor={{
+              column: sortKey,
+              direction: sortDir === "asc" ? "ascending" : "descending",
+            }}
+            onSortChange={(descriptor) => {
+              setSortKey(descriptor.column as SortKey);
+              setSortDir(descriptor.direction === "descending" ? "desc" : "asc");
+            }}
+            sortIcon={({ "data-visible": visible, "data-direction": direction }) => {
+              // HeroUI does not merge its slot classes into function icons, so the
+              // inline-block/align utilities must be set here (Tailwind preflight
+              // makes bare <svg> display:block, which stacked the icon below the label).
+              const active = visible === true || visible === "true";
+              return active ? (
+                direction === "descending" ? (
+                  <ChevronDown size={12} className="ms-1.5 inline-block text-cyan-600 dark:text-cyan-400" aria-hidden="true" />
+                ) : (
+                  <ChevronUp size={12} className="ms-1.5 inline-block text-cyan-600 dark:text-cyan-400" aria-hidden="true" />
+                )
+              ) : (
+                <ArrowUpDown size={11} className="ms-1.5 inline-block text-zinc-400" aria-hidden="true" />
+              );
+            }}
+            classNames={{
+              base: "flex-1 min-h-0 overflow-hidden",
+              wrapper: "h-full p-0 rounded-none shadow-none border-none bg-transparent overflow-auto custom-scrollbar",
+              table: "min-w-[620px] table-fixed",
+              th: "bg-zinc-100 dark:bg-slate-800 text-zinc-500 dark:text-zinc-400 font-semibold uppercase text-[11px] tracking-wide border-b border-zinc-200 dark:border-slate-700 z-10 px-3",
+              td: "border-b border-zinc-100 dark:border-slate-800/50 group-last:border-none py-2 px-3",
+              tr: "hover:bg-zinc-50 dark:hover:bg-slate-800/60 focus-within:bg-zinc-50 dark:focus-within:bg-slate-800/60 transition-colors",
+            }}
+          >
+            <TableHeader columns={SORTABLE_COLUMNS}>
+              {(col) => (
+                <TableColumn
+                  key={col.uid}
+                  allowsSorting={col.uid !== "actions"}
+                  align={col.uid === "created_at" || col.uid === "actions" ? "end" : "start"}
+                  width={col.width}
+                >
+                  <span
+                    className={clsx(
+                      col.uid !== "actions" && sortKey === col.uid && "text-cyan-700 dark:text-cyan-400"
+                    )}
+                  >
+                    {col.name}
+                  </span>
+                </TableColumn>
+              )}
+            </TableHeader>
+
+            <TableBody
+              items={filteredItems}
+              isLoading={isLoading}
+              loadingContent={
+                <div className="flex flex-col gap-2 p-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-12 w-full rounded bg-zinc-100 dark:bg-slate-800" />
+                  ))}
+                </div>
+              }
+              emptyContent={listEmptyContent}
+            >
+              {(item) => (
+                <TableRow key={item.uuid}>
+                  {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+
+          {/* ── Export confirmation (privacy notice) ── */}
+          <Modal
+            isOpen={exportModal.isOpen}
+            onClose={exportModal.onClose}
+            placement="center"
+            size="sm"
+            hideCloseButton
+            aria-labelledby="export-modal-title"
+            classNames={{
+              backdrop: "bg-white/80 dark:bg-black/80 z-[99]",
+              base: "bg-white dark:bg-black border border-zinc-200 dark:border-slate-800 rounded-xl shadow-2xl z-[10001]",
+              wrapper: "z-[10000]",
+              body: "p-0",
+            }}
+          >
+            <ModalContent>
+              {(close) => (
+                <div className="flex flex-col">
+                  <div className="border-b border-zinc-100 px-5 py-4 dark:border-slate-800">
+                    <h3 id="export-modal-title" className="text-base font-bold text-zinc-900 dark:text-white">
+                      Export registrations?
+                    </h3>
+                  </div>
+                  <div className="space-y-3 px-5 py-4">
+                    <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                      The Excel file for <span className="font-semibold text-zinc-900 dark:text-zinc-100">{event.name}</span> contains{" "}
+                      <span className="font-semibold tabular-nums">{filteredItems.length}</span> registration
+                      {filteredItems.length === 1 ? "" : "s"} with attendee contact details (name, email, phone,
+                      registration number), registration and payment statuses, ticket codes, and full payment
+                      UTRs for reconciliation.
+                    </p>
+                    <Note tone="warning" icon={<AlertTriangle size={13} />}>
+                      Anyone with this file can view payment identifiers. Share it only through trusted channels.
+                    </Note>
+                  </div>
+                  <div className="flex gap-3 border-t border-zinc-100 px-5 py-4 dark:border-slate-800">
+                    <Button
+                      className="h-11 flex-1 bg-zinc-100 font-medium text-zinc-700 dark:bg-slate-800 dark:text-zinc-200"
+                      radius="md"
+                      onPress={close}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      className="h-11 flex-1 bg-cyan-600 font-semibold text-white hover:bg-cyan-700"
+                      radius="md"
+                      startContent={<Download size={14} aria-hidden="true" />}
+                      onPress={runExport}
+                    >
+                      Export
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </ModalContent>
+          </Modal>
+
+          {/* ── Review modal ── */}
+          <ReviewModal
+            registration={reviewItem}
+            isOpen={reviewModal.isOpen}
+            onClose={reviewModal.onClose}
+            onApprove={(reg) => {
+              if (updateMutation.isPending) return;
+              updateMutation.mutate({ regUuid: reg.uuid, status: "confirmed" });
+            }}
+            onReject={(reg) => {
+              if (updateMutation.isPending) return;
+              updateMutation.mutate({ regUuid: reg.uuid, status: "cancelled" });
+            }}
+            isLoading={updateMutation.isPending}
+          />
+        </>
+      )}
     </div>
   );
 }
-
