@@ -66,6 +66,9 @@ const FailedEventRegistration = lazy(() =>
   })),
 );
 const TicketVerifier = lazy(() => import("./pages/User/TicketVerifier"));
+const MemberTicketsPage = lazy(
+  () => import("./pages/User/MemberTicketsPage"),
+);
 
 // --- Standard User Components (lazy) ---
 const UserDashboard = lazy(() => import("./pages/User/UserDashboard"));
@@ -261,6 +264,11 @@ function App() {
                 element={<ShowCreditPage />}
               />
               <Route path="/:username/profile" element={<UserProfilePage />} />
+              <Route path="/:username/tickets" element={<MemberTicketsPage />} />
+              <Route
+                path="/:username/verify-ticket"
+                element={<TicketVerifier />}
+              />
 
               {/* EBM Routes */}
               <Route

@@ -5,6 +5,8 @@ import {
   CircleUser,
   Home,
   Ticket,
+  ListChecks,
+  ScanLine,
 } from "lucide-react";
 
 export const getCommonNavItems = (basePath: string) => [
@@ -35,7 +37,18 @@ export const getCommonNavItems = (basePath: string) => [
   },
   {
     icon: <Ticket />,
-    name: "Verify Ticket",
-    path: `/verify-ticket`,
+    name: "Tickets",
+    subItems: [
+      {
+        icon: <ListChecks />,
+        name: "View Tickets",
+        path: `${basePath}/tickets`,
+      },
+      {
+        icon: <ScanLine />,
+        name: "Verify Ticket",
+        path: `${basePath}/verify-ticket`,
+      },
+    ],
   },
 ];
