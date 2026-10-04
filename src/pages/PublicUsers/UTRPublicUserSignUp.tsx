@@ -22,6 +22,7 @@ import {
   CheckCircle2,
   Users,
   CreditCard,
+  AlertTriangle,
   // QrCode
 } from "lucide-react";
 
@@ -29,9 +30,23 @@ type EventResponse = {
   name?: string;
   fee?: number | string | null;
   type?: string | null;
+  status?: string | null;
   amount?: number | string | null;
+  registration_deadline?: string | null;
   qr_code_url?: string | null;
+  max_participants?: number | null;
+  current_participants?: number;
+  seats_remaining?: number | null;
+  is_full?: boolean;
 };
+
+const REGISTRATIONS_CLOSED_TITLE = "Registrations Closed";
+const MAX_PARTICIPANTS_MESSAGE =
+  "Registrations for this event are closed because the maximum number of participants has been reached.";
+const EVENT_ENDED_MESSAGE =
+  "Registrations for this event are closed because the event has ended.";
+const DEADLINE_PASSED_MESSAGE =
+  "The registration deadline for this event has passed.";
 
 // --- Helpers ---
 function unwrap<T>(res: any): T {
@@ -67,9 +82,32 @@ export const UtrPublicUserSignUp: React.FC = () => {
   const [eventName, setEventName] = useState("");
   const [eventType, setEventType] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [qrImageFailed, setQrImageFailed] = useState(false);
+  const [maxParticipants, setMaxParticipants] = useState<number | null>(null);
+  const [seatsRemaining, setSeatsRemaining] = useState<number | null>(null);
+  const [eventStatus, setEventStatus] = useState<string | null>(null);
+  const [registrationDeadline, setRegistrationDeadline] = useState<
+    string | null
+  >(null);
 
   const isFeeLoaded = eventFee !== null;
   const currentFee = eventFee ?? 0;
+  const isRegistrationFull =
+    maxParticipants !== null && seatsRemaining !== null && seatsRemaining <= 0;
+  const isEventOver =
+    eventStatus === "completed" || eventStatus === "cancelled";
+  const isDeadlinePassed =
+    registrationDeadline !== null &&
+    new Date(registrationDeadline) < new Date();
+
+  const closedReason = isRegistrationFull
+    ? MAX_PARTICIPANTS_MESSAGE
+    : isEventOver
+      ? EVENT_ENDED_MESSAGE
+      : isDeadlinePassed
+        ? DEADLINE_PASSED_MESSAGE
+        : null;
+  const isRegistrationClosed = closedReason !== null;
 
   // --- Dynamic Schema ---
   const formSchema = useMemo(() => {
@@ -142,7 +180,30 @@ export const UtrPublicUserSignUp: React.FC = () => {
         setEventFee(fee);
         setEventName(data.name || "Event");
         setEventType(data.type || "default");
+        setEventStatus(data.status || null);
+        setRegistrationDeadline(data.registration_deadline || null);
         setQrCodeUrl(data.qr_code_url || null);
+        setQrImageFailed(false);
+
+        const max =
+          typeof data.max_participants === "number"
+            ? data.max_participants
+            : null;
+        setMaxParticipants(max);
+
+        if (max !== null) {
+          const current =
+            typeof data.current_participants === "number"
+              ? data.current_participants
+              : 0;
+          setSeatsRemaining(
+            typeof data.seats_remaining === "number"
+              ? data.seats_remaining
+              : Math.max(0, max - current),
+          );
+        } else {
+          setSeatsRemaining(null);
+        }
       } catch (e) {
         if (!isMounted) return;
         toast.error("Failed to load event details. Please refresh.");
@@ -201,6 +262,11 @@ export const UtrPublicUserSignUp: React.FC = () => {
       return;
     }
     if (isProcessing) return;
+
+    if (isRegistrationClosed) {
+      toast.error(closedReason ?? "Registrations for this event are closed.");
+      return;
+    }
 
     setIsProcessing(true);
     const toastId = toast.loading("Processing...");
@@ -292,139 +358,179 @@ export const UtrPublicUserSignUp: React.FC = () => {
             Event Registration
           </h1>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-            {eventName
-              ? `Registering for ${eventName}`
-              : "Enter your details to register."}
+            {isRegistrationClosed
+              ? closedReason
+              : eventName
+                ? `Registering for ${eventName}`
+                : "Enter your details to register."}
           </p>
         </div>
+
+        {isRegistrationClosed && (
+          <div
+            role="alert"
+            className="mb-8 flex items-start gap-3 rounded-2xl border border-amber-400/40 bg-amber-500/10 p-5"
+          >
+            <AlertTriangle
+              size={20}
+              className="text-amber-400 mt-0.5 shrink-0"
+            />
+            <div>
+              <p className="font-bold text-amber-300">
+                {REGISTRATIONS_CLOSED_TITLE}
+              </p>
+              <p className="text-sm text-neutral-300 mt-1 leading-relaxed">
+                {closedReason}
+              </p>
+              {isRegistrationFull && maxParticipants !== null && (
+                <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200/70 mt-2">
+                  {maxParticipants} seats filled
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleRegistration)}
             className="space-y-8"
           >
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-6">
-                <div className="bg-[#09090b] border border-white/10 p-6 md:p-8 rounded-3xl relative overflow-hidden shadow-2xl">
-                  <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                    <Users size={20} className="text-lolo-pink" />
-                    Participant Details
-                  </h3>
-                  <UtrPublicUserStep form={form} />
-                </div>
-              </div>
-
-              <div className="lg:col-span-1">
-                <div className="sticky top-8 space-y-6">
-                  <div className="bg-[#09090b]/80 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-                    <div className="absolute -top-24 -right-24 w-48 h-48 bg-lolo-pink/20 rounded-full blur-[60px] pointer-events-none"></div>
-
-                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2 relative z-10">
-                      <CreditCard size={20} className="text-emerald-400" />
-                      Payment Details
+            <fieldset
+              disabled={isRegistrationClosed}
+              className="m-0 min-w-0 border-0 p-0"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-6">
+                  <div className="bg-[#09090b] border border-white/10 p-6 md:p-8 rounded-3xl relative overflow-hidden shadow-2xl">
+                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                      <Users size={20} className="text-lolo-pink" />
+                      Participant Details
                     </h3>
+                    <UtrPublicUserStep form={form} />
+                  </div>
+                </div>
 
-                    {currentFee > 0 && (
-                      <>
-                        {/* ✨ UPDATED: Dark theme QR container with proper contrast */}
-                        <div className="mb-6 flex flex-col items-center justify-center p-6 bg-white/5 border border-white/10 rounded-2xl relative z-10">
-                          <div className="w-48 h-48 bg-white flex items-center justify-center rounded-xl mb-5 p-2 shadow-[0_0_20px_rgba(236,72,153,0.15)]">
-                            {qrCodeUrl ? (
-                              <img
-                                src={qrCodeUrl}
-                                alt="Payment QR Code"
-                                className="w-full h-full object-contain rounded-lg"
-                              />
-                            ) : (
-                              <div className="text-center text-neutral-400 px-4">
-                                <p className="text-sm font-semibold text-neutral-300">
-                                  Payment QR unavailable
-                                </p>
-                                <p className="text-xs mt-1">
-                                  Please contact the event coordinator for
-                                  payment details before entering your UTR.
-                                </p>
-                              </div>
-                            )}
+                <div className="lg:col-span-1">
+                  <div className="sticky top-8 space-y-6">
+                    <div className="bg-[#09090b]/80 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+                      <div className="absolute -top-24 -right-24 w-48 h-48 bg-lolo-pink/20 rounded-full blur-[60px] pointer-events-none"></div>
+
+                      <h3 className="text-xl font-bold mb-6 flex items-center gap-2 relative z-10">
+                        <CreditCard size={20} className="text-emerald-400" />
+                        Payment Details
+                      </h3>
+
+                      {currentFee > 0 && (
+                        <>
+                          {/* ✨ UPDATED: Dark theme QR container with proper contrast */}
+                          <div className="mb-6 flex flex-col items-center justify-center p-6 bg-white/5 border border-white/10 rounded-2xl relative z-10">
+                            <div className="w-48 h-48 bg-white flex items-center justify-center rounded-xl mb-5 p-2 shadow-[0_0_20px_rgba(236,72,153,0.15)]">
+                              {qrCodeUrl && !qrImageFailed ? (
+                                <img
+                                  src={qrCodeUrl}
+                                  onError={() => setQrImageFailed(true)}
+                                  alt="Payment QR Code"
+                                  className="w-full h-full object-contain rounded-lg"
+                                />
+                              ) : (
+                                <div className="text-center text-neutral-400 px-4">
+                                  <p className="text-sm font-semibold text-neutral-300">
+                                    Payment QR unavailable
+                                  </p>
+                                  <p className="text-xs mt-1">
+                                    Please contact the event coordinator for
+                                    payment details before entering your UTR.
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-neutral-400 text-xs text-center">
+                              Please pay using UPI before proceeding
+                            </p>
                           </div>
-                          <p className="text-neutral-400 text-xs text-center">
-                            Please pay using UPI before proceeding
-                          </p>
-                        </div>
 
-                        <div className="relative z-10 mb-8">
-                          <FormField
-                            control={form.control}
-                            name="utr_number"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-[10px] font-bold uppercase text-neutral-500 tracking-wider ml-1 mb-1.5 block">
-                                  UTR NUMBER (12 DIGITS) *
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="Enter UTR after successful payment"
-                                    className="bg-white/5 border border-white/10 text-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-lolo-pink h-12 rounded-xl placeholder:text-neutral-600 transition-colors text-sm"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage className="text-red-400 text-xs" />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </>
-                    )}
+                          <div className="relative z-10 mb-8">
+                            <FormField
+                              control={form.control}
+                              name="utr_number"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-[10px] font-bold uppercase text-neutral-500 tracking-wider ml-1 mb-1.5 block">
+                                    UTR NUMBER (12 DIGITS) *
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Enter UTR after successful payment"
+                                      className="bg-white/5 border border-white/10 text-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-lolo-pink h-12 rounded-xl placeholder:text-neutral-600 transition-colors text-sm"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage className="text-red-400 text-xs" />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </>
+                      )}
 
-                    <div className="space-y-4 mb-8 relative z-10 border-t border-white/10 pt-6">
-                      <div className="flex justify-between items-center text-lg font-bold">
-                        <span>Total Amount</span>
-                        <span className="text-3xl text-transparent bg-clip-text bg-gradient-to-r from-lolo-pink to-purple-400 font-mono tracking-tight">
-                          {isFeeLoaded ? (
-                            currentFee === 0 ? (
-                              "Free"
+                      <div className="space-y-4 mb-8 relative z-10 border-t border-white/10 pt-6">
+                        <div className="flex justify-between items-center text-lg font-bold">
+                          <span>Total Amount</span>
+                          <span className="text-3xl text-transparent bg-clip-text bg-gradient-to-r from-lolo-pink to-purple-400 font-mono tracking-tight">
+                            {isFeeLoaded ? (
+                              currentFee === 0 ? (
+                                "Free"
+                              ) : (
+                                `₹${currentFee}`
+                              )
                             ) : (
-                              `₹${currentFee}`
-                            )
+                              <Loader2 className="w-6 h-6 animate-spin text-lolo-pink" />
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+                      {!isFeeLoaded && (
+                        <div className="flex items-center justify-center gap-2 p-3 mb-6 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-200 text-xs relative z-10">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Fetching
+                          latest ticket prices...
+                        </div>
+                      )}
+
+                      <Button
+                        type="submit"
+                        disabled={
+                          isProcessing || !isFeeLoaded || isRegistrationClosed
+                        }
+                        className="w-full h-16 bg-white text-black hover:bg-lolo-pink hover:text-white font-bold rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(236,72,153,0.4)] transition-all active:scale-[0.98] text-lg relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed z-10"
+                      >
+                        <span className="relative z-10 flex items-center justify-center gap-2">
+                          {isRegistrationClosed ? (
+                            <>
+                              <AlertTriangle className="w-5 h-5" />{" "}
+                              {REGISTRATIONS_CLOSED_TITLE}
+                            </>
+                          ) : isProcessing ? (
+                            <>
+                              <Loader2 className="h-5 w-5 animate-spin" />{" "}
+                              Processing...
+                            </>
                           ) : (
-                            <Loader2 className="w-6 h-6 animate-spin text-lolo-pink" />
+                            <>
+                              <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />{" "}
+                              {currentFee > 0
+                                ? "Confirm Registration"
+                                : "Complete Registration"}
+                            </>
                           )}
                         </span>
-                      </div>
+                      </Button>
                     </div>
-
-                    {!isFeeLoaded && (
-                      <div className="flex items-center justify-center gap-2 p-3 mb-6 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-200 text-xs relative z-10">
-                        <Loader2 className="w-3 h-3 animate-spin" /> Fetching
-                        latest ticket prices...
-                      </div>
-                    )}
-
-                    <Button
-                      type="submit"
-                      disabled={isProcessing || !isFeeLoaded}
-                      className="w-full h-16 bg-white text-black hover:bg-lolo-pink hover:text-white font-bold rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(236,72,153,0.4)] transition-all active:scale-[0.98] text-lg relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed z-10"
-                    >
-                      <span className="relative z-10 flex items-center justify-center gap-2">
-                        {isProcessing ? (
-                          <>
-                            <Loader2 className="h-5 w-5 animate-spin" />{" "}
-                            Processing...
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />{" "}
-                            {currentFee > 0
-                              ? "Confirm Registration"
-                              : "Complete Registration"}
-                          </>
-                        )}
-                      </span>
-                    </Button>
                   </div>
                 </div>
               </div>
-            </div>
+            </fieldset>
           </form>
         </Form>
       </div>

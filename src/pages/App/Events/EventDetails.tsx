@@ -15,6 +15,7 @@ import {
   Users,
   Trophy,
   CreditCard,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@heroui/button";
 import axios from "axios";
@@ -24,6 +25,7 @@ import { Zoom, Thumbnails } from "yet-another-react-lightbox/plugins";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import { toast } from "sonner";
 import SectionHeader from "@/components/HomeSectionHeader";
+import { eventImageSrc, handleEventImageError } from "@/lib/event-images";
 
 // --- Types ---
 interface EventImage {
@@ -53,12 +55,14 @@ interface EventDetailsData {
   fee: number;
   credits_awarded: number;
   registration_deadline: string;
-  max_participants: number;
+  max_participants: number | null;
   registration_mode: string;
   registration_place: string;
   images: EventImage[];
   coordinators: (Coordinator | null)[];
   current_participants?: number;
+  seats_remaining?: number | null;
+  is_full?: boolean;
 }
 
 // --- Enterprise Registration Card ---
@@ -99,6 +103,32 @@ const useEventStatus = (status: EventStatus, deadline: Date) => {
   }, [status, deadline]);
 };
 
+// --- Capacity helpers ---
+const CAPACITY_UNLIMITED = Number.POSITIVE_INFINITY;
+
+const getSeatsRemaining = (
+  event: Pick<
+    EventDetailsData,
+    "max_participants" | "current_participants" | "seats_remaining"
+  >,
+): number => {
+  if (typeof event.seats_remaining === "number") return event.seats_remaining;
+
+  if (
+    typeof event.max_participants !== "number" ||
+    !Number.isFinite(event.max_participants)
+  ) {
+    return CAPACITY_UNLIMITED;
+  }
+
+  const current = event.current_participants ?? 0;
+  return Math.max(0, event.max_participants - current);
+};
+
+const FULL_NOTICE_TITLE = "Registrations Closed";
+const FULL_NOTICE_MESSAGE =
+  "Registrations are closed for this event because the maximum number of participants has been reached.";
+
 // --- Shared card dressing: monochrome black surfaces with neutral depth ---
 const CardTopLeak = memo(() => (
   <>
@@ -133,11 +163,10 @@ const RegistrationCard = memo<{
   );
 
   const statusConfig = useEventStatus(event.status, deadline);
-  const currentParticipants = event.current_participants ?? 0;
-  const seatsRemaining = Math.max(
-    0,
-    event.max_participants - currentParticipants,
-  );
+  const seatsRemaining = getSeatsRemaining(event);
+  const isFull = seatsRemaining === 0;
+  const isRegistrationOpen = statusConfig.isRegistrationOpen && !isFull;
+  const hasCapacityLimit = Number.isFinite(seatsRemaining);
   // const capacityPercentage = Math.min(
   //   100,
   //   (currentParticipants / event.max_participants) * 100,
@@ -156,9 +185,11 @@ const RegistrationCard = memo<{
           <CardTopLeak />
 
           <h3 className="text-2xl font-bold mb-2 text-white relative z-10">
-            {statusConfig.isRegistrationOpen
+            {isRegistrationOpen
               ? "Registrations Open"
-              : "Registration Closed"}
+              : isFull
+                ? FULL_NOTICE_TITLE
+                : "Registration Closed"}
           </h3>
 
           <div className="flex items-baseline gap-2 mb-8 relative z-10">
@@ -222,23 +253,51 @@ const RegistrationCard = memo<{
             </div>
           </div>
 
-          {statusConfig.isRegistrationOpen && (
+          {isRegistrationOpen && (
             <Button
               onClick={onRegister}
-              disabled={isLoading || seatsRemaining === 0}
+              disabled={isLoading}
               size="lg"
               className="hidden lg:flex w-full py-7 px-6 bg-white hover:text-white text-black hover:bg-lolo-pink disabled:from-neutral-700 disabled:cursor-not-allowed font-bold rounded-full transition-all duration-300 relative z-10"
             >
-              {isLoading
-                ? "Processing..."
-                : seatsRemaining === 0
-                  ? "Registration Full"
-                  : "Register Now"}
+              {isLoading ? "Processing..." : "Register Now"}
             </Button>
           )}
 
+          {!isRegistrationOpen && (
+            <div
+              role="status"
+              className={`flex items-start gap-3 rounded-2xl border p-4 relative z-10 ${
+                isFull
+                  ? "border-amber-400/40 bg-amber-500/10"
+                  : "border-white/10 bg-white/5"
+              }`}
+            >
+              <AlertTriangle
+                size={18}
+                className={`mt-0.5 shrink-0 ${isFull ? "text-amber-400" : "text-neutral-400"}`}
+              />
+              <div>
+                <p
+                  className={`text-sm font-bold ${isFull ? "text-amber-300" : "text-white"}`}
+                >
+                  {isFull ? FULL_NOTICE_TITLE : "Registration Closed"}
+                </p>
+                <p className="text-xs mt-1 leading-relaxed text-neutral-300">
+                  {isFull
+                    ? FULL_NOTICE_MESSAGE
+                    : "Registrations for this event are no longer accepting new entries."}
+                </p>
+              </div>
+            </div>
+          )}
+
           <p className="text-sm text-center text-neutral-300 mt-4 uppercase tracking-widest relative z-10">
-            Limited to {event.max_participants} seats
+            {hasCapacityLimit
+              ? isFull
+                ? `Fully booked · ${event.max_participants} seats`
+                : `Limited to ${event.max_participants} seats`
+              : "Limited seats available"}
           </p>
           <CardAurora />
         </article>
@@ -306,6 +365,12 @@ const EventDetails: React.FC = () => {
 
   const handleRegistration = async () => {
     if (!event) return;
+
+    if (getSeatsRemaining(event) === 0) {
+      toast.error(FULL_NOTICE_MESSAGE);
+      return;
+    }
+
     setIsRegistering(true);
     await new Promise((r) => setTimeout(r, 600));
 
@@ -363,11 +428,8 @@ const EventDetails: React.FC = () => {
   const isRegistrationOpen =
     !isExpired && event.status !== "completed" && event.status !== "cancelled";
 
-  const currentParticipants = event.current_participants ?? 0;
-  const seatsRemaining = Math.max(
-    0,
-    event.max_participants - currentParticipants,
-  );
+  const seatsRemaining = getSeatsRemaining(event);
+  const isFull = seatsRemaining === 0;
 
   const isSameDay = startDate.toDateString() === endDate.toDateString();
 
@@ -405,7 +467,7 @@ const EventDetails: React.FC = () => {
     (c): c is Coordinator => c !== null,
   );
   const lightboxSlides = event.images.map((img) => ({
-    src: img.url,
+    src: eventImageSrc(img.url),
     alt: img.alt_txt,
   }));
 
@@ -441,7 +503,8 @@ const EventDetails: React.FC = () => {
       <section className="relative min-h-[540px] md:min-h-[620px] w-full overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src={event.images[0]?.url || "/images/events/paatashaala.jpeg"}
+            src={eventImageSrc(event.images[0]?.url)}
+            onError={handleEventImageError}
             alt={event.name}
             className="w-full h-full object-cover opacity-55 scale-[1.02]"
           />
@@ -528,9 +591,9 @@ const EventDetails: React.FC = () => {
               <SectionHeader
                 title={
                   <>
-                      <span className="font-original-surfer text-lolo-pink lg:text-4xl">
-                        About The Event
-                      </span>
+                    <span className="font-original-surfer text-lolo-pink lg:text-4xl">
+                      About The Event
+                    </span>
                   </>
                 }
               />
@@ -568,9 +631,9 @@ const EventDetails: React.FC = () => {
               <SectionHeader
                 title={
                   <>
-                      <span className="font-original-surfer text-lolo-pink lg:text-4xl">
-                        Event Details
-                      </span>
+                    <span className="font-original-surfer text-lolo-pink lg:text-4xl">
+                      Event Details
+                    </span>
                   </>
                 }
               />
@@ -695,38 +758,41 @@ const EventDetails: React.FC = () => {
           )}
 
           {/* Gallery */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <SectionHeader
-              title={
-                <>
-                  <span className="font-club text-lolo-pink lg:text-4xl drop-shadow-[0_0_10px_rgba(236,72,153,0.4)] flex items-center gap-2 justify-center">
-                    Gallery
-                  </span>
-                </>
-              }
-            />
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {event.images.map((img, index) => (
-                <div
-                  key={img.uuid}
-                  onClick={() => setLightboxIndex(index)}
-                  className="group relative rounded-[1.25rem] overflow-hidden h-48 border border-white/12 cursor-zoom-in shadow-[0_16px_50px_-20px_rgba(0,0,0,0.9)] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25"
-                >
-                  <img
-                    src={img.url || "/images/events/paatashaala.jpeg"}
-                    alt={img.alt_txt}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
-                  />
-                  {/* ... zoom icon overlay ... */}
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 rounded-b-[1.25rem] bg-gradient-to-t from-slate-950/55 via-slate-900/10 to-transparent opacity-70" />
-                </div>
-              ))}
-            </div>
-          </motion.section>
+          {event.images.length > 0 && (
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <SectionHeader
+                title={
+                  <>
+                    <span className="font-club text-lolo-pink lg:text-4xl drop-shadow-[0_0_10px_rgba(236,72,153,0.4)] flex items-center gap-2 justify-center">
+                      Gallery
+                    </span>
+                  </>
+                }
+              />
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {event.images.map((img, index) => (
+                  <div
+                    key={img.uuid}
+                    onClick={() => setLightboxIndex(index)}
+                    className="group relative rounded-[1.25rem] overflow-hidden h-48 border border-white/12 cursor-zoom-in shadow-[0_16px_50px_-20px_rgba(0,0,0,0.9)] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25"
+                  >
+                    <img
+                      src={eventImageSrc(img.url)}
+                      onError={handleEventImageError}
+                      alt={img.alt_txt}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
+                    />
+                    {/* ... zoom icon overlay ... */}
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 rounded-b-[1.25rem] bg-gradient-to-t from-slate-950/55 via-slate-900/10 to-transparent opacity-70" />
+                  </div>
+                ))}
+              </div>
+            </motion.section>
+          )}
         </div>
 
         {/* Desktop Sidebar with Sticky Card */}
@@ -751,29 +817,45 @@ const EventDetails: React.FC = () => {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="lg:hidden fixed bottom-0 left-0 right-0 px-4 py-4 bg-[#030303]/90 backdrop-blur-xl border-t border-white/10 z-50 flex items-center justify-between gap-4 safe-area-bottom"
           >
-            <div className="flex flex-col">
-              <span className="text-[10px] text-neutral-400 uppercase font-bold tracking-wider">
-                Total Fee
-              </span>
-              <span className="text-xl font-bold text-white">
-                {event.fee > 0 ? `₹${event.fee}` : "Free"}
-              </span>
-            </div>
-            <Button
-              size="lg"
-              className="flex-1 font-bold bg-white text-black hover:bg-lolo-pink hover:text-white disabled:bg-neutral-700 disabled:text-neutral-400 disabled:cursor-not-allowed shadow-lg h-12 rounded-full transition-all"
-              onPress={handleRegistration}
-              disabled={isRegistering || seatsRemaining === 0}
-            >
-              {isRegistering
-                ? "Processing..."
-                : seatsRemaining === 0
-                  ? "Registration Full"
-                  : "Register Now"}
-              {seatsRemaining > 0 && !isRegistering && (
-                <Ticket size={18} className="ml-2" />
-              )}
-            </Button>
+            {isFull ? (
+              <div
+                role="status"
+                className="w-full flex items-start gap-3 rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3"
+              >
+                <AlertTriangle
+                  size={18}
+                  className="text-amber-400 mt-0.5 shrink-0"
+                />
+                <div>
+                  <p className="text-sm font-bold text-amber-300">
+                    {FULL_NOTICE_TITLE}
+                  </p>
+                  <p className="text-xs text-neutral-300 mt-0.5 leading-relaxed">
+                    {FULL_NOTICE_MESSAGE}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-neutral-400 uppercase font-bold tracking-wider">
+                    Total Fee
+                  </span>
+                  <span className="text-xl font-bold text-white">
+                    {event.fee > 0 ? `₹${event.fee}` : "Free"}
+                  </span>
+                </div>
+                <Button
+                  size="lg"
+                  className="flex-1 font-bold bg-white text-black hover:bg-lolo-pink hover:text-white disabled:bg-neutral-700 disabled:text-neutral-400 disabled:cursor-not-allowed shadow-lg h-12 rounded-full transition-all"
+                  onPress={handleRegistration}
+                  disabled={isRegistering}
+                >
+                  {isRegistering ? "Processing..." : "Register Now"}
+                  {!isRegistering && <Ticket size={18} className="ml-2" />}
+                </Button>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

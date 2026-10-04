@@ -24,3 +24,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+#graphify
+/graphify-out
+src/graphify-out
+
+.env
+/public/inspirations
+CONTEXT.md
+DEVELOPER_DOCS.md
+<motion.html
