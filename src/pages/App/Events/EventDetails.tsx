@@ -99,6 +99,29 @@ const useEventStatus = (status: EventStatus, deadline: Date) => {
   }, [status, deadline]);
 };
 
+// --- Shared card dressing: monochrome black surfaces with neutral depth ---
+const CardTopLeak = memo(() => (
+  <>
+    <div className="pointer-events-none absolute inset-x-10 top-0 z-20 h-px bg-gradient-to-r from-transparent via-slate-300/25 to-transparent" />
+    <div className="pointer-events-none absolute -top-24 left-1/2 z-0 h-44 w-3/4 -translate-x-1/2 rounded-full bg-white/[0.025] blur-3xl" />
+  </>
+));
+
+const CardAurora = memo(() => {
+  return (
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-36 overflow-hidden rounded-b-[1.75rem] [mask-image:linear-gradient(to_bottom,transparent,black_55%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_55%)]">
+      {/* dotted texture */}
+      <div className="event-dot-grid absolute inset-0 opacity-30" />
+      {/* Registration card keeps the expressive LoLo gradient as its focal accent. */}
+      <div className="animate-aurora-a absolute -bottom-10 -left-8 h-36 w-56 rounded-full bg-violet-600/45 blur-[50px]" />
+      <div className="animate-aurora-b absolute -bottom-12 left-1/3 h-40 w-64 rounded-full bg-fuchsia-500/40 blur-[60px]" />
+      <div className="animate-aurora-c absolute -bottom-10 -right-8 h-36 w-56 rounded-full bg-cyan-400/30 blur-[50px]" />
+      <div className="animate-aurora-wash absolute inset-0 bg-gradient-to-t from-violet-700/20 via-fuchsia-600/[0.07] to-transparent" />
+      <div className="absolute inset-x-8 bottom-[2px] h-4 rounded-full bg-gradient-to-r from-violet-500/0 via-fuchsia-400/40 to-cyan-300/30 blur-lg" />
+    </div>
+  );
+});
+
 const RegistrationCard = memo<{
   event: EventDetailsData;
   onRegister: () => void;
@@ -129,8 +152,8 @@ const RegistrationCard = memo<{
         viewport={{ once: true }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        <article className="p-8 rounded-3xl bg-white/[0.06] backdrop-blur-md relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-lolo-pink/5 via-transparent to-transparent pointer-events-none" />
+        <article className="group relative overflow-hidden rounded-[1.75rem] border border-white/12 bg-[#050505] p-8 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9)] ring-1 ring-inset ring-white/[0.05] transition-colors duration-500 hover:border-white/25">
+          <CardTopLeak />
 
           <h3 className="text-2xl font-bold mb-2 text-white relative z-10">
             {statusConfig.isRegistrationOpen
@@ -214,9 +237,10 @@ const RegistrationCard = memo<{
             </Button>
           )}
 
-          <p className="text-sm text-center text-neutral-500 mt-4 uppercase tracking-widest relative z-10">
+          <p className="text-sm text-center text-neutral-300 mt-4 uppercase tracking-widest relative z-10">
             Limited to {event.max_participants} seats
           </p>
+          <CardAurora />
         </article>
       </motion.div>
     </div>
@@ -272,7 +296,7 @@ const EventDetails: React.FC = () => {
       }
     };
     fetchEventDetails();
-  }, [id]);
+  }, [id, APP_BASE_URL]);
 
   const handleBack = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -387,7 +411,6 @@ const EventDetails: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-lolo-pink/30 selection:text-white pb-32 lg:pb-12 relative">
-      <div className="absolute bottom-0 right-0 w-[800px] h-[500px] bg-lolo-cyan/5 rounded-full blur-[399px] pointer-events-none" />
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-[#030303]/80 backdrop-blur-xl border-b border-white/5 h-16 flex items-center px-6">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
@@ -415,18 +438,17 @@ const EventDetails: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
+      <section className="relative min-h-[540px] md:min-h-[620px] w-full overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src={
-              event.images[0]?.url || "https://via.placeholder.com/1920x1080"
-            }
+            src={event.images[0]?.url || "/images/events/paatashaala.jpeg"}
             alt={event.name}
-            className="w-full h-full object-cover opacity-50"
+            className="w-full h-full object-cover opacity-55 scale-[1.02]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#030303] via-[#030303]/60 to-transparent" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,3,3,.98)_0%,rgba(3,3,3,.68)_42%,rgba(3,3,3,.18)_100%)]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#030303] via-transparent to-[#030303]/30" />
         </div>
-        <div className="relative w-full p-6 md:p-12 z-10 h-full flex flex-col justify-end">
+        <div className="relative w-full px-6 py-16 md:px-12 md:py-20 z-10 min-h-[540px] md:min-h-[620px] flex items-end">
           <div className="max-w-7xl mx-auto w-full">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -445,7 +467,7 @@ const EventDetails: React.FC = () => {
                   {event.status}
                 </span>
               </div>
-              <h1 className="text-4xl md:text-7xl font-bold leading-tight max-w-4xl mb-8 text-white drop-shadow-xl">
+              <h1 className="text-4xl md:text-7xl lg:text-[5.5rem] font-bold leading-[0.98] tracking-[-0.045em] max-w-5xl mb-9 text-white drop-shadow-xl">
                 {event.name}
               </h1>
 
@@ -494,8 +516,8 @@ const EventDetails: React.FC = () => {
       </section>
 
       {/* Main Content Grid */}
-      <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-10 -mt-8">
-        <div className="lg:col-span-2 space-y-14 pt-8">
+      <main className="max-w-7xl mx-auto px-6 md:px-8 grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-10 -mt-2 lg:-mt-8">
+        <div className="lg:col-span-2 space-y-20 pt-8">
           {/* About Section */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
@@ -506,14 +528,14 @@ const EventDetails: React.FC = () => {
               <SectionHeader
                 title={
                   <>
-                    <span className="font-club text-lolo-pink lg:text-4xl">
-                      About The Event
-                    </span>
+                      <span className="font-original-surfer text-lolo-pink lg:text-4xl">
+                        About The Event
+                      </span>
                   </>
                 }
               />
             </div>
-            <div className="prose prose-invert max-w-none text-neutral-400 leading-relaxed text-lg">
+            <div className="max-w-3xl text-neutral-300 leading-[1.8] text-lg">
               <p className="whitespace-pre-wrap">
                 {event.description.length > DESCRIPTION_PREVIEW_LENGTH &&
                 !isDescriptionExpanded
@@ -546,9 +568,9 @@ const EventDetails: React.FC = () => {
               <SectionHeader
                 title={
                   <>
-                    <span className="font-club text-lolo-pink lg:text-4xl">
-                      Event Details
-                    </span>
+                      <span className="font-original-surfer text-lolo-pink lg:text-4xl">
+                        Event Details
+                      </span>
                   </>
                 }
               />
@@ -578,11 +600,13 @@ const EventDetails: React.FC = () => {
               ].map((item, idx) => (
                 <div
                   key={idx}
-                  className="group relative overflow-hidden rounded-2xl bg-white/[0.06] p-5 backdrop-blur-md transition-all duration-300 hover:bg-white/[0.08] hover:-translate-y-0.5"
+                  className="group relative overflow-hidden rounded-[1.25rem] border border-white/12 bg-[#050505] p-5 shadow-[0_16px_50px_-20px_rgba(0,0,0,0.9)] ring-1 ring-inset ring-white/[0.05] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25 hover:shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9)]"
                 >
-                  <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full bg-lolo-pink/[0.06] blur-2xl group-hover:bg-lolo-pink/[0.09] transition-colors" />
-                  <div className="relative flex items-center gap-4">
-                    <item.icon size={24} className="text-lolo-pink shrink-0" />
+                  <div className="pointer-events-none absolute inset-x-8 top-0 z-20 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent blur-[0.5px]" />
+                  <div className="relative z-10 flex items-center gap-4">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05]">
+                      <item.icon size={22} className="text-white" />
+                    </div>
                     <div className="min-w-0">
                       <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-[0.2em] mb-1">
                         {item.label}
@@ -612,7 +636,7 @@ const EventDetails: React.FC = () => {
                 <SectionHeader
                   title={
                     <>
-                      <span className="font-club text-lolo-pink lg:text-4xl">
+                      <span className="font-original-surfer text-lolo-pink lg:text-4xl">
                         Coordinators
                       </span>
                     </>
@@ -631,11 +655,12 @@ const EventDetails: React.FC = () => {
                   return (
                     <div
                       key={idx}
-                      className="group relative overflow-hidden rounded-2xl bg-white/[0.06] p-5 backdrop-blur-md transition-all duration-300 hover:bg-white/[0.08] hover:-translate-y-0.5"
+                      className="group relative overflow-hidden rounded-[1.25rem] border border-white/12 bg-[#050505] p-5 shadow-[0_16px_50px_-20px_rgba(0,0,0,0.9)] ring-1 ring-inset ring-white/[0.05] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25 hover:shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9)]"
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="pointer-events-none absolute inset-x-8 top-0 z-20 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent blur-[0.5px]" />
+                      <div className="relative z-10 flex items-center gap-4">
                         <div
-                          className="w-12 h-12 rounded-full bg-gradient-to-br from-lolo-pink to-fuchsia-800 flex items-center justify-center text-white font-extrabold text-sm shrink-0 shadow-lg group-hover:scale-105 transition-transform"
+                          className="w-12 h-12 rounded-full bg-gradient-to-br from-white/25 to-white/5 flex items-center justify-center text-white font-extrabold text-sm shrink-0 shadow-lg group-hover:scale-105 transition-transform"
                           aria-hidden="true"
                         >
                           {initials || <User size={20} />}
@@ -649,12 +674,19 @@ const EventDetails: React.FC = () => {
                           </p>
                         </div>
                       </div>
-                      <a
-                        href={`tel:${coord.phone}`}
-                        className="mt-4 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-white/10 text-sm font-semibold text-neutral-100 transition-all hover:bg-lolo-pink hover:text-white active:scale-[0.98]"
-                      >
-                        <Phone size={15} /> {coord.phone}
-                      </a>
+                      <div className="relative z-10 mt-4 flex items-center justify-between gap-3">
+                        <span className="text-xs font-medium uppercase tracking-wider text-neutral-500">
+                          Tap to call
+                        </span>
+                        <a
+                          href={`tel:${coord.phone}`}
+                          aria-label={`Call ${coord.name}`}
+                          title={`Call ${coord.name}`}
+                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-white transition-all hover:border-white/40 hover:bg-white/15 active:scale-95"
+                        >
+                          <Phone size={16} />
+                        </a>
+                      </div>
                     </div>
                   );
                 })}
@@ -682,14 +714,15 @@ const EventDetails: React.FC = () => {
                 <div
                   key={img.uuid}
                   onClick={() => setLightboxIndex(index)}
-                  className="group relative rounded-2xl overflow-hidden h-48 border border-white/5 cursor-zoom-in"
+                  className="group relative rounded-[1.25rem] overflow-hidden h-48 border border-white/12 cursor-zoom-in shadow-[0_16px_50px_-20px_rgba(0,0,0,0.9)] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25"
                 >
                   <img
-                    src={img.url}
+                    src={img.url || "/images/events/paatashaala.jpeg"}
                     alt={img.alt_txt}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
                   />
                   {/* ... zoom icon overlay ... */}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 rounded-b-[1.25rem] bg-gradient-to-t from-slate-950/55 via-slate-900/10 to-transparent opacity-70" />
                 </div>
               ))}
             </div>

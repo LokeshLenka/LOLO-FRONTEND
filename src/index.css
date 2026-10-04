@@ -381,6 +381,7 @@ html {
 
   --font-*: initial;
   --font-poppins: "PoppinsRegular", sans-serif;
+  --font-original-surfer: "Original Surfer", system-ui;
 
   --breakpoint-*: initial;
   --breakpoint-2xsm: 375px;
@@ -1349,6 +1350,69 @@ span.flatpickr-weekday,
 
 .dark .scrollbar-track-gray-800::-webkit-scrollbar-track {
   background: #1f2937;
+}
+
+/* ===== Event cards — multi aurora gradient (bottom glow, inspired by dark-cards) ===== */
+@keyframes aurora-drift-a {
+  0%, 100% { transform: translate(-18%, 6%) scale(1); opacity: 0.85; }
+  50% { transform: translate(22%, -12%) scale(1.35); opacity: 1; }
+}
+@keyframes aurora-drift-b {
+  0%, 100% { transform: translate(16%, -4%) scale(1.15); opacity: 0.7; }
+  50% { transform: translate(-24%, 10%) scale(0.9); opacity: 1; }
+}
+@keyframes aurora-drift-c {
+  0%, 100% { transform: translate(0%, 10%) scale(1); opacity: 0.6; }
+  50% { transform: translate(6%, -18%) scale(1.3); opacity: 0.95; }
+}
+@keyframes aurora-edge-pan {
+  0%, 100% { background-position: 0% 50%; opacity: 0.7; }
+  50% { background-position: 100% 50%; opacity: 1; }
+}
+@keyframes aurora-wash {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.95; }
+}
+/* Page-background aurora — tall hikes & sharp spikes */
+@keyframes page-aurora-rise-a {
+  0%, 100% { transform: translate(-6%, 40px) scale(1, 1); opacity: 0.7; }
+  25% { transform: translate(2%, -70px) scale(1.1, 1.35); opacity: 1; }
+  50% { transform: translate(8%, -170px) scale(1, 1.7); opacity: 0.9; }
+  75% { transform: translate(-4%, -50px) scale(1.12, 1.25); opacity: 1; }
+}
+@keyframes page-aurora-rise-b {
+  0%, 100% { transform: translate(8%, 50px) scale(1.05, 1); opacity: 0.65; }
+  35% { transform: translate(-6%, -120px) scale(1, 1.5); opacity: 1; }
+  60% { transform: translate(4%, -200px) scale(1.08, 1.8); opacity: 0.85; }
+  80% { transform: translate(10%, -40px) scale(1, 1.2); opacity: 0.95; }
+}
+@keyframes page-aurora-rise-c {
+  0%, 100% { transform: translate(0%, 60px) scale(1, 1.1); opacity: 0.6; }
+  30% { transform: translate(-8%, -60px) scale(1.15, 1.3); opacity: 0.95; }
+  55% { transform: translate(6%, -140px) scale(0.95, 1.65); opacity: 1; }
+  80% { transform: translate(-2%, -30px) scale(1.05, 1.15); opacity: 0.8; }
+}
+@layer utilities {
+  .animate-aurora-a { animation: aurora-drift-a 7s ease-in-out infinite; will-change: transform, opacity; }
+  .animate-aurora-b { animation: aurora-drift-b 9s ease-in-out infinite; will-change: transform, opacity; }
+  .animate-aurora-c { animation: aurora-drift-c 11s ease-in-out infinite; will-change: transform, opacity; }
+  .animate-aurora-wash { animation: aurora-wash 6s ease-in-out infinite; will-change: opacity; }
+  .animate-page-aurora-a { animation: page-aurora-rise-a 9s ease-in-out infinite; will-change: transform, opacity; }
+  .animate-page-aurora-b { animation: page-aurora-rise-b 12s ease-in-out infinite; will-change: transform, opacity; }
+  .animate-page-aurora-c { animation: page-aurora-rise-c 15s ease-in-out infinite; will-change: transform, opacity; }
+  .animate-aurora-edge {
+    background-size: 200% 100%;
+    animation: aurora-edge-pan 5s ease-in-out infinite;
+  }
+  .event-dot-grid {
+    background-image: radial-gradient(rgba(255,255,255,0.14) 1px, transparent 1.5px);
+    background-size: 16px 16px;
+    mask-image: radial-gradient(ellipse 90% 100% at 50% 100%, black 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 90% 100% at 50% 100%, black 30%, transparent 75%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-aurora-a, .animate-aurora-b, .animate-aurora-c, .animate-aurora-edge, .animate-aurora-wash, .animate-page-aurora-a, .animate-page-aurora-b, .animate-page-aurora-c { animation: none; }
 }
 
 /* Lightweight CSS Confetti (No JS Canvas Required) */

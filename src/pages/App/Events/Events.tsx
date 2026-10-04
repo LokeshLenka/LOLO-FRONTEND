@@ -419,10 +419,14 @@ const Event: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
+                whileHover={{ y: -6 }}
                 transition={{ duration: 0.6 }}
                 className="relative"
               >
-                <div className="group relative bg-white/[0.08] rounded-[2.5rem] overflow-hidden transition-all duration-500 border-2 border-white/[0.02]">
+                <div className="group relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#000000] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] transition-colors duration-500 hover:border-white/20">
+                  {/* ── Top light-leak (matches grid cards) ── */}
+                  <div className="pointer-events-none absolute inset-x-10 top-0 z-20 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
+                  <div className="pointer-events-none absolute -top-24 left-1/2 z-0 h-44 w-3/4 -translate-x-1/2 rounded-full bg-white/[0.07] blur-3xl transition-opacity duration-700 group-hover:bg-white/[0.12]" />
                   <div className="grid lg:grid-cols-2 gap-0">
                     <div className="relative overflow-hidden h-full min-h-[400px] lg:min-h-[500px] self-stretch">
                       <div className="absolute top-6 left-6 z-10 flex flex-wrap gap-2 items-center">
@@ -451,15 +455,12 @@ const Event: React.FC = () => {
                       </div>
 
                       <img
-                        src={
-                          heroEvent.cover_image ||
-                          "https://via.placeholder.com/800x600"
-                        }
+                        src="/images/events/paatashaala.jpeg"
                         alt={heroEvent.name}
                         className="absolute inset-0 block w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
 
-                      <div className="absolute bottom-6 left-6 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl px-5 py-3 flex flex-col items-center min-w-[90px] text-center">
+                      <div className="absolute bottom-6 left-6 bg-[#000000]/40 backdrop-blur-md border border-white/10 rounded-2xl px-5 py-3 flex flex-col items-center min-w-[90px] text-center">
                         <span className="text-xs font-bold text-white uppercase leading-none mb-1">
                           {formatEventDate(heroEvent.start_date).month}
                         </span>
@@ -528,6 +529,8 @@ const Event: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                  {/* inner highlight for glass depth (matches grid cards) */}
+                  <div className="pointer-events-none absolute inset-0 z-20 rounded-[1.75rem] ring-1 ring-inset ring-white/[0.06]" />
                 </div>
               </motion.div>
             )}
@@ -559,16 +562,33 @@ const Event: React.FC = () => {
                     return (
                       <motion.div
                         key={event.uuid}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 24 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="group relative bg-white/[0.08] backdrop-blur-xl border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-lolo-pink/30 transition-all duration-500 flex flex-col min-h-[500px]"
+                        viewport={{ once: true, margin: "-40px" }}
+                        whileHover={{ y: -6 }}
+                        transition={{ duration: 0.45, ease: "easeOut" }}
+                        className="group relative flex flex-col min-h-[520px] overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#000000] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] transition-colors duration-500 hover:border-white/20"
                       >
-                        <div className="relative h-64 overflow-hidden">
-                          <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
+                        {/* ── Top light-leak (inspiration: Grok / Eth cards) ── */}
+                        <div className="pointer-events-none absolute inset-x-10 top-0 z-20 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
+                        <div className="pointer-events-none absolute -top-24 left-1/2 z-0 h-44 w-3/4 -translate-x-1/2 rounded-full bg-white/[0.07] blur-3xl transition-opacity duration-700 group-hover:bg-white/[0.12]" />
+
+                        {/* ── Cover image ── */}
+                        <div className="relative h-60 shrink-0 overflow-hidden">
+                          <img
+                            src={"/images/events/paatashaala.jpeg"}
+                            alt={event.name}
+                            loading="lazy"
+                            className="h-full w-full object-cover opacity-85 transition-all duration-700 group-hover:scale-[1.06] group-hover:opacity-100"
+                          />
+                          {/* legibility + blend into card body */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#000000] via-[#000000]/35 to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-b from-[#000000]/50 via-transparent to-transparent" />
+
+                          <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
                             {/* 🎨 TYPE BADGE */}
                             <span
-                              className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border backdrop-blur-md ${getEventTypeColor(
+                              className={`rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md ${getEventTypeColor(
                                 event.type,
                               )}`}
                             >
@@ -577,7 +597,7 @@ const Event: React.FC = () => {
 
                             {/* 🚦 STATUS BADGE */}
                             <span
-                              className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border backdrop-blur-md ${getEventStatusColor(
+                              className={`rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md ${getEventStatusColor(
                                 event.status,
                               )}`}
                             >
@@ -585,45 +605,41 @@ const Event: React.FC = () => {
                             </span>
                           </div>
 
-                          <img
-                            src={
-                              event.cover_image ||
-                              "https://via.placeholder.com/800x600"
-                            }
-                            alt={event.name}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
-                          />
-
-                          <div className="absolute bottom-4 left-4 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl px-4 py-2 flex flex-col items-center min-w-[70px] text-center">
-                            <span className="text-[10px] font-bold text-white uppercase leading-none mb-1">
+                          {/* date chip */}
+                          <div className="absolute bottom-3 left-4 z-10 flex min-w-[72px] flex-col items-center rounded-2xl border border-white/15 bg-[#000000]/50 px-4 py-2 text-center shadow-lg backdrop-blur-md">
+                            <span className="mb-1 text-[10px] font-bold uppercase leading-none text-white/90">
                               {eventDate.month}
                             </span>
-                            <span className="text-2xl font-black text-white leading-none">
+                            <span className="text-2xl font-black leading-none text-white">
                               {eventDate.day}
                             </span>
                           </div>
+
+                          <div className="absolute bottom-3 right-4 z-10 flex items-center gap-1.5 rounded-full border border-white/10 bg-[#000000]/50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white/90 backdrop-blur-md">
+                            <Clock size={12} className="text-lolo-pink" />
+                            <span>{eventDate.time}</span>
+                          </div>
                         </div>
 
-                        <div className="p-8 flex flex-col flex-grow">
-                          <div className="flex justify-between items-start mb-4">
-                            <div className="flex items-center gap-2 text-xs font-bold text-lolo-pink uppercase tracking-wider">
-                              <Clock size={14} />
-                              <span>{eventDate.time}</span>
-                            </div>
+                        {/* ── Body ── */}
+                        <div className="relative z-10 flex flex-grow flex-col px-7 pb-7 pt-6">
+                          <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-neutral-500">
+                            <MapPin size={12} className="text-purple-400" />
+                            <span className="truncate">{event.venue}</span>
                           </div>
 
-                          <h3 className="text-2xl font-bold text-white leading-tight mb-3 line-clamp-2 group-hover:text-lolo-pink transition-colors">
+                          <h3 className="mb-2 line-clamp-2 text-[1.55rem] font-bold leading-tight text-white transition-colors group-hover:text-white">
                             {event.name}
                           </h3>
-                          <p className="text-neutral-400 text-sm leading-relaxed mb-8 line-clamp-2 flex-grow">
+                          <p className="line-clamp-2 text-sm leading-relaxed text-neutral-400">
                             {event.description}
                           </p>
 
-                          <div className="pt-6 mt-auto border-t border-white/5 flex items-end justify-between">
+                          <div className="mt-auto flex items-end justify-between pt-6">
                             <div className="flex flex-col gap-1">
                               {deadline ? (
                                 <>
-                                  <span className="text-[10px] uppercase tracking-wider text-neutral-500 font-bold flex items-center gap-1.5">
+                                  <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-500">
                                     <Hourglass
                                       size={12}
                                       className={
@@ -645,19 +661,25 @@ const Event: React.FC = () => {
                                   </span>
                                 </>
                               ) : (
-                                <span className="text-xs text-neutral-600 font-medium">
-                                  No registration
+                                <span className="text-xs font-medium text-neutral-600">
+                                  No registration needed
                                 </span>
                               )}
                             </div>
 
-                            <Link to={`/events/${event.uuid}`}>
-                              <Button className="bg-white/5 hover:bg-white hover:text-black text-white border border-white/10 rounded-full w-12 h-12 p-0 flex items-center justify-center transition-all group-hover:scale-110">
+                            <Link
+                              to={`/events/${event.uuid}`}
+                              aria-label={`View ${event.name}`}
+                            >
+                              <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-white backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:border-transparent group-hover:bg-white group-hover:text-black">
                                 <ArrowRight size={20} />
-                              </Button>
+                              </span>
                             </Link>
                           </div>
                         </div>
+
+                        {/* inner highlight for glass depth */}
+                        <div className="pointer-events-none absolute inset-0 z-20 rounded-[1.75rem] ring-1 ring-inset ring-white/[0.06]" />
                       </motion.div>
                     );
                   })}
