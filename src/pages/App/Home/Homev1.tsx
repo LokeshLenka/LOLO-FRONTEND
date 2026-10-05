@@ -258,9 +258,9 @@ const HeroSection = () => {
           transition={{ delay: 0.8, duration: 0.8 }}
           className="flex flex-col sm:flex-row gap-4 mt-8 sm:mt-12 w-full sm:w-auto px-6 sm:px-0 relative z-30"
         >
-          <Link to="/signup" className="w-full sm:w-auto">
+          <Link to="/events/6b657203-9009-4405-94c4-c62b3b93e571" className="w-full sm:w-auto">
             <Button className="w-full sm:w-auto h-14 px-8 sm:px-10 rounded-full bg-white text-black text-base sm:text-lg font-bold hover:scale-105 hover:shadow-[0_0_30px_rgba(236,72,153,0.4)] transition-all duration-300 border-none">
-              Join the Community
+              Join Paatashaala
             </Button>
           </Link>
           <Link to="/events" className="w-full sm:w-auto">
