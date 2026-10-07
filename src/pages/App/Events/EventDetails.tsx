@@ -27,6 +27,9 @@ import { toast } from "sonner";
 import SectionHeader from "@/components/HomeSectionHeader";
 import { eventImageSrc, handleEventImageError } from "@/lib/event-images";
 
+// Temporarily hold registrations: set to false to re-enable all buttons.
+const REGISTRATIONS_HELD: boolean = true;
+
 // --- Types ---
 interface EventImage {
   uuid: string;
@@ -256,9 +259,9 @@ const RegistrationCard = memo<{
           {isRegistrationOpen && (
             <Button
               onClick={onRegister}
-              disabled={isLoading}
+              disabled={isLoading || REGISTRATIONS_HELD}
               size="lg"
-              className="hidden lg:flex w-full py-7 px-6 bg-white hover:text-white text-black hover:bg-lolo-pink disabled:from-neutral-700 disabled:cursor-not-allowed font-bold rounded-full transition-all duration-300 relative z-10"
+              className="hidden lg:flex w-full py-7 px-6 bg-white hover:text-white text-black hover:bg-lolo-pink disabled:from-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-400 font-bold rounded-full transition-all duration-300 relative z-10"
             >
               {isLoading ? "Processing..." : "Register Now"}
             </Button>
@@ -365,6 +368,11 @@ const EventDetails: React.FC = () => {
 
   const handleRegistration = async () => {
     if (!event) return;
+
+    if (REGISTRATIONS_HELD) {
+      toast.error("Registrations are temporarily on hold. Please check back later.");
+      return;
+    }
 
     if (getSeatsRemaining(event) === 0) {
       toast.error(FULL_NOTICE_MESSAGE);
@@ -487,12 +495,13 @@ const EventDetails: React.FC = () => {
             <span className="inline">Back to Events</span>
           </a>
           <button
+            disabled={REGISTRATIONS_HELD}
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
               setShowToast(true);
               setTimeout(() => setShowToast(false), 2000);
             }}
-            className="p-2 text-neutral-400 hover:text-white hover:bg-white/10 rounded-full transition-all active:scale-95"
+            className="p-2 text-neutral-400 hover:text-white hover:bg-white/10 rounded-full transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
             <Share2 size={18} />
           </button>
@@ -601,17 +610,19 @@ const EventDetails: React.FC = () => {
             <div className="max-w-3xl text-neutral-300 leading-[1.8] text-lg">
               <p className="whitespace-pre-wrap">
                 {event.description.length > DESCRIPTION_PREVIEW_LENGTH &&
-                !isDescriptionExpanded
+                !isDescriptionExpanded &&
+                !REGISTRATIONS_HELD
                   ? event.description.slice(0, DESCRIPTION_PREVIEW_LENGTH) +
                     "..."
                   : event.description}
               </p>
               {event.description.length > DESCRIPTION_PREVIEW_LENGTH && (
                 <button
+                  disabled={REGISTRATIONS_HELD}
                   onClick={() =>
                     setIsDescriptionExpanded(!isDescriptionExpanded)
                   }
-                  className="mt-4 text-lolo-pink hover:text-pink-300 font-semibold text-base transition-colors flex items-center gap-2 group"
+                  className="mt-4 text-lolo-pink hover:text-pink-300 font-semibold text-base transition-colors flex items-center gap-2 group disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-lolo-pink"
                 >
                   {isDescriptionExpanded ? "Read Less" : "Read More..."}
                 </button>
@@ -849,7 +860,7 @@ const EventDetails: React.FC = () => {
                   size="lg"
                   className="flex-1 font-bold bg-white text-black hover:bg-lolo-pink hover:text-white disabled:bg-neutral-700 disabled:text-neutral-400 disabled:cursor-not-allowed shadow-lg h-12 rounded-full transition-all"
                   onPress={handleRegistration}
-                  disabled={isRegistering}
+                  disabled={isRegistering || REGISTRATIONS_HELD}
                 >
                   {isRegistering ? "Processing..." : "Register Now"}
                   {!isRegistering && <Ticket size={18} className="ml-2" />}

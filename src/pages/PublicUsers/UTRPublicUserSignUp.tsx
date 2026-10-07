@@ -41,6 +41,10 @@ type EventResponse = {
 };
 
 const REGISTRATIONS_CLOSED_TITLE = "Registrations Closed";
+// Temporarily hold registrations: set to false to re-enable the form.
+const REGISTRATIONS_HELD: boolean = true;
+const REGISTRATIONS_HELD_MESSAGE =
+  "Registrations are temporarily on hold. Please check back later.";
 const MAX_PARTICIPANTS_MESSAGE =
   "Registrations for this event are closed because the maximum number of participants has been reached.";
 const EVENT_ENDED_MESSAGE =
@@ -81,8 +85,6 @@ export const UtrPublicUserSignUp: React.FC = () => {
   const [eventFee, setEventFee] = useState<number | null>(null);
   const [eventName, setEventName] = useState("");
   const [eventType, setEventType] = useState("");
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  const [qrImageFailed, setQrImageFailed] = useState(false);
   const [maxParticipants, setMaxParticipants] = useState<number | null>(null);
   const [seatsRemaining, setSeatsRemaining] = useState<number | null>(null);
   const [eventStatus, setEventStatus] = useState<string | null>(null);
@@ -182,8 +184,6 @@ export const UtrPublicUserSignUp: React.FC = () => {
         setEventType(data.type || "default");
         setEventStatus(data.status || null);
         setRegistrationDeadline(data.registration_deadline || null);
-        setQrCodeUrl(data.qr_code_url || null);
-        setQrImageFailed(false);
 
         const max =
           typeof data.max_participants === "number"
@@ -265,6 +265,11 @@ export const UtrPublicUserSignUp: React.FC = () => {
 
     if (isRegistrationClosed) {
       toast.error(closedReason ?? "Registrations for this event are closed.");
+      return;
+    }
+
+    if (REGISTRATIONS_HELD) {
+      toast.error(REGISTRATIONS_HELD_MESSAGE);
       return;
     }
 
@@ -358,13 +363,35 @@ export const UtrPublicUserSignUp: React.FC = () => {
             Event Registration
           </h1>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-            {isRegistrationClosed
-              ? closedReason
-              : eventName
-                ? `Registering for ${eventName}`
-                : "Enter your details to register."}
+            {REGISTRATIONS_HELD
+              ? REGISTRATIONS_HELD_MESSAGE
+              : isRegistrationClosed
+                ? closedReason
+                : eventName
+                  ? `Registering for ${eventName}`
+                  : "Enter your details to register."}
           </p>
         </div>
+
+        {REGISTRATIONS_HELD && !isRegistrationClosed && (
+          <div
+            role="alert"
+            className="mb-8 flex items-start gap-3 rounded-2xl border border-amber-400/40 bg-amber-500/10 p-5"
+          >
+            <AlertTriangle
+              size={20}
+              className="text-amber-400 mt-0.5 shrink-0"
+            />
+            <div>
+              <p className="font-bold text-amber-300">
+                Registrations Temporarily On Hold
+              </p>
+              <p className="text-sm text-neutral-300 mt-1 leading-relaxed">
+                {REGISTRATIONS_HELD_MESSAGE}
+              </p>
+            </div>
+          </div>
+        )}
 
         {isRegistrationClosed && (
           <div
@@ -397,7 +424,7 @@ export const UtrPublicUserSignUp: React.FC = () => {
             className="space-y-8"
           >
             <fieldset
-              disabled={isRegistrationClosed}
+              disabled={isRegistrationClosed || REGISTRATIONS_HELD}
               className="m-0 min-w-0 border-0 p-0"
             >
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -423,33 +450,6 @@ export const UtrPublicUserSignUp: React.FC = () => {
 
                       {currentFee > 0 && (
                         <>
-                          {/* ✨ UPDATED: Dark theme QR container with proper contrast */}
-                          <div className="mb-6 flex flex-col items-center justify-center p-6 bg-white/5 border border-white/10 rounded-2xl relative z-10">
-                            <div className="w-48 h-48 bg-white flex items-center justify-center rounded-xl mb-5 p-2 shadow-[0_0_20px_rgba(236,72,153,0.15)]">
-                              {qrCodeUrl && !qrImageFailed ? (
-                                <img
-                                  src={qrCodeUrl}
-                                  onError={() => setQrImageFailed(true)}
-                                  alt="Payment QR Code"
-                                  className="w-full h-full object-contain rounded-lg"
-                                />
-                              ) : (
-                                <div className="text-center text-neutral-400 px-4">
-                                  <p className="text-sm font-semibold text-neutral-300">
-                                    Payment QR unavailable
-                                  </p>
-                                  <p className="text-xs mt-1">
-                                    Please contact the event coordinator for
-                                    payment details before entering your UTR.
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                            <p className="text-neutral-400 text-xs text-center">
-                              Please pay using UPI before proceeding
-                            </p>
-                          </div>
-
                           <div className="relative z-10 mb-8">
                             <FormField
                               control={form.control}
@@ -501,15 +501,20 @@ export const UtrPublicUserSignUp: React.FC = () => {
                       <Button
                         type="submit"
                         disabled={
-                          isProcessing || !isFeeLoaded || isRegistrationClosed
+                          isProcessing ||
+                          !isFeeLoaded ||
+                          isRegistrationClosed ||
+                          REGISTRATIONS_HELD
                         }
                         className="w-full h-16 bg-white text-black hover:bg-lolo-pink hover:text-white font-bold rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(236,72,153,0.4)] transition-all active:scale-[0.98] text-lg relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed z-10"
                       >
                         <span className="relative z-10 flex items-center justify-center gap-2">
-                          {isRegistrationClosed ? (
+                          {isRegistrationClosed || REGISTRATIONS_HELD ? (
                             <>
                               <AlertTriangle className="w-5 h-5" />{" "}
-                              {REGISTRATIONS_CLOSED_TITLE}
+                              {isRegistrationClosed
+                                ? REGISTRATIONS_CLOSED_TITLE
+                                : "Registrations On Hold"}
                             </>
                           ) : isProcessing ? (
                             <>
